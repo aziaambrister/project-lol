@@ -5,26 +5,19 @@ import Enemy from './Enemy';
 import Building from './Building';
 import GameHUD from './GameHUD';
 import Minimap from './Minimap';
-import TouchControls from './TouchControls';
 
 const GameWorld: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, enterBuilding } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [lastMoveTime, setLastMoveTime] = useState(0);
-  const [showTouchControls, setShowTouchControls] = useState(true);
 
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
-      // Prevent default behavior for movement keys
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault();
-      }
-      
-      // Movement keys - both WASD and Arrow keys
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+      // Movement keys
+      if (['w', 'a', 's', 'd'].includes(key)) {
         setKeysPressed(prev => new Set(prev).add(key));
       }
       
@@ -38,13 +31,11 @@ const GameWorld: React.FC = () => {
       }
       
       if (key === 'shift') { // Shift for block
-        e.preventDefault();
         performAttack('block');
       }
       
       // Interaction keys
       if (key === 'e') { // E to enter buildings
-        e.preventDefault();
         const nearestBuilding = findNearestBuilding();
         if (nearestBuilding && nearestBuilding.enterable) {
           enterBuilding(nearestBuilding.id);
@@ -52,20 +43,10 @@ const GameWorld: React.FC = () => {
       }
       
       // Special moves
-      if (key === '1') {
-        e.preventDefault();
-        performAttack('basic-punch');
-      }
-      if (key === '2') {
-        e.preventDefault();
-        performAttack('basic-kick');
-      }
-      if (key === '3') {
-        e.preventDefault();
-        performAttack('dodge-roll');
-      }
+      if (key === '1') performAttack('basic-punch');
+      if (key === '2') performAttack('basic-kick');
+      if (key === '3') performAttack('dodge-roll');
       if (key === '4') {
-        e.preventDefault();
         const specialMove = state.player.character.moveSet.find(m => m.type === 'special');
         if (specialMove) performAttack(specialMove.id);
       }
@@ -73,8 +54,7 @@ const GameWorld: React.FC = () => {
     
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault();
+      if (['w', 'a', 's', 'd'].includes(key)) {
         setKeysPressed(prev => {
           const newSet = new Set(prev);
           newSet.delete(key);
@@ -83,9 +63,8 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    // Add event listeners to window to ensure they capture all events
-    window.addEventListener('keydown', handleKeyDown, { passive: false });
-    window.addEventListener('keyup', handleKeyUp, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -93,11 +72,10 @@ const GameWorld: React.FC = () => {
     };
   }, [state.player.character.moveSet, performAttack, enterBuilding]);
 
-  // Movement loop with improved logic
+  // Movement loop
   useEffect(() => {
     const moveInterval = setInterval(() => {
       const now = Date.now();
-      
       if (keysPressed.size === 0) {
         if (state.player.isMoving) {
           stopMoving();
@@ -108,22 +86,15 @@ const GameWorld: React.FC = () => {
       // Throttle movement updates
       if (now - lastMoveTime < 50) return;
       
-      // Determine movement direction with priority system
+      // Determine movement direction
       let direction: 'up' | 'down' | 'left' | 'right' | null = null;
       
-      // Check for movement keys (both WASD and Arrow keys)
-      if (keysPressed.has('w') || keysPressed.has('arrowup')) {
-        direction = 'up';
-      } else if (keysPressed.has('s') || keysPressed.has('arrowdown')) {
-        direction = 'down';
-      } else if (keysPressed.has('a') || keysPressed.has('arrowleft')) {
-        direction = 'left';
-      } else if (keysPressed.has('d') || keysPressed.has('arrowright')) {
-        direction = 'right';
-      }
+      if (keysPressed.has('w')) direction = 'up';
+      else if (keysPressed.has('s')) direction = 'down';
+      else if (keysPressed.has('a')) direction = 'left';
+      else if (keysPressed.has('d')) direction = 'right';
       
       if (direction) {
-        console.log('Moving player:', direction); // Debug log
         movePlayer(direction);
         setLastMoveTime(now);
       }
@@ -131,16 +102,6 @@ const GameWorld: React.FC = () => {
     
     return () => clearInterval(moveInterval);
   }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime]);
-
-  // Touch control handlers
-  const handleTouchDirectionPress = (direction: 'up' | 'down' | 'left' | 'right') => {
-    console.log('Touch direction pressed:', direction); // Debug log
-    movePlayer(direction);
-  };
-
-  const handleTouchDirectionRelease = () => {
-    stopMoving();
-  };
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
@@ -462,13 +423,6 @@ const GameWorld: React.FC = () => {
         ></div>
       )}
 
-      {/* Touch Controls */}
-      <TouchControls
-        onDirectionPress={handleTouchDirectionPress}
-        onDirectionRelease={handleTouchDirectionRelease}
-        isVisible={showTouchControls}
-      />
-
       {/* Game HUD */}
       <GameHUD />
 
@@ -479,7 +433,7 @@ const GameWorld: React.FC = () => {
       <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
         <div className="space-y-2">
           <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-          <div>🎮 <span className="text-yellow-300">WASD / Arrows</span> - Move</div>
+          <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
           <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
           <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
           <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
