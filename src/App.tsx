@@ -7,8 +7,8 @@ import GameWorld from './components/GameWorld';
 
 function App() {
   const { state } = useGame();
-  // Start directly in the "playing" state for debugging
-  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing'>('playing');
+  // Set initial game state to 'welcome' to restore homepages
+  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing'>('welcome');
 
   const handleEnterGame = () => {
     console.log('handleEnterGame called - transitioning to start screen');
@@ -49,7 +49,6 @@ function App() {
 
       {gameState === 'playing' && (
         <div className="absolute inset-0 z-10">
-          {console.log('Rendering character image:', '/ninja.png')}
           <img
             src="/ninja.png"
             alt="Ninja"
