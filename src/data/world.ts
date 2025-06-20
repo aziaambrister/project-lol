@@ -1119,7 +1119,7 @@ export const gameWorld: GameWorld = {
       state: 'patrol',
       lastAction: 0,
       // Updated sprite to use the pixel art sea serpent from the reference image
-      sprite: '/image copy.png', // Using the provided sea serpent pixel art
+      sprite: '/DRAGONSNAKE.png', // Using the provided sea serpent pixel art
       aiDifficulty: 'medium',
       moveSet: [
         {
