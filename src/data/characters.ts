@@ -79,14 +79,14 @@ export const characters: Character[] = [
         animation: 'uppercut'
       }
     ],
-    portrait: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=128',
-    sprite: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64',
+    portrait: '/ninja.png',
+    sprite: '/ninja.png',
     animations: {
-      idle: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64',
-      walk: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64',
-      attack: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64',
-      block: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64',
-      hurt: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=64'
+      idle: '/ninja.png',
+      walk: '/ninja.png',
+      attack: '/ninja.png',
+      block: '/ninja.png',
+      hurt: '/ninja.png'
     }
   },
   {
