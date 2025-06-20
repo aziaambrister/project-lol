@@ -8,8 +8,8 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
-    host: '0.0.0.0', // Listen on all addresses (LAN, localhost, etc.)
-    port: 3000,       // Use port 3000
-    strictPort: true, // Fail if port 3000 is taken instead of auto-incrementing
+    host: '0.0.0.0', // Listen on all interfaces
+    port: 3001,       // Use port 3001 (or any free port)
+    strictPort: true, // Fail if port is taken, don't auto-increment
   },
 });
