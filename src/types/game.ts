@@ -136,16 +136,21 @@ export interface NPC {
 export interface Item {
   id: string;
   name: string;
-  type: 'weapon' | 'armor' | 'consumable' | 'key' | 'material';
+  type: 'weapon' | 'armor' | 'consumable' | 'key' | 'material' | 'upgrade';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   value: number;
   effect?: {
-    type: 'heal' | 'boost-attack' | 'boost-defense' | 'boost-speed';
+    type: 'heal' | 'boost-attack' | 'boost-defense' | 'boost-speed' | 'health' | 'speed' | 'damage' | 'defense';
     value: number;
     duration?: number;
   };
   icon: string;
   description: string;
+}
+
+export interface EquippedItems {
+  weapon?: Item;
+  armor?: Item;
 }
 
 export interface Combat {
@@ -176,6 +181,8 @@ export interface GameState {
     inventory: Item[];
     currency: number;
     currentBuilding?: string;
+    equippedItems: EquippedItems;
+    unlockedCharacters: CharacterClass[];
   };
   currentWorld: GameWorld;
   combat: Combat;
