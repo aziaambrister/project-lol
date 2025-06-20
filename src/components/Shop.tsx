@@ -285,12 +285,12 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               className={`bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border-2 transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer ${getRarityColor(item.rarity)}`}
               onClick={() => setSelectedItem(item)}
             >
-              {/* Item Image */}
-              <div className="w-full h-32 mb-4 rounded-lg overflow-hidden bg-gray-700">
+              {/* Item Image - Made smaller to fit better */}
+              <div className="w-full h-24 mb-4 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center"> {/* Reduced from h-32 to h-24 */}
                 <img 
                   src={item.image} 
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain" // Changed from object-cover to object-contain to fit properly
                 />
               </div>
 

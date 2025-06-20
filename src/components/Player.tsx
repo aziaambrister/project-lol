@@ -14,13 +14,13 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
     <div 
       className="absolute z-20 transition-all duration-100"
       style={{
-        left: player.position.x - cameraX - 24,
-        top: player.position.y - cameraY - 24,
+        left: player.position.x - cameraX - 32, // Increased from 24 to 32 for bigger character
+        top: player.position.y - cameraY - 32, // Increased from 24 to 32 for bigger character
         transform: `scaleX(${player.direction === 'left' ? -1 : 1})`
       }}
     >
-      {/* Player Character */}
-      <div className="relative w-12 h-12">
+      {/* Player Character - Made bigger */}
+      <div className="relative w-16 h-16"> {/* Increased from w-12 h-12 to w-16 h-16 */}
         {/* Character Sprite */}
         <div className="w-full h-full rounded-full overflow-hidden border-3 border-yellow-400 bg-gradient-to-b from-blue-600 to-purple-600 shadow-lg">
           <img 
@@ -38,12 +38,12 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
         {/* Swimming Effect */}
         {player.isSwimming && (
           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-            <div className="w-8 h-2 bg-blue-400 rounded-full opacity-60 animate-pulse"></div>
+            <div className="w-10 h-3 bg-blue-400 rounded-full opacity-60 animate-pulse"></div> {/* Scaled up for bigger character */}
           </div>
         )}
         
         {/* Health Bar */}
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-16">
+        <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20"> {/* Increased width from 16 to 20 */}
           <div className="h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
             <div 
               className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
@@ -53,7 +53,7 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
         </div>
         
         {/* Stamina Bar */}
-        <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-16">
+        <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 w-20"> {/* Increased width from 16 to 20 */}
           <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
             <div 
               className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
@@ -63,12 +63,12 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
         </div>
         
         {/* Character Name */}
-        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
+        <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
           {player.character.name}
         </div>
         
         {/* Level Badge */}
-        <div className="absolute -top-2 -right-2 bg-yellow-500 text-black rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+        <div className="absolute -top-3 -right-3 bg-yellow-500 text-black rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold"> {/* Increased from w-6 h-6 to w-7 h-7 */}
           {player.character.level}
         </div>
         

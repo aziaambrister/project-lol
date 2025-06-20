@@ -108,16 +108,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       switch (direction) {
         case 'up':
-          newY = Math.max(0, newY - speed);
+          newY = Math.max(50, newY - speed); // Keep 50px margin from top edge
           break;
         case 'down':
-          newY = Math.min(state.currentWorld.size.height - 50, newY + speed); // Account for player size
+          newY = Math.min(state.currentWorld.size.height - 50, newY + speed); // Keep 50px margin from bottom edge
           break;
         case 'left':
-          newX = Math.max(0, newX - speed);
+          newX = Math.max(50, newX - speed); // Keep 50px margin from left edge
           break;
         case 'right':
-          newX = Math.min(state.currentWorld.size.width - 50, newX + speed); // Account for player size
+          newX = Math.min(state.currentWorld.size.width - 50, newX + speed); // Keep 50px margin from right edge
           break;
       }
       
@@ -128,6 +128,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newY >= water.position.y && 
         newY <= water.position.y + water.size.height
       );
+      
+      // Calculate camera position with boundaries
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const worldWidth = state.currentWorld.size.width;
+      const worldHeight = state.currentWorld.size.height;
+      
+      // Camera boundaries - prevent showing white edges
+      let cameraX = newX;
+      let cameraY = newY;
+      
+      // Constrain camera to world boundaries
+      cameraX = Math.max(screenWidth / 2, Math.min(worldWidth - screenWidth / 2, cameraX));
+      cameraY = Math.max(screenHeight / 2, Math.min(worldHeight - screenHeight / 2, cameraY));
       
       return {
         ...state,
@@ -140,8 +154,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
         camera: {
           ...state.camera,
-          x: newX,
-          y: newY
+          x: cameraX,
+          y: cameraY
         }
       };
     }

@@ -6,15 +6,15 @@ export const characters: Character[] = [
     name: 'Ninja',
     class: 'balanced-fighter',
     level: 1,
-    health: 50,
-    maxHealth: 50,
+    health: 100,
+    maxHealth: 100,
     stamina: 100,
     maxStamina: 100,
     experience: 0,
     experienceToNextLevel: 100,
     attack: 10,
     defense: 8,
-    speed: 5,
+    speed: 8, // Increased from 5 to 8 for faster movement
     unlocked: true,
     moveSet: [
       {
@@ -102,7 +102,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 8,
     defense: 6,
-    speed: 8,
+    speed: 10, // Increased from 8 to 10 for faster movement
     unlocked: false,
     price: 500,
     moveSet: [
@@ -167,7 +167,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 15,
     defense: 12,
-    speed: 3,
+    speed: 4, // Increased from 3 to 4 for slightly faster movement
     unlocked: false,
     price: 800,
     moveSet: [
@@ -231,7 +231,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 9,
     defense: 15,
-    speed: 4,
+    speed: 5, // Increased from 4 to 5 for slightly faster movement
     unlocked: false,
     price: 600,
     moveSet: [
