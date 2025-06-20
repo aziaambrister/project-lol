@@ -33,7 +33,7 @@ const shopItems: ShopItem[] = [
     rarity: 'common',
     effect: { type: 'damage', value: 8 },
     icon: '⚔️',
-    image: 'https://images.pexels.com/photos/8389717/pexels-photo-8389717.jpeg?auto=compress&cs=tinysrgb&w=200',
+    image: '/sword.png',
     inStock: true
   },
   {
