@@ -89,12 +89,12 @@ const initialState: GameState = {
     sfxVolume: 0.8,
     difficulty: 'medium'
   },
-  // Enhanced movement system with proper physics values
+  // Enhanced movement system
   movement: {
-    speed: 250, // 250 units per second - good balance for exploration
-    acceleration: 1000, // 1000 units per second squared - responsive feel
-    deceleration: 1500, // 1500 units per second squared - quick stops
-    maxSpeed: 350 // 350 maximum speed cap - allows for speed boosts
+    speed: 200, // 200 units per second
+    acceleration: 800, // 800 units per second squared
+    deceleration: 1200, // 1200 units per second squared (faster deceleration)
+    maxSpeed: 300 // maximum speed cap
   }
 };
 
