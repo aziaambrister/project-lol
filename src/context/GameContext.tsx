@@ -43,7 +43,7 @@ const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
-    position: { x: 200, y: 2800 }, // Bottom left of the map (3000x3000 map)
+    position: { x: 200, y: 3800 }, // Bottom left of the 4000x4000 map
     direction: 'down',
     isMoving: false,
     isSwimming: false,
@@ -60,7 +60,7 @@ const initialState: GameState = {
   },
   camera: {
     x: 200, // Start camera at bottom left
-    y: 2800,
+    y: 3800,
     zoom: 1
   },
   ui: {
@@ -90,12 +90,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         player: {
           ...state.player,
           character: { ...selectedCharacter },
-          position: { x: 200, y: 2800 }, // Start at bottom left
+          position: { x: 200, y: 3800 }, // Start at bottom left
         },
         camera: {
           ...state.camera,
           x: 200, // Camera follows player to bottom left
-          y: 2800
+          y: 3800
         }
       };
     }
@@ -111,13 +111,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           newY = Math.max(0, newY - speed);
           break;
         case 'down':
-          newY = Math.min(state.currentWorld.size.height, newY + speed);
+          newY = Math.min(state.currentWorld.size.height - 50, newY + speed); // Account for player size
           break;
         case 'left':
           newX = Math.max(0, newX - speed);
           break;
         case 'right':
-          newX = Math.min(state.currentWorld.size.width, newX + speed);
+          newX = Math.min(state.currentWorld.size.width - 50, newX + speed); // Account for player size
           break;
       }
       

@@ -76,7 +76,10 @@ const GameWorld: React.FC = () => {
   // Check if map image loads
   useEffect(() => {
     const img = new Image();
-    img.onload = () => setMapLoaded(true);
+    img.onload = () => {
+      console.log('Map loaded successfully');
+      setMapLoaded(true);
+    };
     img.onerror = () => {
       console.error('Failed to load map.png');
       setMapLoaded(false);
@@ -167,113 +170,38 @@ const GameWorld: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Map Background - with fallback */}
+      {/* Map Background - Full Coverage */}
       <div 
-        className="absolute inset-0"
+        className="absolute"
         style={{
           left: -cameraX,
           top: -cameraY,
           width: state.currentWorld.size.width,
           height: state.currentWorld.size.height,
-          backgroundImage: mapLoaded ? `url(/map.png)` : `
-            linear-gradient(45deg, #22c55e 0%, #16a34a 25%, #15803d 50%, #166534 75%, #14532d 100%),
-            radial-gradient(circle at 15% 15%, rgba(34, 197, 94, 0.9) 0%, transparent 25%),
-            radial-gradient(circle at 85% 85%, rgba(22, 163, 74, 0.7) 0%, transparent 35%),
-            radial-gradient(circle at 50% 30%, rgba(21, 128, 61, 0.5) 0%, transparent 40%),
-            radial-gradient(circle at 30% 70%, rgba(16, 185, 129, 0.6) 0%, transparent 30%)
-          `,
-          backgroundSize: mapLoaded ? 'cover' : '600px 600px, 1200px 1200px, 900px 900px, 1500px 1500px, 800px 800px',
+          backgroundImage: `url(/map.png)`,
+          backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          imageRendering: 'pixelated', // Keeps pixel art crisp
+          minWidth: '100vw',
+          minHeight: '100vh'
         }}
       >
         {/* Show loading indicator if map hasn't loaded */}
         {!mapLoaded && (
-          <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg">
-            Loading map... Using fallback terrain
+          <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg z-50">
+            Loading map...
           </div>
         )}
 
-        {/* Fallback terrain elements when map doesn't load */}
-        {!mapLoaded && (
-          <>
-            {/* Forest Areas - Scaled and Enhanced */}
-            <div 
-              className="absolute bg-green-800 opacity-70 rounded-full"
-              style={{ left: '8%', top: '12%', width: '450px', height: '375px' }}
-            ></div>
-            <div 
-              className="absolute bg-green-800 opacity-70 rounded-full"
-              style={{ left: '68%', top: '8%', width: '375px', height: '300px' }}
-            ></div>
-            <div 
-              className="absolute bg-green-800 opacity-70 rounded-full"
-              style={{ left: '12%', top: '68%', width: '300px', height: '270px' }}
-            ></div>
-            <div 
-              className="absolute bg-green-700 opacity-60 rounded-full"
-              style={{ left: '5%', top: '45%', width: '200px', height: '180px' }}
-            ></div>
-            
-            {/* Desert/Sandy Areas - Scaled and Enhanced */}
-            <div 
-              className="absolute bg-yellow-600 opacity-50 rounded-lg"
-              style={{ left: '40%', top: '55%', width: '600px', height: '450px' }}
-            ></div>
-            <div 
-              className="absolute bg-yellow-700 opacity-40 rounded-lg"
-              style={{ left: '65%', top: '75%', width: '300px', height: '200px' }}
-            ></div>
-            
-            {/* Mountain/Rocky Areas - Scaled and Enhanced */}
-            <div 
-              className="absolute bg-gray-600 opacity-60 rounded-lg"
-              style={{ left: '72%', top: '60%', width: '300px', height: '375px' }}
-            ></div>
-            <div 
-              className="absolute bg-gray-700 opacity-50 rounded-lg"
-              style={{ left: '85%', top: '45%', width: '200px', height: '250px' }}
-            ></div>
-            
-            {/* Enhanced Tree Sprites - More scattered and varied */}
-            <div className="absolute text-8xl" style={{ left: '12%', top: '18%' }}>🌲</div>
-            <div className="absolute text-7xl" style={{ left: '16%', top: '23%' }}>🌳</div>
-            <div className="absolute text-8xl" style={{ left: '9%', top: '28%' }}>🌲</div>
-            <div className="absolute text-6xl" style={{ left: '20%', top: '15%' }}>🌲</div>
-            <div className="absolute text-7xl" style={{ left: '73%', top: '12%' }}>🌲</div>
-            <div className="absolute text-8xl" style={{ left: '76%', top: '18%' }}>🌳</div>
-            <div className="absolute text-7xl" style={{ left: '70%', top: '22%' }}>🌲</div>
-            <div className="absolute text-6xl" style={{ left: '80%', top: '15%' }}>🌲</div>
-            
-            {/* Enhanced Rock formations and mountain details */}
-            <div className="absolute text-6xl" style={{ left: '78%', top: '68%' }}>🪨</div>
-            <div className="absolute text-7xl" style={{ left: '83%', top: '73%' }}>⛰️</div>
-            <div className="absolute text-6xl" style={{ left: '76%', top: '78%' }}>🪨</div>
-            <div className="absolute text-5xl" style={{ left: '85%', top: '65%' }}>🪨</div>
-            
-            {/* Desert details */}
-            <div className="absolute text-4xl" style={{ left: '50%', top: '70%' }}>🌵</div>
-            <div className="absolute text-3xl" style={{ left: '60%', top: '75%' }}>🌵</div>
-            <div className="absolute text-5xl" style={{ left: '45%', top: '80%' }}>🌵</div>
-            <div className="absolute text-3xl" style={{ left: '70%', top: '85%' }}>🌵</div>
-          </>
-        )}
-
-        {/* Overlay for additional terrain details */}
+        {/* Fallback background color to prevent white space */}
         <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 15% 15%, rgba(34, 197, 94, 0.3) 0%, transparent 25%),
-              radial-gradient(circle at 85% 85%, rgba(22, 163, 74, 0.2) 0%, transparent 35%),
-              radial-gradient(circle at 50% 30%, rgba(21, 128, 61, 0.2) 0%, transparent 40%)
-            `,
-            backgroundSize: '600px 600px, 900px 900px, 1200px 1200px'
-          }}
+          className="absolute inset-0 bg-green-600"
+          style={{ zIndex: -1 }}
         ></div>
       </div>
 
-      {/* Enhanced Water Bodies with RPG styling */}
+      {/* Enhanced Water Bodies with RPG styling - positioned to match map */}
       {state.currentWorld.waterBodies.map(water => (
         <div
           key={water.id}
@@ -284,7 +212,8 @@ const GameWorld: React.FC = () => {
             width: water.size.width,
             height: water.size.height,
             background: 'linear-gradient(45deg, #3b82f6, #1d4ed8, #1e40af, #1e3a8a)',
-            boxShadow: 'inset 0 0 40px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.4)'
+            boxShadow: 'inset 0 0 40px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.4)',
+            opacity: 0.8 // Make water slightly transparent to blend with map
           }}
         >
           {/* Enhanced water animation effects */}

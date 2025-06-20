@@ -3,18 +3,65 @@ import { GameWorld, Enemy, Building, WaterBody, NPC, Item } from '../types/game'
 export const gameWorld: GameWorld = {
   id: 'main-world',
   name: 'Realm of Fighters',
-  size: { width: 3000, height: 3000 }, // Scaled up 150% from 2000x2000
+  size: { width: 4000, height: 4000 }, // Increased size to ensure full coverage
   terrain: [], // Will be generated procedurally
-  spawnPoint: { x: 200, y: 2800 }, // Bottom left of the map
+  spawnPoint: { x: 200, y: 3800 }, // Bottom left of the map
   
   buildings: [
+    // Forest Area Buildings - positioned to match the map
+    {
+      id: 'forest-cabin-1',
+      name: 'Forest Cabin',
+      type: 'house',
+      position: { x: 600, y: 800 }, // Top left house in forest
+      size: { width: 120, height: 90 },
+      enterable: true,
+      sprite: '🏠',
+      interior: {
+        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        npcs: [],
+        items: [],
+        exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
+      }
+    },
+    {
+      id: 'forest-cabin-2',
+      name: 'Forest Cabin',
+      type: 'house',
+      position: { x: 600, y: 2200 }, // Bottom left house in forest
+      size: { width: 120, height: 90 },
+      enterable: true,
+      sprite: '🏠',
+      interior: {
+        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        npcs: [],
+        items: [],
+        exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
+      }
+    },
+    // Snow Area Building - positioned to match the map
+    {
+      id: 'snow-cabin',
+      name: 'Snow Cabin',
+      type: 'house',
+      position: { x: 2800, y: 1200 }, // Snow area cabin
+      size: { width: 120, height: 90 },
+      enterable: true,
+      sprite: '🏠',
+      interior: {
+        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        npcs: [],
+        items: [],
+        exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
+      }
+    },
     // Desert Area Buildings (scaled positions)
     {
       id: 'desert-outpost',
       name: 'Desert Outpost',
       type: 'inn',
-      position: { x: 1350, y: 2100 }, // Scaled from 900,1400
-      size: { width: 135, height: 105 }, // Scaled from 90x70
+      position: { x: 1350, y: 2100 },
+      size: { width: 135, height: 105 },
       enterable: true,
       sprite: '🏜️',
       interior: {
@@ -44,8 +91,8 @@ export const gameWorld: GameWorld = {
       id: 'mountain-tower',
       name: 'Watchtower',
       type: 'dungeon',
-      position: { x: 2400, y: 2250 }, // Scaled from 1600,1500
-      size: { width: 90, height: 120 }, // Scaled from 60x80
+      position: { x: 2400, y: 2250 },
+      size: { width: 90, height: 120 },
       enterable: true,
       sprite: '🗼',
       interior: {
@@ -85,32 +132,16 @@ export const gameWorld: GameWorld = {
         items: [],
         exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
       }
-    },
-    // Forest Area Buildings (keeping only forest cabin)
-    {
-      id: 'forest-cabin',
-      name: 'Hermit\'s Cabin',
-      type: 'house',
-      position: { x: 450, y: 600 }, // Scaled from 300,400
-      size: { width: 105, height: 75 }, // Scaled from 70x50
-      enterable: true,
-      sprite: '🛖',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 52, y: 75, leadsTo: 'main-world' }]
-      }
     }
   ],
   
   waterBodies: [
-    // Central Lake (scaled)
+    // Large Lake (positioned to match the map's lake)
     {
       id: 'central-lake',
       type: 'lake',
-      position: { x: 900, y: 900 }, // Scaled from 600,600
-      size: { width: 300, height: 225 }, // Scaled from 200x150
+      position: { x: 2400, y: 2800 }, // Bottom right lake from the map
+      size: { width: 800, height: 600 },
       swimmable: true,
       currentStrength: 0.5
     },
@@ -118,8 +149,8 @@ export const gameWorld: GameWorld = {
     {
       id: 'northern-river',
       type: 'river',
-      position: { x: 600, y: 300 }, // Scaled from 400,200
-      size: { width: 450, height: 60 }, // Scaled from 300x40
+      position: { x: 600, y: 300 },
+      size: { width: 450, height: 60 },
       swimmable: true,
       currentStrength: 1.0
     },
@@ -127,8 +158,8 @@ export const gameWorld: GameWorld = {
     {
       id: 'eastern-pond',
       type: 'pond',
-      position: { x: 2100, y: 1200 }, // Scaled from 1400,800
-      size: { width: 180, height: 150 }, // Scaled from 120x100
+      position: { x: 2100, y: 1200 },
+      size: { width: 180, height: 150 },
       swimmable: true,
       currentStrength: 0.3
     },
@@ -136,8 +167,8 @@ export const gameWorld: GameWorld = {
     {
       id: 'western-coast',
       type: 'ocean',
-      position: { x: 75, y: 600 }, // Scaled from 50,400
-      size: { width: 150, height: 1200 }, // Scaled from 100x800
+      position: { x: 75, y: 600 },
+      size: { width: 150, height: 1200 },
       swimmable: true,
       currentStrength: 2.0
     },
@@ -161,7 +192,7 @@ export const gameWorld: GameWorld = {
   ],
   
   enemies: [
-    // Forest Area Enemies (50% more enemies - original + additional)
+    // Forest Area Enemies - positioned in forest areas
     {
       id: 'forest-bandit-1',
       name: 'Forest Bandit',
@@ -185,8 +216,8 @@ export const gameWorld: GameWorld = {
           description: 'A coin stolen by bandits'
         }
       ],
-      position: { x: 375, y: 525 }, // Scaled from 250,350
-      patrolCenter: { x: 375, y: 525 },
+      position: { x: 800, y: 1000 }, // Forest area
+      patrolCenter: { x: 800, y: 1000 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
@@ -229,8 +260,8 @@ export const gameWorld: GameWorld = {
           description: 'A coin stolen by bandits'
         }
       ],
-      position: { x: 600, y: 750 },
-      patrolCenter: { x: 600, y: 750 },
+      position: { x: 1200, y: 1500 }, // Forest area
+      patrolCenter: { x: 1200, y: 1500 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
@@ -246,51 +277,6 @@ export const gameWorld: GameWorld = {
           currentCooldown: 0,
           range: 30,
           description: 'A crude sword attack',
-          animation: 'slash'
-        }
-      ]
-    },
-    {
-      id: 'forest-bandit-3',
-      name: 'Forest Bandit Leader',
-      type: 'aggressive',
-      health: 80,
-      maxHealth: 80,
-      attack: 12,
-      defense: 6,
-      speed: 5,
-      detectionRadius: 100,
-      patrolRadius: 80,
-      experience: 40,
-      loot: [
-        {
-          id: 'bandit-sword',
-          name: 'Bandit Sword',
-          type: 'weapon',
-          rarity: 'uncommon',
-          value: 75,
-          effect: { type: 'boost-attack', value: 6 },
-          icon: '⚔️',
-          description: 'A well-maintained bandit blade'
-        }
-      ],
-      position: { x: 450, y: 900 },
-      patrolCenter: { x: 450, y: 900 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'bandit-slash',
-          name: 'Rusty Blade',
-          type: 'basic-attack',
-          damage: 16,
-          staminaCost: 15,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 35,
-          description: 'A skilled sword attack',
           animation: 'slash'
         }
       ]
@@ -318,8 +304,8 @@ export const gameWorld: GameWorld = {
           description: 'Thick fur from a wild wolf'
         }
       ],
-      position: { x: 525, y: 675 }, // Scaled from 350,450
-      patrolCenter: { x: 525, y: 675 },
+      position: { x: 900, y: 1800 }, // Forest area
+      patrolCenter: { x: 900, y: 1800 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
@@ -339,456 +325,96 @@ export const gameWorld: GameWorld = {
         }
       ]
     },
+    // Snow Area Enemies
     {
-      id: 'forest-wolf-2',
-      name: 'Alpha Wolf',
+      id: 'snow-wolf',
+      name: 'Snow Wolf',
       type: 'aggressive',
-      health: 60,
-      maxHealth: 60,
-      attack: 14,
+      health: 50,
+      maxHealth: 50,
+      attack: 12,
       defense: 4,
       speed: 7,
-      detectionRadius: 120,
-      patrolRadius: 180,
-      experience: 35,
+      detectionRadius: 110,
+      patrolRadius: 160,
+      experience: 30,
       loot: [
         {
-          id: 'alpha-pelt',
-          name: 'Alpha Wolf Pelt',
+          id: 'snow-pelt',
+          name: 'Snow Wolf Pelt',
           type: 'material',
           rarity: 'uncommon',
-          value: 30,
+          value: 25,
           icon: '🐺',
-          description: 'Rare pelt from an alpha wolf'
+          description: 'Thick white fur from a snow wolf'
         }
       ],
-      position: { x: 300, y: 600 },
-      patrolCenter: { x: 300, y: 600 },
+      position: { x: 2600, y: 800 }, // Snow area
+      patrolCenter: { x: 2600, y: 800 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
       aiDifficulty: 'medium',
       moveSet: [
         {
-          id: 'wolf-bite',
-          name: 'Savage Bite',
+          id: 'frost-bite',
+          name: 'Frost Bite',
           type: 'basic-attack',
-          damage: 18,
-          staminaCost: 20,
+          damage: 16,
+          staminaCost: 18,
           cooldown: 0,
           currentCooldown: 0,
-          range: 30,
-          description: 'A powerful alpha bite',
+          range: 28,
+          description: 'A freezing bite attack',
           animation: 'bite'
         }
       ]
     },
     {
-      id: 'forest-bear',
-      name: 'Forest Bear',
-      type: 'aggressive',
-      health: 100,
-      maxHealth: 100,
-      attack: 16,
-      defense: 8,
-      speed: 4,
-      detectionRadius: 90,
-      patrolRadius: 120,
-      experience: 50,
-      loot: [
-        {
-          id: 'bear-claw',
-          name: 'Bear Claw',
-          type: 'material',
-          rarity: 'rare',
-          value: 50,
-          icon: '🐻',
-          description: 'Sharp claw from a forest bear'
-        }
-      ],
-      position: { x: 750, y: 450 },
-      patrolCenter: { x: 750, y: 450 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'hard',
-      moveSet: [
-        {
-          id: 'bear-swipe',
-          name: 'Claw Swipe',
-          type: 'basic-attack',
-          damage: 20,
-          staminaCost: 25,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 35,
-          description: 'A powerful claw attack',
-          animation: 'swipe'
-        }
-      ]
-    },
-
-    // Desert Area Enemies (50% more)
-    {
-      id: 'desert-scorpion-1',
-      name: 'Giant Scorpion',
-      type: 'aggressive',
-      health: 80,
-      maxHealth: 80,
-      attack: 12,
-      defense: 6,
-      speed: 5,
-      detectionRadius: 90,
-      patrolRadius: 120,
-      experience: 35,
-      loot: [
-        {
-          id: 'scorpion-stinger',
-          name: 'Scorpion Stinger',
-          type: 'material',
-          rarity: 'uncommon',
-          value: 25,
-          icon: '🦂',
-          description: 'A venomous stinger'
-        }
-      ],
-      position: { x: 1275, y: 1950 }, // Scaled from 850,1300
-      patrolCenter: { x: 1275, y: 1950 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'scorpion-sting',
-          name: 'Poison Sting',
-          type: 'basic-attack',
-          damage: 16,
-          staminaCost: 20,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 30,
-          description: 'A poisonous sting attack',
-          animation: 'sting'
-        }
-      ]
-    },
-    {
-      id: 'desert-scorpion-2',
-      name: 'Desert Scorpion',
-      type: 'aggressive',
-      health: 70,
-      maxHealth: 70,
-      attack: 10,
-      defense: 5,
-      speed: 5,
-      detectionRadius: 85,
-      patrolRadius: 110,
-      experience: 30,
-      loot: [
-        {
-          id: 'scorpion-stinger',
-          name: 'Scorpion Stinger',
-          type: 'material',
-          rarity: 'uncommon',
-          value: 25,
-          icon: '🦂',
-          description: 'A venomous stinger'
-        }
-      ],
-      position: { x: 1800, y: 2100 },
-      patrolCenter: { x: 1800, y: 2100 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'scorpion-sting',
-          name: 'Poison Sting',
-          type: 'basic-attack',
-          damage: 14,
-          staminaCost: 18,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 28,
-          description: 'A poisonous sting attack',
-          animation: 'sting'
-        }
-      ]
-    },
-    {
-      id: 'desert-raider',
-      name: 'Desert Raider',
-      type: 'patrol',
-      health: 90,
-      maxHealth: 90,
-      attack: 14,
-      defense: 7,
-      speed: 6,
-      detectionRadius: 100,
-      patrolRadius: 140,
-      experience: 40,
-      loot: [
-        {
-          id: 'desert-scimitar',
-          name: 'Desert Scimitar',
-          type: 'weapon',
-          rarity: 'uncommon',
-          value: 85,
-          effect: { type: 'boost-attack', value: 7 },
-          icon: '🗡️',
-          description: 'A curved desert blade'
-        }
-      ],
-      position: { x: 2250, y: 2400 },
-      patrolCenter: { x: 2250, y: 2400 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'scimitar-slash',
-          name: 'Scimitar Slash',
-          type: 'basic-attack',
-          damage: 18,
-          staminaCost: 22,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 32,
-          description: 'A swift curved blade attack',
-          animation: 'slash'
-        }
-      ]
-    },
-    {
-      id: 'sand-elemental',
-      name: 'Sand Elemental',
-      type: 'aggressive',
-      health: 120,
-      maxHealth: 120,
-      attack: 16,
-      defense: 10,
-      speed: 3,
-      detectionRadius: 80,
-      patrolRadius: 100,
-      experience: 60,
-      loot: [
-        {
-          id: 'sand-crystal',
-          name: 'Sand Crystal',
-          type: 'material',
-          rarity: 'rare',
-          value: 60,
-          icon: '💎',
-          description: 'A crystallized essence of sand'
-        }
-      ],
-      position: { x: 1950, y: 2700 },
-      patrolCenter: { x: 1950, y: 2700 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'hard',
-      moveSet: [
-        {
-          id: 'sand-blast',
-          name: 'Sand Blast',
-          type: 'basic-attack',
-          damage: 22,
-          staminaCost: 30,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 40,
-          description: 'A powerful sand attack',
-          animation: 'blast'
-        }
-      ]
-    },
-
-    // Mountain Area Enemies (50% more)
-    {
-      id: 'mountain-orc-1',
-      name: 'Mountain Orc',
+      id: 'ice-bear',
+      name: 'Ice Bear',
       type: 'aggressive',
       health: 120,
       maxHealth: 120,
       attack: 18,
       defense: 10,
-      speed: 3,
-      detectionRadius: 110,
-      patrolRadius: 80,
+      speed: 4,
+      detectionRadius: 100,
+      patrolRadius: 140,
       experience: 60,
       loot: [
         {
-          id: 'orc-axe',
-          name: 'Crude Axe',
-          type: 'weapon',
-          rarity: 'uncommon',
-          value: 75,
-          effect: { type: 'boost-attack', value: 8 },
-          icon: '🪓',
-          description: 'A heavy orcish battle axe'
-        }
-      ],
-      position: { x: 2325, y: 2175 }, // Scaled from 1550,1450
-      patrolCenter: { x: 2325, y: 2175 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'hard',
-      moveSet: [
-        {
-          id: 'orc-chop',
-          name: 'Axe Chop',
-          type: 'basic-attack',
-          damage: 22,
-          staminaCost: 25,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 35,
-          description: 'A powerful axe strike',
-          animation: 'chop'
-        }
-      ]
-    },
-    {
-      id: 'mountain-orc-2',
-      name: 'Orc Warrior',
-      type: 'aggressive',
-      health: 140,
-      maxHealth: 140,
-      attack: 20,
-      defense: 12,
-      speed: 3,
-      detectionRadius: 120,
-      patrolRadius: 90,
-      experience: 70,
-      loot: [
-        {
-          id: 'orc-hammer',
-          name: 'War Hammer',
-          type: 'weapon',
-          rarity: 'rare',
-          value: 120,
-          effect: { type: 'boost-attack', value: 12 },
-          icon: '🔨',
-          description: 'A massive orcish war hammer'
-        }
-      ],
-      position: { x: 2700, y: 1950 },
-      patrolCenter: { x: 2700, y: 1950 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'hard',
-      moveSet: [
-        {
-          id: 'hammer-smash',
-          name: 'Hammer Smash',
-          type: 'basic-attack',
-          damage: 26,
-          staminaCost: 30,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 38,
-          description: 'A devastating hammer blow',
-          animation: 'smash'
-        }
-      ]
-    },
-    {
-      id: 'mountain-troll',
-      name: 'Mountain Troll',
-      type: 'aggressive',
-      health: 200,
-      maxHealth: 200,
-      attack: 25,
-      defense: 15,
-      speed: 2,
-      detectionRadius: 100,
-      patrolRadius: 60,
-      experience: 100,
-      loot: [
-        {
-          id: 'troll-club',
-          name: 'Troll Club',
-          type: 'weapon',
-          rarity: 'epic',
-          value: 200,
-          effect: { type: 'boost-attack', value: 15 },
-          icon: '🏏',
-          description: 'A massive troll war club'
-        }
-      ],
-      position: { x: 2550, y: 1650 },
-      patrolCenter: { x: 2550, y: 1650 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'hard',
-      moveSet: [
-        {
-          id: 'troll-smash',
-          name: 'Ground Smash',
-          type: 'basic-attack',
-          damage: 30,
-          staminaCost: 35,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 45,
-          description: 'A earth-shaking attack',
-          animation: 'ground-smash'
-        }
-      ]
-    },
-    {
-      id: 'stone-golem',
-      name: 'Stone Golem',
-      type: 'defensive',
-      health: 180,
-      maxHealth: 180,
-      attack: 22,
-      defense: 18,
-      speed: 2,
-      detectionRadius: 80,
-      patrolRadius: 50,
-      experience: 80,
-      loot: [
-        {
-          id: 'stone-core',
-          name: 'Stone Core',
+          id: 'ice-claw',
+          name: 'Ice Bear Claw',
           type: 'material',
           rarity: 'rare',
-          value: 80,
-          icon: '🪨',
-          description: 'The magical core of a stone golem'
+          value: 60,
+          icon: '🐻',
+          description: 'Sharp claw from an ice bear'
         }
       ],
-      position: { x: 2400, y: 1800 },
-      patrolCenter: { x: 2400, y: 1800 },
+      position: { x: 3000, y: 1000 }, // Snow area
+      patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
       aiDifficulty: 'hard',
       moveSet: [
         {
-          id: 'stone-punch',
-          name: 'Stone Fist',
+          id: 'ice-swipe',
+          name: 'Ice Claw Swipe',
           type: 'basic-attack',
-          damage: 24,
+          damage: 22,
           staminaCost: 28,
           cooldown: 0,
           currentCooldown: 0,
-          range: 30,
-          description: 'A crushing stone fist',
-          animation: 'punch'
+          range: 38,
+          description: 'A powerful icy claw attack',
+          animation: 'swipe'
         }
       ]
     },
-
-    // Central Plains Enemies (50% more)
+    // Plains/Grassland Enemies - positioned in open areas
     {
       id: 'plains-goblin-1',
       name: 'Goblin Scout',
@@ -813,8 +439,8 @@ export const gameWorld: GameWorld = {
           description: 'A small, rusty blade'
         }
       ],
-      position: { x: 1650, y: 1650 }, // Scaled from 1100,1100
-      patrolCenter: { x: 1650, y: 1650 },
+      position: { x: 1800, y: 2000 }, // Open grassland
+      patrolCenter: { x: 1800, y: 2000 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
@@ -858,8 +484,8 @@ export const gameWorld: GameWorld = {
           description: 'A crude goblin blade'
         }
       ],
-      position: { x: 1200, y: 1350 },
-      patrolCenter: { x: 1200, y: 1350 },
+      position: { x: 2000, y: 1600 }, // Open grassland
+      patrolCenter: { x: 2000, y: 1600 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
@@ -879,123 +505,32 @@ export const gameWorld: GameWorld = {
         }
       ]
     },
+    // Lake/Water Area Enemies
     {
-      id: 'plains-goblin-3',
-      name: 'Goblin Shaman',
+      id: 'water-serpent',
+      name: 'Lake Serpent',
       type: 'aggressive',
-      health: 65,
-      maxHealth: 65,
-      attack: 11,
-      defense: 5,
-      speed: 5,
-      detectionRadius: 90,
-      patrolRadius: 100,
-      experience: 35,
-      loot: [
-        {
-          id: 'goblin-staff',
-          name: 'Shaman Staff',
-          type: 'weapon',
-          rarity: 'uncommon',
-          value: 70,
-          effect: { type: 'boost-attack', value: 6 },
-          icon: '🪄',
-          description: 'A magical goblin staff'
-        }
-      ],
-      position: { x: 1800, y: 1200 },
-      patrolCenter: { x: 1800, y: 1200 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'magic-bolt',
-          name: 'Magic Bolt',
-          type: 'basic-attack',
-          damage: 14,
-          staminaCost: 15,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 40,
-          description: 'A magical energy bolt',
-          animation: 'bolt'
-        }
-      ]
-    },
-
-    // Coastal Area Enemies (new area)
-    {
-      id: 'sea-raider',
-      name: 'Sea Raider',
-      type: 'patrol',
-      health: 75,
-      maxHealth: 75,
-      attack: 11,
+      health: 80,
+      maxHealth: 80,
+      attack: 14,
       defense: 6,
-      speed: 5,
-      detectionRadius: 85,
-      patrolRadius: 110,
-      experience: 30,
-      loot: [
-        {
-          id: 'cutlass',
-          name: 'Cutlass',
-          type: 'weapon',
-          rarity: 'uncommon',
-          value: 65,
-          effect: { type: 'boost-attack', value: 5 },
-          icon: '⚔️',
-          description: 'A curved pirate blade'
-        }
-      ],
-      position: { x: 450, y: 1200 },
-      patrolCenter: { x: 450, y: 1200 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'medium',
-      moveSet: [
-        {
-          id: 'cutlass-slash',
-          name: 'Cutlass Slash',
-          type: 'basic-attack',
-          damage: 15,
-          staminaCost: 18,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 30,
-          description: 'A swift cutlass attack',
-          animation: 'slash'
-        }
-      ]
-    },
-    {
-      id: 'sea-serpent',
-      name: 'Sea Serpent',
-      type: 'aggressive',
-      health: 110,
-      maxHealth: 110,
-      attack: 15,
-      defense: 8,
       speed: 6,
-      detectionRadius: 100,
-      patrolRadius: 80,
-      experience: 55,
+      detectionRadius: 120,
+      patrolRadius: 100,
+      experience: 45,
       loot: [
         {
           id: 'serpent-scale',
-          name: 'Serpent Scale',
+          name: 'Lake Serpent Scale',
           type: 'material',
           rarity: 'rare',
-          value: 45,
+          value: 40,
           icon: '🐍',
-          description: 'A shimmering sea serpent scale'
+          description: 'A shimmering scale from a lake serpent'
         }
       ],
-      position: { x: 300, y: 1800 },
-      patrolCenter: { x: 300, y: 1800 },
+      position: { x: 2600, y: 3000 }, // Near the large lake
+      patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
       sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
