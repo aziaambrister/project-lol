@@ -49,9 +49,9 @@ function App() {
 
       {gameState === 'playing' && (
         <div className="absolute inset-0 z-10">
-          {console.log('Rendering character image:', '/imgs_png/ninja.png')}
+          {console.log('Rendering character image:', '/ninja.png')}
           <img
-            src="/imgs_png/ninja.png"
+            src="/ninja.png"
             alt="Ninja"
             style={{
               position: 'absolute',
