@@ -8,127 +8,6 @@ export const gameWorld: GameWorld = {
   spawnPoint: { x: 1500, y: 1500 }, // Centered in scaled map
   
   buildings: [
-    // Central Village Buildings (scaled positions)
-    {
-      id: 'player-house',
-      name: 'Your House',
-      type: 'house',
-      position: { x: 1425, y: 1425 }, // Scaled from 950,950
-      size: { width: 120, height: 90 }, // Scaled from 80x60
-      enterable: true,
-      sprite: '🏠',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [
-          {
-            id: 'health-potion',
-            name: 'Health Potion',
-            type: 'consumable',
-            rarity: 'common',
-            value: 50,
-            effect: { type: 'heal', value: 30 },
-            icon: '🧪',
-            description: 'Restores 30 health points'
-          }
-        ],
-        exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
-      }
-    },
-    {
-      id: 'weapon-shop',
-      name: 'Weapon Shop',
-      type: 'shop',
-      position: { x: 1200, y: 1800 }, // Scaled from 800,1200
-      size: { width: 150, height: 120 }, // Scaled from 100x80
-      enterable: true,
-      sprite: '⚔️',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [
-          {
-            id: 'weapon-merchant',
-            name: 'Gareth the Blacksmith',
-            type: 'merchant',
-            position: { x: 75, y: 60 },
-            dialogue: ['Welcome to my shop!', 'I have the finest weapons in the realm.'],
-            sprite: '👨‍🔧',
-            shop: {
-              items: [
-                {
-                  id: 'iron-sword',
-                  name: 'Iron Sword',
-                  type: 'weapon',
-                  rarity: 'common',
-                  value: 100,
-                  effect: { type: 'boost-attack', value: 5 },
-                  icon: '⚔️',
-                  description: 'A sturdy iron blade'
-                }
-              ],
-              currency: 1000
-            }
-          }
-        ],
-        items: [],
-        exits: [{ x: 75, y: 120, leadsTo: 'main-world' }]
-      }
-    },
-    {
-      id: 'training-dojo',
-      name: 'Training Dojo',
-      type: 'temple',
-      position: { x: 1800, y: 1200 }, // Scaled from 1200,800
-      size: { width: 180, height: 150 }, // Scaled from 120x100
-      enterable: true,
-      sprite: '🏛️',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [
-          {
-            id: 'master-trainer',
-            name: 'Master Chen',
-            type: 'trainer',
-            position: { x: 90, y: 75 },
-            dialogue: ['Train hard, young warrior.', 'Strength comes from within.'],
-            sprite: '🥋'
-          }
-        ],
-        items: [],
-        exits: [{ x: 90, y: 150, leadsTo: 'main-world' }]
-      }
-    },
-    // Forest Area Buildings (scaled positions)
-    {
-      id: 'forest-cabin',
-      name: 'Hermit\'s Cabin',
-      type: 'house',
-      position: { x: 450, y: 600 }, // Scaled from 300,400
-      size: { width: 105, height: 75 }, // Scaled from 70x50
-      enterable: true,
-      sprite: '🛖',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 52, y: 75, leadsTo: 'main-world' }]
-      }
-    },
-    {
-      id: 'forest-watchtower',
-      name: 'Forest Watchtower',
-      type: 'dungeon',
-      position: { x: 300, y: 900 },
-      size: { width: 90, height: 120 },
-      enterable: true,
-      sprite: '🗼',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 45, y: 120, leadsTo: 'main-world' }]
-      }
-    },
     // Desert Area Buildings (scaled positions)
     {
       id: 'desert-outpost',
@@ -207,19 +86,20 @@ export const gameWorld: GameWorld = {
         exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
       }
     },
+    // Forest Area Buildings (keeping only forest cabin)
     {
-      id: 'fishing-hut',
-      name: 'Fishing Hut',
+      id: 'forest-cabin',
+      name: 'Hermit\'s Cabin',
       type: 'house',
-      position: { x: 300, y: 1500 },
-      size: { width: 90, height: 60 },
+      position: { x: 450, y: 600 }, // Scaled from 300,400
+      size: { width: 105, height: 75 }, // Scaled from 70x50
       enterable: true,
       sprite: '🛖',
       interior: {
         background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
         npcs: [],
         items: [],
-        exits: [{ x: 45, y: 60, leadsTo: 'main-world' }]
+        exits: [{ x: 52, y: 75, leadsTo: 'main-world' }]
       }
     }
   ],
@@ -1138,93 +1018,7 @@ export const gameWorld: GameWorld = {
   ],
   
   npcs: [
-    {
-      id: 'village-elder',
-      name: 'Elder Wisdom',
-      type: 'quest-giver',
-      position: { x: 1575, y: 1575 }, // Scaled from 1050,1050
-      dialogue: [
-        'Welcome, young fighter.',
-        'The realm is in danger from growing darkness.',
-        'Train well and become strong.'
-      ],
-      sprite: '🧙‍♂️'
-    },
-    {
-      id: 'forest-ranger',
-      name: 'Ranger Finn',
-      type: 'quest-giver',
-      position: { x: 420, y: 480 }, // Scaled from 280,320
-      dialogue: [
-        'The forest has been restless lately.',
-        'Strange creatures roam these paths.',
-        'Be careful, traveler.'
-      ],
-      sprite: '🏹'
-    },
-    {
-      id: 'desert-nomad',
-      name: 'Nomad Zara',
-      type: 'merchant',
-      position: { x: 1425, y: 2025 }, // Scaled from 950,1350
-      dialogue: [
-        'The desert holds many secrets.',
-        'I have supplies for brave adventurers.',
-        'Water is life in these lands.'
-      ],
-      sprite: '🧕',
-      shop: {
-        items: [
-          {
-            id: 'desert-water',
-            name: 'Desert Water',
-            type: 'consumable',
-            rarity: 'common',
-            value: 20,
-            effect: { type: 'heal', value: 25 },
-            icon: '💧',
-            description: 'Refreshing desert spring water'
-          }
-        ],
-        currency: 500
-      }
-    },
-    {
-      id: 'mountain-hermit',
-      name: 'Hermit Sage',
-      type: 'trainer',
-      position: { x: 2250, y: 1950 },
-      dialogue: [
-        'The mountains hold ancient wisdom.',
-        'Only the strong survive these peaks.',
-        'Seek knowledge, young one.'
-      ],
-      sprite: '🧙‍♂️'
-    },
-    {
-      id: 'coastal-fisherman',
-      name: 'Old Fisherman',
-      type: 'quest-giver',
-      position: { x: 375, y: 1350 },
-      dialogue: [
-        'The seas have been rough lately.',
-        'Strange creatures emerge from the depths.',
-        'The lighthouse keeper might know more.'
-      ],
-      sprite: '🎣'
-    },
-    {
-      id: 'lighthouse-keeper',
-      name: 'Keeper Magnus',
-      type: 'quest-giver',
-      position: { x: 225, y: 1125 },
-      dialogue: [
-        'I watch over these waters.',
-        'Many ships have been lost recently.',
-        'The sea holds dark secrets.'
-      ],
-      sprite: '👨‍🦳'
-    }
+    // All NPCs removed - only enemies remain
   ],
   
   items: [
