@@ -9,7 +9,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 5175,      // Use Vite's default port
-    strictPort: true // Fail if 5173 is taken, don't try 5174, etc.
+    port: 5173, // Vite will try this port first, but will use the next available if it's busy
+    // strictPort: true, // <-- removed to allow automatic port selection
   },
 });
