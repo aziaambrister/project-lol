@@ -7,7 +7,8 @@ import GameWorld from './components/GameWorld';
 
 function App() {
   const { state } = useGame();
-  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing'>('welcome');
+  // Start directly in the "playing" state for debugging
+  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing'>('playing');
 
   const handleEnterGame = () => {
     console.log('handleEnterGame called - transitioning to start screen');
