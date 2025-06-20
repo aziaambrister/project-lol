@@ -5,31 +5,20 @@ import Enemy from './Enemy';
 import Building from './Building';
 import GameHUD from './GameHUD';
 import Minimap from './Minimap';
-import TouchControls from './TouchControls';
 
 const GameWorld: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, enterBuilding } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [lastMoveTime, setLastMoveTime] = useState(0);
-  const [touchControlActive, setTouchControlActive] = useState(false);
 
-  // Handle keyboard input (WASD + Arrow Keys)
+  // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
-      // Movement keys - both WASD and Arrow Keys
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault(); // Prevent page scrolling with arrow keys
-        
-        // Map arrow keys to WASD equivalent
-        let mappedKey = key;
-        if (key === 'arrowup') mappedKey = 'w';
-        if (key === 'arrowdown') mappedKey = 's';
-        if (key === 'arrowleft') mappedKey = 'a';
-        if (key === 'arrowright') mappedKey = 'd';
-        
-        setKeysPressed(prev => new Set(prev).add(mappedKey));
+      // Movement keys
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        setKeysPressed(prev => new Set(prev).add(key));
       }
       
       // Combat keys
@@ -42,13 +31,11 @@ const GameWorld: React.FC = () => {
       }
       
       if (key === 'shift') { // Shift for block
-        e.preventDefault();
         performAttack('block');
       }
       
       // Interaction keys
       if (key === 'e') { // E to enter buildings
-        e.preventDefault();
         const nearestBuilding = findNearestBuilding();
         if (nearestBuilding && nearestBuilding.enterable) {
           enterBuilding(nearestBuilding.id);
@@ -56,20 +43,10 @@ const GameWorld: React.FC = () => {
       }
       
       // Special moves
-      if (key === '1') {
-        e.preventDefault();
-        performAttack('basic-punch');
-      }
-      if (key === '2') {
-        e.preventDefault();
-        performAttack('basic-kick');
-      }
-      if (key === '3') {
-        e.preventDefault();
-        performAttack('dodge-roll');
-      }
+      if (key === '1') performAttack('basic-punch');
+      if (key === '2') performAttack('basic-kick');
+      if (key === '3') performAttack('dodge-roll');
       if (key === '4') {
-        e.preventDefault();
         const specialMove = state.player.character.moveSet.find(m => m.type === 'special');
         if (specialMove) performAttack(specialMove.id);
       }
@@ -77,20 +54,10 @@ const GameWorld: React.FC = () => {
     
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault();
-        
-        // Map arrow keys to WASD equivalent
-        let mappedKey = key;
-        if (key === 'arrowup') mappedKey = 'w';
-        if (key === 'arrowdown') mappedKey = 's';
-        if (key === 'arrowleft') mappedKey = 'a';
-        if (key === 'arrowright') mappedKey = 'd';
-        
+      if (['w', 'a', 's', 'd'].includes(key)) {
         setKeysPressed(prev => {
           const newSet = new Set(prev);
-          newSet.delete(mappedKey);
+          newSet.delete(key);
           return newSet;
         });
       }
@@ -105,76 +72,33 @@ const GameWorld: React.FC = () => {
     };
   }, [state.player.character.moveSet, performAttack, enterBuilding]);
 
-  // Handle touch controls
-  const handleTouchDirectionPress = (direction: 'up' | 'down' | 'left' | 'right') => {
-    setTouchControlActive(true);
-    
-    // Map touch directions to WASD
-    const keyMap = {
-      'up': 'w',
-      'down': 's',
-      'left': 'a',
-      'right': 'd'
-    };
-    
-    setKeysPressed(prev => new Set(prev).add(keyMap[direction]));
-  };
-
-  const handleTouchDirectionRelease = () => {
-    setTouchControlActive(false);
-    setKeysPressed(new Set()); // Clear all movement keys
-  };
-
-  // Movement loop with enhanced smoothness
+  // Movement loop
   useEffect(() => {
     const moveInterval = setInterval(() => {
       const now = Date.now();
-      
-      // Check if any movement keys are pressed (keyboard or touch)
-      const hasMovementInput = keysPressed.size > 0;
-      
-      if (!hasMovementInput) {
+      if (keysPressed.size === 0) {
         if (state.player.isMoving) {
           stopMoving();
         }
         return;
       }
       
-      // Throttle movement updates for performance
-      if (now - lastMoveTime < 16) return; // ~60 FPS
+      // Throttle movement updates
+      if (now - lastMoveTime < 50) return;
       
-      // Determine movement direction with priority system
+      // Determine movement direction
       let direction: 'up' | 'down' | 'left' | 'right' | null = null;
       
-      // Vertical movement priority
-      if (keysPressed.has('w')) {
-        direction = 'up';
-      } else if (keysPressed.has('s')) {
-        direction = 'down';
-      }
-      // Horizontal movement priority (if no vertical input)
-      else if (keysPressed.has('a')) {
-        direction = 'left';
-      } else if (keysPressed.has('d')) {
-        direction = 'right';
-      }
-      
-      // Handle diagonal movement by alternating directions
-      if (keysPressed.has('w') && keysPressed.has('a')) {
-        direction = Math.floor(now / 100) % 2 === 0 ? 'up' : 'left';
-      } else if (keysPressed.has('w') && keysPressed.has('d')) {
-        direction = Math.floor(now / 100) % 2 === 0 ? 'up' : 'right';
-      } else if (keysPressed.has('s') && keysPressed.has('a')) {
-        direction = Math.floor(now / 100) % 2 === 0 ? 'down' : 'left';
-      } else if (keysPressed.has('s') && keysPressed.has('d')) {
-        direction = Math.floor(now / 100) % 2 === 0 ? 'down' : 'right';
-      }
+      if (keysPressed.has('w')) direction = 'up';
+      else if (keysPressed.has('s')) direction = 'down';
+      else if (keysPressed.has('a')) direction = 'left';
+      else if (keysPressed.has('d')) direction = 'right';
       
       if (direction) {
         movePlayer(direction);
         setLastMoveTime(now);
       }
-    }, 16); // 60 FPS movement updates
+    }, 16); // 60 FPS
     
     return () => clearInterval(moveInterval);
   }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime]);
@@ -499,25 +423,17 @@ const GameWorld: React.FC = () => {
         ></div>
       )}
 
-      {/* Touch Controls - Bottom Left */}
-      <TouchControls
-        onDirectionPress={handleTouchDirectionPress}
-        onDirectionRelease={handleTouchDirectionRelease}
-        isVisible={true}
-      />
-
       {/* Game HUD */}
       <GameHUD />
 
       {/* Minimap */}
       {state.ui.showMinimap && <Minimap />}
 
-      {/* Enhanced Controls Help - Positioned to not overlap with touch controls */}
+      {/* Enhanced Controls Help */}
       <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
         <div className="space-y-2">
           <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-          <div>🎮 <span className="text-yellow-300">WASD / Arrow Keys</span> - Move</div>
-          <div>📱 <span className="text-yellow-300">Touch Controls</span> - Move (Mobile)</div>
+          <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
           <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
           <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
           <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
