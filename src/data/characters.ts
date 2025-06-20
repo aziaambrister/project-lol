@@ -3,7 +3,7 @@ import { Character } from '../types/game';
 export const characters: Character[] = [
   {
     id: 'balanced-fighter',
-    name: 'Kai the Balanced',
+    name: 'Ninja',
     class: 'balanced-fighter',
     level: 1,
     health: 100,
