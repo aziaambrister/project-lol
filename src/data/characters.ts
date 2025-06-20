@@ -14,7 +14,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 10,
     defense: 8,
-    speed: 8, // Increased from 5 to 8 for faster movement
+    speed: 12, // Increased from 8 to 12 for much faster movement
     unlocked: true,
     moveSet: [
       {
@@ -102,7 +102,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 8,
     defense: 6,
-    speed: 10, // Increased from 8 to 10 for faster movement
+    speed: 14, // Increased from 10 to 14 for faster movement
     unlocked: false,
     price: 500,
     moveSet: [
@@ -167,7 +167,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 15,
     defense: 12,
-    speed: 4, // Increased from 3 to 4 for slightly faster movement
+    speed: 6, // Increased from 4 to 6 for slightly faster movement
     unlocked: false,
     price: 800,
     moveSet: [
@@ -231,7 +231,7 @@ export const characters: Character[] = [
     experienceToNextLevel: 100,
     attack: 9,
     defense: 15,
-    speed: 5, // Increased from 4 to 5 for slightly faster movement
+    speed: 7, // Increased from 5 to 7 for slightly faster movement
     unlocked: false,
     price: 600,
     moveSet: [

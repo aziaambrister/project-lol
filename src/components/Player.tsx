@@ -21,8 +21,8 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
     >
       {/* Player Character - Made bigger */}
       <div className="relative w-16 h-16"> {/* Increased from w-12 h-12 to w-16 h-16 */}
-        {/* Character Sprite */}
-        <div className="w-full h-full rounded-full overflow-hidden border-3 border-yellow-400 bg-gradient-to-b from-blue-600 to-purple-600 shadow-lg">
+        {/* Character Sprite - Removed purple background */}
+        <div className="w-full h-full rounded-full overflow-hidden border-3 border-yellow-400 shadow-lg">
           <img 
             src={player.character.sprite}
             alt={player.character.name}
