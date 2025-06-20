@@ -1045,7 +1045,7 @@ export const gameWorld: GameWorld = {
       ]
     },
 
-    // Coastal Area Enemies (new area) - Updated Sea Serpent with pixel art texture
+    // Coastal Area Enemies (new area)
     {
       id: 'sea-raider',
       name: 'Sea Raider',
@@ -1118,8 +1118,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 300, y: 1800 },
       state: 'patrol',
       lastAction: 0,
-      // Updated sprite to use the pixel art sea serpent from the reference image
-      sprite: '/image copy.png', // Using the provided sea serpent pixel art
+      sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
       aiDifficulty: 'medium',
       moveSet: [
         {

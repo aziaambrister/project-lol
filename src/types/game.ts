@@ -165,29 +165,18 @@ export interface DamageNumber {
   timestamp: number;
 }
 
-// Enhanced Player Interface with Velocity
-export interface Player {
-  character: Character;
-  position: { x: number; y: number };
-  velocity: { x: number; y: number }; // New velocity system
-  direction: 'up' | 'down' | 'left' | 'right';
-  isMoving: boolean;
-  isSwimming: boolean;
-  inventory: Item[];
-  currency: number;
-  currentBuilding?: string;
-  // Game stats for game over screen
-  stats: {
-    enemiesDefeated: number;
-    coinsEarned: number;
-    timeAlive: number;
-    startTime: number;
-  };
-}
-
 export interface GameState {
-  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu' | 'game-over';
-  player: Player;
+  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu';
+  player: {
+    character: Character;
+    position: { x: number; y: number };
+    direction: 'up' | 'down' | 'left' | 'right';
+    isMoving: boolean;
+    isSwimming: boolean;
+    inventory: Item[];
+    currency: number;
+    currentBuilding?: string;
+  };
   currentWorld: GameWorld;
   combat: Combat;
   camera: {
@@ -206,12 +195,5 @@ export interface GameState {
     musicVolume: number;
     sfxVolume: number;
     difficulty: 'easy' | 'medium' | 'hard';
-  };
-  // Movement settings
-  movement: {
-    speed: number; // units per second
-    acceleration: number; // acceleration rate
-    deceleration: number; // deceleration rate
-    maxSpeed: number; // maximum speed
   };
 }

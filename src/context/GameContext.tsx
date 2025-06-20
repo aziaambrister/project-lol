@@ -18,17 +18,12 @@ interface GameContextType {
   takeDamage: (damage: number, targetId: string) => void;
   purchaseItem: (itemId: string, price: number, item: Item) => void;
   addCoins: (amount: number) => void;
-  gameOver: (victory?: boolean) => void;
-  restartGame: () => void;
-  returnToHome: () => void;
-  updateMovement: (deltaTime: number) => void;
 }
 
 type GameAction =
   | { type: 'START_GAME'; payload: { characterClass: CharacterClass } }
   | { type: 'MOVE_PLAYER'; payload: { direction: 'up' | 'down' | 'left' | 'right' } }
   | { type: 'STOP_MOVING' }
-  | { type: 'UPDATE_MOVEMENT'; payload: { deltaTime: number } }
   | { type: 'PERFORM_ATTACK'; payload: { moveId: string; targetId?: string } }
   | { type: 'ENTER_BUILDING'; payload: { buildingId: string } }
   | { type: 'EXIT_BUILDING' }
@@ -42,28 +37,18 @@ type GameAction =
   | { type: 'REMOVE_DAMAGE_NUMBER'; payload: { id: string } }
   | { type: 'PURCHASE_ITEM'; payload: { itemId: string; price: number; item: Item } }
   | { type: 'ADD_COINS'; payload: { amount: number } }
-  | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } }
-  | { type: 'GAME_OVER'; payload: { victory?: boolean } }
-  | { type: 'RESTART_GAME' }
-  | { type: 'RETURN_TO_HOME' };
+  | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } };
 
 const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
     position: { x: 1500, y: 1500 }, // Updated for scaled map
-    velocity: { x: 0, y: 0 }, // New velocity system
     direction: 'down',
     isMoving: false,
     isSwimming: false,
     inventory: [],
     currency: 100, // Starting coins
-    stats: {
-      enemiesDefeated: 0,
-      coinsEarned: 0,
-      timeAlive: 0,
-      startTime: Date.now()
-    }
   },
   currentWorld: gameWorld,
   combat: {
@@ -88,13 +73,6 @@ const initialState: GameState = {
     musicVolume: 0.7,
     sfxVolume: 0.8,
     difficulty: 'medium'
-  },
-  // Enhanced movement system
-  movement: {
-    speed: 200, // 200 units per second
-    acceleration: 800, // 800 units per second squared
-    deceleration: 1200, // 1200 units per second squared (faster deceleration)
-    maxSpeed: 300 // maximum speed cap
   }
 };
 
@@ -111,24 +89,53 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         gameMode: 'world-exploration',
         player: {
           ...state.player,
-          character: { ...selectedCharacter },
-          stats: {
-            ...state.player.stats,
-            startTime: Date.now()
-          }
+          character: { ...selectedCharacter }
         }
       };
     }
     
     case 'MOVE_PLAYER': {
       const { direction } = action.payload;
+      const speed = state.player.character.speed;
+      let newX = state.player.position.x;
+      let newY = state.player.position.y;
+      
+      switch (direction) {
+        case 'up':
+          newY = Math.max(0, newY - speed);
+          break;
+        case 'down':
+          newY = Math.min(state.currentWorld.size.height, newY + speed);
+          break;
+        case 'left':
+          newX = Math.max(0, newX - speed);
+          break;
+        case 'right':
+          newX = Math.min(state.currentWorld.size.width, newX + speed);
+          break;
+      }
+      
+      // Check for water collision
+      const isInWater = state.currentWorld.waterBodies.some(water => 
+        newX >= water.position.x && 
+        newX <= water.position.x + water.size.width &&
+        newY >= water.position.y && 
+        newY <= water.position.y + water.size.height
+      );
       
       return {
         ...state,
         player: {
           ...state.player,
+          position: { x: newX, y: newY },
           direction,
-          isMoving: true
+          isMoving: true,
+          isSwimming: isInWater
+        },
+        camera: {
+          ...state.camera,
+          x: newX,
+          y: newY
         }
       };
     }
@@ -139,88 +146,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         player: {
           ...state.player,
           isMoving: false
-        }
-      };
-    }
-
-    case 'UPDATE_MOVEMENT': {
-      const { deltaTime } = action.payload;
-      const { player, movement } = state;
-      
-      let newVelocityX = player.velocity.x;
-      let newVelocityY = player.velocity.y;
-      
-      // Apply acceleration based on input
-      if (player.isMoving) {
-        const accelerationRate = movement.acceleration * deltaTime;
-        
-        switch (player.direction) {
-          case 'up':
-            newVelocityY = Math.max(newVelocityY - accelerationRate, -movement.maxSpeed);
-            break;
-          case 'down':
-            newVelocityY = Math.min(newVelocityY + accelerationRate, movement.maxSpeed);
-            break;
-          case 'left':
-            newVelocityX = Math.max(newVelocityX - accelerationRate, -movement.maxSpeed);
-            break;
-          case 'right':
-            newVelocityX = Math.min(newVelocityX + accelerationRate, movement.maxSpeed);
-            break;
-        }
-      } else {
-        // Apply deceleration when not moving
-        const decelerationRate = movement.deceleration * deltaTime;
-        
-        if (newVelocityX > 0) {
-          newVelocityX = Math.max(0, newVelocityX - decelerationRate);
-        } else if (newVelocityX < 0) {
-          newVelocityX = Math.min(0, newVelocityX + decelerationRate);
-        }
-        
-        if (newVelocityY > 0) {
-          newVelocityY = Math.max(0, newVelocityY - decelerationRate);
-        } else if (newVelocityY < 0) {
-          newVelocityY = Math.min(0, newVelocityY + decelerationRate);
-        }
-      }
-      
-      // Update position based on velocity
-      let newX = player.position.x + newVelocityX * deltaTime;
-      let newY = player.position.y + newVelocityY * deltaTime;
-      
-      // Keep within world bounds
-      newX = Math.max(0, Math.min(state.currentWorld.size.width, newX));
-      newY = Math.max(0, Math.min(state.currentWorld.size.height, newY));
-      
-      // Check for water collision
-      const isInWater = state.currentWorld.waterBodies.some(water => 
-        newX >= water.position.x && 
-        newX <= water.position.x + water.size.width &&
-        newY >= water.position.y && 
-        newY <= water.position.y + water.size.height
-      );
-      
-      // Update time alive
-      const currentTime = Date.now();
-      const timeAlive = Math.floor((currentTime - player.stats.startTime) / 1000);
-      
-      return {
-        ...state,
-        player: {
-          ...state.player,
-          position: { x: newX, y: newY },
-          velocity: { x: newVelocityX, y: newVelocityY },
-          isSwimming: isInWater,
-          stats: {
-            ...state.player.stats,
-            timeAlive
-          }
-        },
-        camera: {
-          ...state.camera,
-          x: newX,
-          y: newY
         }
       };
     }
@@ -236,8 +161,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let updatedEnemies = [...state.currentWorld.enemies];
       let damageNumbers = [...state.combat.damageNumbers];
       let newCurrency = state.player.currency;
-      let enemiesDefeated = state.player.stats.enemiesDefeated;
-      let coinsEarned = state.player.stats.coinsEarned;
       
       if (targetId) {
         const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
@@ -267,8 +190,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           // Award coins for defeating enemy
           if (newEnemyHealth <= 0) {
             newCurrency += 10; // 10 coins per defeated enemy
-            enemiesDefeated += 1;
-            coinsEarned += 10;
             
             // Add coin notification
             const coinNumber: DamageNumber = {
@@ -297,12 +218,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             stamina: Math.max(0, state.player.character.stamina - move.staminaCost),
             moveSet: updatedMoveSet
           },
-          currency: newCurrency,
-          stats: {
-            ...state.player.stats,
-            enemiesDefeated,
-            coinsEarned
-          }
+          currency: newCurrency
         },
         currentWorld: {
           ...state.currentWorld,
@@ -376,15 +292,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         timestamp: Date.now()
       };
       
-      // Check for game over
-      let newGameMode = state.gameMode;
-      if (newPlayerHealth <= 0) {
-        newGameMode = 'game-over';
-      }
-      
       return {
         ...state,
-        gameMode: newGameMode,
         player: {
           ...state.player,
           character: {
@@ -656,27 +565,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       };
     }
-
-    case 'GAME_OVER': {
-      return {
-        ...state,
-        gameMode: 'game-over'
-      };
-    }
-
-    case 'RESTART_GAME': {
-      return {
-        ...initialState,
-        gameMode: 'character-select'
-      };
-    }
-
-    case 'RETURN_TO_HOME': {
-      return {
-        ...initialState,
-        gameMode: 'character-select'
-      };
-    }
     
     case 'UNLOCK_CHARACTER': {
       // Implementation for character unlocking
@@ -701,10 +589,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
   
   const stopMoving = () => {
     dispatch({ type: 'STOP_MOVING' });
-  };
-
-  const updateMovement = (deltaTime: number) => {
-    dispatch({ type: 'UPDATE_MOVEMENT', payload: { deltaTime } });
   };
   
   const performAttack = (moveId: string, targetId?: string) => {
@@ -746,35 +630,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const addCoins = (amount: number) => {
     dispatch({ type: 'ADD_COINS', payload: { amount } });
   };
-
-  const gameOver = (victory?: boolean) => {
-    dispatch({ type: 'GAME_OVER', payload: { victory } });
-  };
-
-  const restartGame = () => {
-    dispatch({ type: 'RESTART_GAME' });
-  };
-
-  const returnToHome = () => {
-    dispatch({ type: 'RETURN_TO_HOME' });
-  };
   
-  // Enhanced game loops with smooth movement
+  // Enhanced game loops with enemy attack handling
   useEffect(() => {
-    let lastTime = performance.now();
-    
-    const gameLoop = (currentTime: number) => {
-      const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-      lastTime = currentTime;
-      
-      // Update movement with delta time for smooth, frame-rate independent movement
-      updateMovement(deltaTime);
-      
-      requestAnimationFrame(gameLoop);
-    };
-    
-    const animationFrame = requestAnimationFrame(gameLoop);
-    
     const aiUpdateInterval = setInterval(() => {
       updateEnemyAI();
     }, 100); // Update AI every 100ms
@@ -820,7 +678,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }, 100);
     
     return () => {
-      cancelAnimationFrame(animationFrame);
       clearInterval(aiUpdateInterval);
       clearInterval(enemyAttackInterval);
       clearInterval(dayNightInterval);
@@ -836,7 +693,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         startGame,
         movePlayer,
         stopMoving,
-        updateMovement,
         performAttack,
         enterBuilding,
         exitBuilding,
@@ -846,10 +702,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         updateEnemyAI,
         takeDamage,
         purchaseItem,
-        addCoins,
-        gameOver,
-        restartGame,
-        returnToHome
+        addCoins
       }}
     >
       {children}
