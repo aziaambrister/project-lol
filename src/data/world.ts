@@ -5,7 +5,7 @@ export const gameWorld: GameWorld = {
   name: 'Realm of Fighters',
   size: { width: 3000, height: 3000 }, // Scaled up 150% from 2000x2000
   terrain: [], // Will be generated procedurally
-  spawnPoint: { x: 1500, y: 1500 }, // Centered in scaled map
+  spawnPoint: { x: 200, y: 2800 }, // Bottom left of the map
   
   buildings: [
     // Desert Area Buildings (scaled positions)

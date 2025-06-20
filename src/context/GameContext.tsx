@@ -43,7 +43,7 @@ const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
-    position: { x: 1500, y: 1500 }, // Updated for scaled map
+    position: { x: 200, y: 2800 }, // Bottom left of the map (3000x3000 map)
     direction: 'down',
     isMoving: false,
     isSwimming: false,
@@ -59,8 +59,8 @@ const initialState: GameState = {
     damageNumbers: []
   },
   camera: {
-    x: 1500, // Updated for scaled map
-    y: 1500,
+    x: 200, // Start camera at bottom left
+    y: 2800,
     zoom: 1
   },
   ui: {
@@ -89,7 +89,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         gameMode: 'world-exploration',
         player: {
           ...state.player,
-          character: { ...selectedCharacter }
+          character: { ...selectedCharacter },
+          position: { x: 200, y: 2800 }, // Start at bottom left
+        },
+        camera: {
+          ...state.camera,
+          x: 200, // Camera follows player to bottom left
+          y: 2800
         }
       };
     }
