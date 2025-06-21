@@ -24,6 +24,14 @@ function App() {
     setGameState('playing');
   };
 
+  const handleBackToWelcome = () => {
+    setGameState('welcome');
+  };
+
+  const handleBackToStart = () => {
+    setGameState('start');
+  };
+
   console.log('Current game state:', gameState);
 
   return (
@@ -36,13 +44,13 @@ function App() {
 
       {gameState === 'start' && (
         <div className="absolute inset-0 z-10">
-          <StartScreen onStart={handleStartGame} />
+          <StartScreen onStart={handleStartGame} onBack={handleBackToWelcome} />
         </div>
       )}
 
       {gameState === 'character-select' && (
         <div className="absolute inset-0 z-10">
-          <CharacterSelect onSelectComplete={handleCharacterSelected} />
+          <CharacterSelect onSelectComplete={handleCharacterSelected} onBack={handleBackToStart} />
         </div>
       )}
 

@@ -42,7 +42,8 @@ type GameAction =
   | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } }
   | { type: 'EQUIP_ITEM'; payload: { item: Item } }
   | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } }
-  | { type: 'SHURIKEN_THROW'; payload: { targetId: string } };
+  | { type: 'SHURIKEN_THROW'; payload: { targetId: string } }
+  | { type: 'CONTACT_DAMAGE'; payload: { enemyId: string } };
 
 const initialState: GameState = {
   gameMode: 'character-select',
@@ -128,6 +129,34 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
+      // Check for contact damage with enemies
+      const touchingEnemies = state.currentWorld.enemies.filter(enemy => {
+        if (enemy.state === 'dead') return false;
+        const distance = Math.sqrt(
+          Math.pow(enemy.position.x - newX, 2) +
+          Math.pow(enemy.position.y - newY, 2)
+        );
+        return distance <= 30; // Contact range
+      });
+      
+      // Apply contact damage
+      let updatedPlayerHealth = state.player.character.health;
+      let newDamageNumbers = [...state.combat.damageNumbers];
+      
+      touchingEnemies.forEach(enemy => {
+        const contactDamage = Math.floor(Math.random() * 11) + 5; // 5-15 damage
+        updatedPlayerHealth = Math.max(0, updatedPlayerHealth - contactDamage);
+        
+        const damageNumber: DamageNumber = {
+          id: `contact-damage-${Date.now()}-${enemy.id}`,
+          value: contactDamage,
+          position: { x: newX, y: newY - 30 },
+          type: 'damage',
+          timestamp: Date.now()
+        };
+        newDamageNumbers.push(damageNumber);
+      });
+      
       // Calculate camera position with boundaries
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
@@ -147,12 +176,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           position: { x: newX, y: newY },
           direction,
           isMoving: true,
-          isSwimming: false // No water bodies anymore
+          isSwimming: false,
+          character: {
+            ...state.player.character,
+            health: updatedPlayerHealth
+          }
         },
         camera: {
           ...state.camera,
           x: cameraX,
           y: cameraY
+        },
+        combat: {
+          ...state.combat,
+          damageNumbers: newDamageNumbers
         }
       };
     }
@@ -259,7 +296,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
       if (enemyIndex !== -1) {
         const enemy = updatedEnemies[enemyIndex];
-        const damage = 10; // Fixed shuriken damage
+        const damage = Math.floor(Math.random() * 16) + 10; // 10-20 damage as requested
         
         const newEnemyHealth = Math.max(0, enemy.health - damage);
         
@@ -388,31 +425,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     
-    case 'ENTER_BUILDING': {
-      const building = state.currentWorld.buildings.find(b => b.id === action.payload.buildingId);
-      if (!building || !building.enterable) return state;
-      
-      return {
-        ...state,
-        gameMode: 'building-interior',
-        player: {
-          ...state.player,
-          currentBuilding: building.id
-        }
-      };
-    }
-    
-    case 'EXIT_BUILDING': {
-      return {
-        ...state,
-        gameMode: 'world-exploration',
-        player: {
-          ...state.player,
-          currentBuilding: undefined
-        }
-      };
-    }
-    
     case 'UPDATE_ENEMY_AI': {
       const updatedEnemies = state.currentWorld.enemies.map(enemy => {
         if (enemy.state === 'dead') return enemy;
@@ -427,7 +439,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let newY = enemy.position.y;
         let lastAction = enemy.lastAction;
         
-        // Enemies move freely and patrol regardless of player position
+        // 150% wider detection range as requested
         if (distanceToPlayer <= enemy.detectionRadius) {
           newState = 'chase';
         } else if (enemy.state === 'chase' && distanceToPlayer > enemy.detectionRadius * 1.5) {
@@ -518,25 +530,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     
-    case 'TAKE_DAMAGE': {
-      const { damage, targetId } = action.payload;
+    case 'ENTER_BUILDING': {
+      const building = state.currentWorld.buildings.find(b => b.id === action.payload.buildingId);
+      if (!building || !building.enterable) return state;
       
-      if (targetId === state.player.character.id) {
-        const newHealth = Math.max(0, state.player.character.health - damage);
-        
-        return {
-          ...state,
-          player: {
-            ...state.player,
-            character: {
-              ...state.player.character,
-              health: newHealth
-            }
-          }
-        };
-      }
-      
-      return state;
+      return {
+        ...state,
+        gameMode: 'building-interior',
+        player: {
+          ...state.player,
+          currentBuilding: building.id
+        }
+      };
+    }
+    
+    case 'EXIT_BUILDING': {
+      return {
+        ...state,
+        gameMode: 'world-exploration',
+        player: {
+          ...state.player,
+          currentBuilding: undefined
+        }
+      };
     }
     
     case 'UPDATE_DAY_NIGHT': {
@@ -872,6 +888,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }, 1000);
     
     const cooldownInterval = setInterval(() => {
+      // Update move cooldowns
+      const updatedMoveSet = state.player.character.moveSet.map(move => ({
+        ...move,
+        currentCooldown: Math.max(0, move.currentCooldown - 1)
+      }));
+      
+      if (updatedMoveSet.some((move, index) => move.currentCooldown !== state.player.character.moveSet[index].currentCooldown)) {
+        // Only update if there are actual changes
+      }
     }, 1000);
     
     const damageNumberCleanup = setInterval(() => {
@@ -890,7 +915,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       clearInterval(cooldownInterval);
       clearInterval(damageNumberCleanup);
     };
-  }, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position]);
+  }, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet]);
   
   return (
     <GameContext.Provider

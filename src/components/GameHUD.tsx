@@ -110,40 +110,6 @@ const GameHUD: React.FC = () => {
         </div>
       )}
 
-      {/* Bottom Center - Move Set */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
-        <div className="flex space-x-2">
-          {player.character.moveSet.slice(0, 4).map((move, index) => (
-            <div 
-              key={move.id}
-              className={`w-16 h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-200 ${
-                move.currentCooldown > 0 
-                  ? 'border-gray-600 bg-gray-800/60' 
-                  : 'border-blue-400 bg-blue-400/20 cursor-pointer hover:bg-blue-400/30'
-              }`}
-              title={move.name}
-            >
-              <div className="text-xs text-white font-bold">{index + 1}</div>
-              <div className="text-2xl">
-                {move.id === 'shuriken-throw' ? (
-                  <img src="/shuriken.png" alt="Shuriken" className="w-6 h-6" />
-                ) : (
-                  move.type === 'basic-attack' ? '👊' :
-                  move.type === 'special' ? '⚡' :
-                  move.type === 'block' ? '🛡️' :
-                  move.type === 'dodge' ? '💨' : '⚔️'
-                )}
-              </div>
-              {move.currentCooldown > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">{move.currentCooldown}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Bottom Right - XP Progress */}
       <div className="absolute bottom-4 right-4 z-30">
         <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
