@@ -193,7 +193,7 @@ export const gameWorld: GameWorld = {
   ],
   
   enemies: [
-    // Forest Area Enemies - renamed to Mindless Zombie
+    // Forest Area Enemies - Mindless Zombies with correct sprite path
     {
       id: 'forest-zombie-1',
       name: 'Mindless Zombie',
@@ -221,7 +221,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 800, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/zombie.png', // Fixed sprite path to use the zombie image
       aiDifficulty: 'easy',
       moveSet: [
         {
@@ -252,7 +252,7 @@ export const gameWorld: GameWorld = {
       experience: 25,
       loot: [
         {
-          id: 'zombie-coin',
+          id: 'zombie-coin-2',
           name: 'Rotting Coin',
           type: 'material',
           rarity: 'common',
@@ -265,11 +265,11 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 1200, y: 1500 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/zombie.png', // Fixed sprite path to use the zombie image
       aiDifficulty: 'easy',
       moveSet: [
         {
-          id: 'zombie-claw',
+          id: 'zombie-claw-2',
           name: 'Rotting Claw',
           type: 'basic-attack',
           damage: 12,
