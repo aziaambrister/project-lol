@@ -60,36 +60,42 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     return 'from-red-600 to-red-400';
   };
 
+  // Check if this is a mindless zombie to apply special styling
+  const isMindlessZombie = enemy.name === 'Mindless Zombie';
+  const enemySize = isMindlessZombie ? 20 : 12; // Bigger size for zombies (20x20 instead of 12x12)
+
   return (
     <div 
       className="absolute z-15 cursor-pointer transition-all duration-200"
       style={{
-        left: enemy.position.x - cameraX - 24,
-        top: enemy.position.y - cameraY - 24
+        left: enemy.position.x - cameraX - (enemySize * 2), // Adjust positioning for bigger size
+        top: enemy.position.y - cameraY - (enemySize * 2)
       }}
       onClick={handleEnemyClick}
     >
       {/* Enemy Character */}
-      <div className="relative w-12 h-12">
+      <div className="relative" style={{ width: `${enemySize * 4}px`, height: `${enemySize * 4}px` }}>
         {/* Enemy Sprite */}
-        <div className={`w-full h-full rounded-full overflow-hidden border-2 ${getStateColor()} shadow-lg hover:scale-110 transition-all duration-200`}>
+        <div className={`w-full h-full rounded-full overflow-hidden shadow-lg hover:scale-110 transition-all duration-200 ${
+          isMindlessZombie ? '' : `border-2 ${getStateColor()}`
+        }`}>
           <img 
             src={enemy.sprite}
             alt={enemy.name}
             className="w-full h-full object-cover"
           />
           
-          {/* Combat State Overlay */}
-          {enemy.state === 'chase' && (
+          {/* Combat State Overlay - only for non-zombies */}
+          {!isMindlessZombie && enemy.state === 'chase' && (
             <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse"></div>
           )}
-          {enemy.state === 'attack' && (
+          {!isMindlessZombie && enemy.state === 'attack' && (
             <div className="absolute inset-0 bg-orange-500/30 rounded-full animate-ping"></div>
           )}
         </div>
         
-        {/* Detection Radius (visible when chasing) */}
-        {enemy.state === 'chase' && (
+        {/* Detection Radius (visible when chasing) - only for non-zombies */}
+        {!isMindlessZombie && enemy.state === 'chase' && (
           <div 
             className="absolute border border-red-500/20 rounded-full pointer-events-none animate-pulse"
             style={{
@@ -125,26 +131,30 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
           </div>
         </div>
         
-        {/* Difficulty Badge */}
-        <div className={`absolute -top-3 -right-3 ${getDifficultyColor()} rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg border border-white/20`}>
-          {enemy.aiDifficulty === 'easy' ? 'E' : enemy.aiDifficulty === 'medium' ? 'M' : 'H'}
-        </div>
+        {/* Difficulty Badge - only for non-zombies */}
+        {!isMindlessZombie && (
+          <div className={`absolute -top-3 -right-3 ${getDifficultyColor()} rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg border border-white/20`}>
+            {enemy.aiDifficulty === 'easy' ? 'E' : enemy.aiDifficulty === 'medium' ? 'M' : 'H'}
+          </div>
+        )}
         
-        {/* State Indicator */}
-        <div className={`absolute -top-3 -left-3 w-4 h-4 rounded-full border-2 border-white shadow-lg ${
-          enemy.state === 'chase' ? 'bg-red-500 animate-pulse' :
-          enemy.state === 'attack' ? 'bg-orange-500 animate-ping' :
-          enemy.state === 'patrol' ? 'bg-yellow-500' :
-          'bg-gray-500'
-        }`}></div>
+        {/* State Indicator - only for non-zombies */}
+        {!isMindlessZombie && (
+          <div className={`absolute -top-3 -left-3 w-4 h-4 rounded-full border-2 border-white shadow-lg ${
+            enemy.state === 'chase' ? 'bg-red-500 animate-pulse' :
+            enemy.state === 'attack' ? 'bg-orange-500 animate-ping' :
+            enemy.state === 'patrol' ? 'bg-yellow-500' :
+            'bg-gray-500'
+          }`}></div>
+        )}
         
-        {/* Attack Range Indicator */}
-        {enemy.state === 'chase' && (
+        {/* Attack Range Indicator - only for non-zombies */}
+        {!isMindlessZombie && enemy.state === 'chase' && (
           <div className="absolute inset-0 rounded-full border-2 border-red-400 animate-pulse opacity-60"></div>
         )}
         
-        {/* Movement Trail Effect */}
-        {enemy.state === 'chase' && (
+        {/* Movement Trail Effect - only for non-zombies */}
+        {!isMindlessZombie && enemy.state === 'chase' && (
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-3">
             <div className="w-6 h-3 bg-red-400/40 rounded-full animate-pulse blur-sm"></div>
           </div>
@@ -157,8 +167,8 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
           </div>
         </div>
         
-        {/* Combat Status Effects */}
-        {enemy.state === 'chase' && (
+        {/* Combat Status Effects - only for non-zombies */}
+        {!isMindlessZombie && enemy.state === 'chase' && (
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
             <div className="absolute bottom-1 left-1 w-2 h-2 bg-orange-500 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
