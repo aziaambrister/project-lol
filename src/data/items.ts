@@ -84,6 +84,21 @@ export const weapons: Item[] = [
       value: 35
     },
     icon: '⚔️'
+  },
+  // Founder's Scepterblade
+  {
+    id: 'founders-scepterblade',
+    name: "Founder's Scepterblade",
+    description: 'The legendary weapon of the founder, imbued with incredible power and prestige.',
+    type: 'weapon',
+    value: 1000,
+    rarity: 'legendary',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 50
+    },
+    icon: '⚔️'
   }
 ];
 

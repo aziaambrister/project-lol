@@ -1,5 +1,5 @@
 // 2D Fighting Game Types
-export type CharacterClass = 'balanced-fighter' | 'speed-demon' | 'heavy-hitter' | 'defensive-tank';
+export type CharacterClass = 'balanced-fighter' | 'speed-demon' | 'heavy-hitter' | 'defensive-tank' | 'founder';
 
 export interface Character {
   id: string;
@@ -8,8 +8,6 @@ export interface Character {
   level: number;
   health: number;
   maxHealth: number;
-  stamina: number;
-  maxStamina: number;
   experience: number;
   experienceToNextLevel: number;
   attack: number;
@@ -146,6 +144,7 @@ export interface Item {
   };
   icon: string;
   description: string;
+  usable?: boolean;
 }
 
 export interface EquippedItems {

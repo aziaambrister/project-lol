@@ -285,5 +285,80 @@ export const characters: Character[] = [
       block: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
       hurt: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64'
     }
+  },
+  // New Founder Character
+  {
+    id: 'founder',
+    name: 'The Founder',
+    class: 'founder',
+    level: 1,
+    health: 400,
+    maxHealth: 400,
+    experience: 0,
+    experienceToNextLevel: 100,
+    attack: 20,
+    defense: 15,
+    speed: 10,
+    unlocked: false,
+    price: 999, // High price since it's premium
+    moveSet: [
+      {
+        id: 'founder-strike',
+        name: 'Founder\'s Strike',
+        type: 'basic-attack',
+        damage: 25,
+        staminaCost: 15,
+        cooldown: 0,
+        currentCooldown: 0,
+        range: 40,
+        description: 'A powerful strike befitting a founder',
+        animation: 'founder-strike'
+      },
+      {
+        id: 'scepter-blast',
+        name: 'Scepter Blast',
+        type: 'special',
+        damage: 50,
+        staminaCost: 30,
+        cooldown: 5,
+        currentCooldown: 0,
+        range: 60,
+        description: 'Unleashes the power of the Founder\'s Scepterblade',
+        animation: 'scepter-blast'
+      },
+      {
+        id: 'founder-guard',
+        name: 'Founder\'s Guard',
+        type: 'block',
+        damage: 0,
+        staminaCost: 10,
+        cooldown: 0,
+        currentCooldown: 0,
+        range: 0,
+        description: 'Legendary defensive stance',
+        animation: 'founder-guard'
+      },
+      {
+        id: 'royal-dash',
+        name: 'Royal Dash',
+        type: 'special',
+        damage: 30,
+        staminaCost: 25,
+        cooldown: 3,
+        currentCooldown: 0,
+        range: 80,
+        description: 'Swift movement with devastating impact',
+        animation: 'royal-dash'
+      }
+    ],
+    portrait: "/Founder's glory bundle.png",
+    sprite: "/Founder's glory bundle.png",
+    animations: {
+      idle: "/Founder's glory bundle.png",
+      walk: "/Founder's glory bundle.png",
+      attack: "/Founder's glory bundle.png",
+      block: "/Founder's glory bundle.png",
+      hurt: "/Founder's glory bundle.png"
+    }
   }
 ];

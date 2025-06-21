@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { ArrowLeft, Coins, ShoppingCart, Star } from 'lucide-react';
+import { ArrowLeft, Coins, ShoppingCart, Star, CreditCard, Crown, Zap } from 'lucide-react';
 import { allItems } from '../data/items';
 
 interface ShopProps {
@@ -9,8 +9,10 @@ interface ShopProps {
 
 const Shop: React.FC<ShopProps> = ({ onClose }) => {
   const { state, purchaseItem } = useGame();
-  const [selectedCategory, setSelectedCategory] = useState<'weapons' | 'armor' | 'consumables' | 'upgrades'>('weapons');
+  const [selectedCategory, setSelectedCategory] = useState<'weapons' | 'armor' | 'consumables' | 'upgrades' | 'premium'>('weapons');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPremiumItem, setSelectedPremiumItem] = useState<any>(null);
   
   const { player } = state;
   
@@ -86,6 +88,70 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         icon: '🛡️',
         price: 160
       }
+    ],
+    premium: [
+      // Coin Packages
+      {
+        id: 'coins-1000',
+        name: '1,000 Coins',
+        description: 'Get 1,000 coins instantly to upgrade your gear!',
+        type: 'premium' as const,
+        value: 1000,
+        rarity: 'common' as const,
+        usable: true,
+        icon: '🪙',
+        realPrice: '$1.99',
+        coins: 1000
+      },
+      {
+        id: 'coins-5000',
+        name: '5,000 Coins',
+        description: 'Get 5,000 coins instantly - best value!',
+        type: 'premium' as const,
+        value: 5000,
+        rarity: 'uncommon' as const,
+        usable: true,
+        icon: '💰',
+        realPrice: '$4.99',
+        coins: 5000
+      },
+      {
+        id: 'coins-10000',
+        name: '10,000 Coins',
+        description: 'Get 10,000 coins instantly - ultimate package!',
+        type: 'premium' as const,
+        value: 10000,
+        rarity: 'rare' as const,
+        usable: true,
+        icon: '💎',
+        realPrice: '$9.99',
+        coins: 10000
+      },
+      // Founder's Bundle
+      {
+        id: 'founders-bundle',
+        name: "Founder's Glory Bundle",
+        description: 'Exclusive founder character with 400 health + legendary Founder\'s Scepterblade with 50 damage!',
+        type: 'premium' as const,
+        value: 0,
+        rarity: 'legendary' as const,
+        usable: true,
+        icon: '👑',
+        realPrice: '$9.99',
+        bundle: true,
+        includes: [
+          {
+            name: 'The Founder',
+            description: 'Exclusive founder character with 400 health',
+            icon: '👑'
+          },
+          {
+            name: "Founder's Scepterblade",
+            description: 'Legendary weapon with 50 damage',
+            icon: '⚔️'
+          }
+        ]
+      }
     ]
   };
   
@@ -96,6 +162,27 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       purchaseItem(item.id, price, item);
       setSelectedItem(null);
     }
+  };
+
+  const handlePremiumPurchase = (item: any) => {
+    setSelectedPremiumItem(item);
+    setShowPayment(true);
+  };
+
+  const handlePaymentComplete = () => {
+    // Simulate payment completion
+    if (selectedPremiumItem) {
+      if (selectedPremiumItem.coins) {
+        // Add coins to player
+        // This would integrate with real payment processing
+        alert(`Payment successful! ${selectedPremiumItem.coins} coins added to your account.`);
+      } else if (selectedPremiumItem.bundle) {
+        // Add founder character and weapon
+        alert('Payment successful! Founder\'s Glory Bundle unlocked!');
+      }
+    }
+    setShowPayment(false);
+    setSelectedPremiumItem(null);
   };
   
   const getRarityColor = (rarity: string) => {
@@ -140,27 +227,56 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         </div>
         
         {/* Category Tabs */}
-        <div className="flex space-x-4 mb-8">
+        <div className="flex space-x-4 mb-8 overflow-x-auto">
           {Object.keys(shopItems).map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category as any)}
-              className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ${
+              className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex items-center ${
                 selectedCategory === category
                   ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black'
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
             >
+              {category === 'premium' && <CreditCard className="mr-2" size={18} />}
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>
           ))}
         </div>
+
+        {/* Premium Section Header */}
+        {selectedCategory === 'premium' && (
+          <div className="mb-8 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg p-6 border border-purple-500/50">
+            <div className="flex items-center mb-4">
+              <Crown className="text-yellow-400 mr-3" size={32} />
+              <div>
+                <h2 className="text-2xl font-bold text-yellow-400">Premium Store</h2>
+                <p className="text-gray-300">Purchase with real money for instant rewards</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center">
+                <Zap className="text-blue-400 mr-2" size={16} />
+                <span>Instant delivery</span>
+              </div>
+              <div className="flex items-center">
+                <Star className="text-yellow-400 mr-2" size={16} />
+                <span>Exclusive content</span>
+              </div>
+              <div className="flex items-center">
+                <Crown className="text-purple-400 mr-2" size={16} />
+                <span>Support development</span>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentItems.map((item) => {
-            const canAfford = player.currency >= item.price;
+            const canAfford = selectedCategory === 'premium' ? true : player.currency >= item.price;
             const isSelected = selectedItem === item.id;
+            const isPremium = selectedCategory === 'premium';
             
             return (
               <div
@@ -168,9 +284,23 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 className={`bg-gray-800 rounded-lg p-6 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
                   isSelected ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 
                   canAfford ? 'border-gray-600 hover:border-gray-500' : 'border-red-600 opacity-60'
-                }`}
+                } ${isPremium ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30' : ''}`}
                 onClick={() => setSelectedItem(isSelected ? null : item.id)}
               >
+                {/* Premium Badge */}
+                {isPremium && (
+                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-2 py-1 rounded-full text-xs font-bold">
+                    PREMIUM
+                  </div>
+                )}
+
+                {/* Bundle Badge */}
+                {item.bundle && (
+                  <div className="absolute -top-2 -left-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                    BUNDLE
+                  </div>
+                )}
+                
                 {/* Item Icon */}
                 <div className="text-center mb-4">
                   <div className="text-6xl mb-2">{item.icon}</div>
@@ -182,6 +312,22 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 
                 {/* Item Description */}
                 <p className="text-gray-300 text-sm mb-4 text-center">{item.description}</p>
+
+                {/* Bundle Contents */}
+                {item.includes && (
+                  <div className="bg-gray-700/50 rounded-lg p-3 mb-4">
+                    <div className="text-yellow-400 text-sm font-bold mb-2">Bundle Includes:</div>
+                    {item.includes.map((bundleItem: any, index: number) => (
+                      <div key={index} className="flex items-center text-sm mb-1">
+                        <span className="mr-2">{bundleItem.icon}</span>
+                        <div>
+                          <div className="font-medium">{bundleItem.name}</div>
+                          <div className="text-gray-400 text-xs">{bundleItem.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 
                 {/* Item Effect */}
                 {item.effect && (
@@ -202,30 +348,108 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 {/* Price and Purchase */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Coins className="text-yellow-400 mr-2" size={16} />
-                    <span className="text-yellow-400 font-bold">{item.price}</span>
+                    {isPremium ? (
+                      <>
+                        <CreditCard className="text-green-400 mr-2" size={16} />
+                        <span className="text-green-400 font-bold">{item.realPrice}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Coins className="text-yellow-400 mr-2" size={16} />
+                        <span className="text-yellow-400 font-bold">{item.price}</span>
+                      </>
+                    )}
                   </div>
                   
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handlePurchase(item, item.price);
+                      if (isPremium) {
+                        handlePremiumPurchase(item);
+                      } else {
+                        handlePurchase(item, item.price);
+                      }
                     }}
-                    disabled={!canAfford}
+                    disabled={!canAfford && !isPremium}
                     className={`px-4 py-2 rounded-lg font-bold transition-all duration-300 flex items-center ${
-                      canAfford
+                      isPremium
+                        ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
+                        : canAfford
                         ? 'bg-green-600 hover:bg-green-500 text-white'
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
                     <ShoppingCart size={16} className="mr-2" />
-                    {canAfford ? 'Buy' : 'Too Expensive'}
+                    {isPremium ? 'Buy Now' : canAfford ? 'Buy' : 'Too Expensive'}
                   </button>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Payment Modal */}
+        {showPayment && selectedPremiumItem && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-xl p-8 w-96 border border-gray-600">
+              <h2 className="text-2xl font-bold mb-6 text-center">Complete Purchase</h2>
+              
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">{selectedPremiumItem.icon}</div>
+                <h3 className="text-xl font-bold mb-2">{selectedPremiumItem.name}</h3>
+                <div className="text-2xl font-bold text-green-400">{selectedPremiumItem.realPrice}</div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Card Number</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
+                    placeholder="1234 5678 9012 3456"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Expiry</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
+                      placeholder="MM/YY"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">CVV</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
+                      placeholder="123"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handlePaymentComplete}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 py-3 rounded-lg font-bold transition-colors"
+                >
+                  Complete Purchase
+                </button>
+                <button
+                  onClick={() => setShowPayment(false)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-3 rounded-lg font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div className="mt-4 text-xs text-gray-400 text-center">
+                🔒 Secure payment processing • 30-day money back guarantee
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Shop Info */}
         <div className="mt-12 bg-gray-800/50 rounded-lg p-6 border border-gray-600">
@@ -233,13 +457,14 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             <Star className="text-yellow-400 mr-2" size={24} />
             <h3 className="text-xl font-bold">Shop Information</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-300">
             <div>
               <h4 className="font-bold text-white mb-2">💰 Earning Coins:</h4>
               <ul className="space-y-1">
                 <li>• Defeat enemies to earn coins</li>
                 <li>• Each enemy drops 10 coins</li>
                 <li>• Stronger enemies may drop more</li>
+                <li>• Complete quests for bonus rewards</li>
               </ul>
             </div>
             <div>
@@ -248,6 +473,16 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 <li>• Weapons increase attack damage</li>
                 <li>• Armor provides defense bonuses</li>
                 <li>• Upgrades are permanent improvements</li>
+                <li>• Higher rarity = better stats</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-white mb-2">💳 Premium Store:</h4>
+              <ul className="space-y-1">
+                <li>• Instant coin packages available</li>
+                <li>• Exclusive founder character bundle</li>
+                <li>• Support game development</li>
+                <li>• Secure payment processing</li>
               </ul>
             </div>
           </div>
