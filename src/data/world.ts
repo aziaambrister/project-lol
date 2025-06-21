@@ -132,62 +132,8 @@ export const gameWorld: GameWorld = {
         items: [],
         exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
       }
-    },
-    // Trees for collision and hiding - positioned throughout the forest areas
-    {
-      id: 'tree-1',
-      name: 'Large Oak Tree',
-      type: 'house', // Using house type but not enterable
-      position: { x: 800, y: 1200 },
-      size: { width: 80, height: 100 },
-      enterable: false,
-      sprite: '🌳'
-    },
-    {
-      id: 'tree-2',
-      name: 'Pine Tree',
-      type: 'house',
-      position: { x: 1000, y: 1400 },
-      size: { width: 60, height: 90 },
-      enterable: false,
-      sprite: '🌲'
-    },
-    {
-      id: 'tree-3',
-      name: 'Ancient Tree',
-      type: 'house',
-      position: { x: 700, y: 1600 },
-      size: { width: 90, height: 110 },
-      enterable: false,
-      sprite: '🌳'
-    },
-    {
-      id: 'tree-4',
-      name: 'Forest Tree',
-      type: 'house',
-      position: { x: 1200, y: 1100 },
-      size: { width: 70, height: 95 },
-      enterable: false,
-      sprite: '🌲'
-    },
-    {
-      id: 'tree-5',
-      name: 'Old Oak',
-      type: 'house',
-      position: { x: 900, y: 1700 },
-      size: { width: 85, height: 105 },
-      enterable: false,
-      sprite: '🌳'
-    },
-    {
-      id: 'tree-6',
-      name: 'Tall Pine',
-      type: 'house',
-      position: { x: 1100, y: 1800 },
-      size: { width: 65, height: 100 },
-      enterable: false,
-      sprite: '🌲'
     }
+    // All trees removed - no more collision objects
   ],
   
   waterBodies: [
