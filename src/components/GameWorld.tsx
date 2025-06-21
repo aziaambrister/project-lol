@@ -58,10 +58,15 @@ const GameWorld: React.FC = () => {
       
       // Special moves
       if (key === '1') performAttack('basic-punch');
-      if (key === '2') performAttack('basic-kick');
+      if (key === '2') {
+        const nearestEnemy = findNearestEnemy();
+        if (nearestEnemy) {
+          performAttack('shuriken-throw', nearestEnemy.id);
+        }
+      }
       if (key === '3') performAttack('dodge-roll');
       if (key === '4') {
-        const specialMove = state.player.character.moveSet.find(m => m.type === 'special');
+        const specialMove = state.player.character.moveSet.find(m => m.type === 'special' && m.id !== 'shuriken-throw');
         if (specialMove) performAttack(specialMove.id);
       }
     };
@@ -171,7 +176,7 @@ const GameWorld: React.FC = () => {
         Math.pow(enemy.position.y - playerPos.y, 2)
       );
       
-      if (distance < 60 && distance < minDistance) { // Attack range
+      if (distance < 150 && distance < minDistance) { // Shuriken range
         minDistance = distance;
         nearestEnemy = enemy;
       }
@@ -368,6 +373,7 @@ const GameWorld: React.FC = () => {
             <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
             <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
             <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
+            <div>🥷 <span className="text-yellow-300">2</span> - Throw Shuriken</div>
             <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
             <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
             <div>⚔️ <span className="text-yellow-300">1-4</span> - Special Moves</div>

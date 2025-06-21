@@ -62,7 +62,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
 
   // Check if this is a mindless zombie to apply special styling
   const isMindlessZombie = enemy.name === 'Mindless Zombie';
-  const enemySize = isMindlessZombie ? 20 : 12; // Bigger size for zombies (20x20 instead of 12x12)
+  const enemySize = isMindlessZombie ? 30 : 12; // 50% bigger: 20 * 1.5 = 30
 
   return (
     <div 

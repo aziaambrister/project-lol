@@ -41,20 +41,21 @@ type GameAction =
   | { type: 'ADD_COINS'; payload: { amount: number } }
   | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } }
   | { type: 'EQUIP_ITEM'; payload: { item: Item } }
-  | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } };
+  | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } }
+  | { type: 'SHURIKEN_THROW'; payload: { targetId: string } };
 
 const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
-    position: { x: 200, y: 3800 }, // Bottom left of the 4000x4000 map
+    position: { x: 200, y: 3800 },
     direction: 'down',
     isMoving: false,
     isSwimming: false,
     inventory: [],
-    currency: 100, // Starting coins
-    equippedItems: {}, // Initialize empty equipped items
-    unlockedCharacters: ['balanced-fighter'], // Start with one unlocked character
+    currency: 100,
+    equippedItems: {},
+    unlockedCharacters: ['balanced-fighter'],
   },
   currentWorld: gameWorld,
   combat: {
@@ -65,7 +66,7 @@ const initialState: GameState = {
     damageNumbers: []
   },
   camera: {
-    x: 200, // Start camera at bottom left
+    x: 200,
     y: 3800,
     zoom: 1
   },
@@ -96,11 +97,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         player: {
           ...state.player,
           character: { ...selectedCharacter },
-          position: { x: 200, y: 3800 }, // Start at bottom left
+          position: { x: 200, y: 3800 },
         },
         camera: {
           ...state.camera,
-          x: 200, // Camera follows player to bottom left
+          x: 200,
           y: 3800
         }
       };
@@ -114,40 +115,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       switch (direction) {
         case 'up':
-          newY = Math.max(50, newY - speed); // Keep 50px margin from top edge
+          newY = Math.max(50, newY - speed);
           break;
         case 'down':
-          newY = Math.min(state.currentWorld.size.height - 50, newY + speed); // Keep 50px margin from bottom edge
+          newY = Math.min(state.currentWorld.size.height - 50, newY + speed);
           break;
         case 'left':
-          newX = Math.max(50, newX - speed); // Keep 50px margin from left edge
+          newX = Math.max(50, newX - speed);
           break;
         case 'right':
-          newX = Math.min(state.currentWorld.size.width - 50, newX + speed); // Keep 50px margin from right edge
+          newX = Math.min(state.currentWorld.size.width - 50, newX + speed);
           break;
-      }
-      
-      // Enhanced tree collision detection
-      const isCollidingWithTree = state.currentWorld.buildings.some(building => {
-        if (!building.sprite.includes('🌳') && !building.sprite.includes('🌲')) return false;
-        
-        const playerRadius = 25; // Player collision radius
-        const treeLeft = building.position.x - 10; // Add some padding
-        const treeRight = building.position.x + building.size.width + 10;
-        const treeTop = building.position.y - 10;
-        const treeBottom = building.position.y + building.size.height + 10;
-        
-        return (
-          newX + playerRadius > treeLeft &&
-          newX - playerRadius < treeRight &&
-          newY + playerRadius > treeTop &&
-          newY - playerRadius < treeBottom
-        );
-      });
-      
-      // If colliding with tree, don't move
-      if (isCollidingWithTree) {
-        return state;
       }
       
       // Check for water collision
@@ -164,11 +142,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const worldWidth = state.currentWorld.size.width;
       const worldHeight = state.currentWorld.size.height;
       
-      // Camera boundaries - prevent showing white edges
       let cameraX = newX;
       let cameraY = newY;
       
-      // Constrain camera to world boundaries
       cameraX = Math.max(screenWidth / 2, Math.min(worldWidth - screenWidth / 2, cameraX));
       cameraY = Math.max(screenHeight / 2, Math.min(worldHeight - screenHeight / 2, cameraY));
       
@@ -203,8 +179,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const { moveId, targetId } = action.payload;
       const move = state.player.character.moveSet.find(m => m.id === moveId);
       
-      if (!move || move.currentCooldown > 0 || state.player.character.stamina < move.staminaCost) {
+      if (!move || move.currentCooldown > 0) {
         return state;
+      }
+      
+      // Handle shuriken throw
+      if (moveId === 'shuriken-throw' && targetId) {
+        return gameReducer(state, { type: 'SHURIKEN_THROW', payload: { targetId } });
       }
       
       let updatedEnemies = [...state.currentWorld.enemies];
@@ -226,7 +207,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentTarget: state.player.character.id
           };
           
-          // Add damage number
           const damageNumber: DamageNumber = {
             id: `damage-${Date.now()}`,
             value: damage,
@@ -236,16 +216,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           };
           damageNumbers.push(damageNumber);
           
-          // Award coins for defeating enemy
           if (newEnemyHealth <= 0) {
-            newCurrency += 10; // 10 coins per defeated enemy
+            newCurrency += 10;
             
-            // Add coin notification
             const coinNumber: DamageNumber = {
               id: `coins-${Date.now()}`,
               value: 10,
               position: { x: enemy.position.x + 20, y: enemy.position.y - 40 },
-              type: 'critical', // Use critical type for gold color
+              type: 'critical',
               timestamp: Date.now()
             };
             damageNumbers.push(coinNumber);
@@ -253,7 +231,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
       
-      // Update move cooldown and player stamina
       const updatedMoveSet = state.player.character.moveSet.map(m => 
         m.id === moveId ? { ...m, currentCooldown: m.cooldown } : m
       );
@@ -264,7 +241,76 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.player,
           character: {
             ...state.player.character,
-            stamina: Math.max(0, state.player.character.stamina - move.staminaCost),
+            moveSet: updatedMoveSet
+          },
+          currency: newCurrency
+        },
+        currentWorld: {
+          ...state.currentWorld,
+          enemies: updatedEnemies
+        },
+        combat: {
+          ...state.combat,
+          damageNumbers,
+          comboCount: state.combat.comboCount + 1,
+          lastHitTime: Date.now()
+        }
+      };
+    }
+    
+    case 'SHURIKEN_THROW': {
+      const { targetId } = action.payload;
+      let updatedEnemies = [...state.currentWorld.enemies];
+      let damageNumbers = [...state.combat.damageNumbers];
+      let newCurrency = state.player.currency;
+      
+      const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
+      if (enemyIndex !== -1) {
+        const enemy = updatedEnemies[enemyIndex];
+        const damage = 10; // Fixed shuriken damage
+        
+        const newEnemyHealth = Math.max(0, enemy.health - damage);
+        
+        updatedEnemies[enemyIndex] = {
+          ...enemy,
+          health: newEnemyHealth,
+          state: newEnemyHealth <= 0 ? 'dead' : 'chase',
+          currentTarget: state.player.character.id
+        };
+        
+        const damageNumber: DamageNumber = {
+          id: `shuriken-damage-${Date.now()}`,
+          value: damage,
+          position: { x: enemy.position.x, y: enemy.position.y - 20 },
+          type: 'damage',
+          timestamp: Date.now()
+        };
+        damageNumbers.push(damageNumber);
+        
+        if (newEnemyHealth <= 0) {
+          newCurrency += 10;
+          
+          const coinNumber: DamageNumber = {
+            id: `shuriken-coins-${Date.now()}`,
+            value: 10,
+            position: { x: enemy.position.x + 20, y: enemy.position.y - 40 },
+            type: 'critical',
+            timestamp: Date.now()
+          };
+          damageNumbers.push(coinNumber);
+        }
+      }
+      
+      const updatedMoveSet = state.player.character.moveSet.map(m => 
+        m.id === 'shuriken-throw' ? { ...m, currentCooldown: m.cooldown } : m
+      );
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          character: {
+            ...state.player.character,
             moveSet: updatedMoveSet
           },
           currency: newCurrency
@@ -288,51 +334,44 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       if (!enemy || enemy.state === 'dead') return state;
       
-      // Calculate distance to player
       const distanceToPlayer = Math.sqrt(
         Math.pow(enemy.position.x - state.player.position.x, 2) +
         Math.pow(enemy.position.y - state.player.position.y, 2)
       );
       
-      // Only attack if close enough (within attack range)
       if (distanceToPlayer > 50) return state;
       
-      // Calculate damage based on enemy type and stats
       let baseDamage = enemy.attack;
       
-      // Different damage multipliers based on enemy type
       switch (enemy.type) {
         case 'aggressive':
-          baseDamage *= 1.3; // Aggressive enemies deal 30% more damage
+          baseDamage *= 1.3;
           break;
         case 'defensive':
-          baseDamage *= 0.8; // Defensive enemies deal 20% less damage
+          baseDamage *= 0.8;
           break;
         case 'patrol':
-          baseDamage *= 1.0; // Normal damage
+          baseDamage *= 1.0;
           break;
         default:
           baseDamage *= 1.0;
       }
       
-      // Additional damage based on AI difficulty
       switch (enemy.aiDifficulty) {
         case 'easy':
-          baseDamage *= 0.7; // Easy enemies deal 30% less damage
+          baseDamage *= 0.7;
           break;
         case 'medium':
-          baseDamage *= 1.0; // Normal damage
+          baseDamage *= 1.0;
           break;
         case 'hard':
-          baseDamage *= 1.4; // Hard enemies deal 40% more damage
+          baseDamage *= 1.4;
           break;
       }
       
-      // Apply player defense
       const finalDamage = Math.max(1, Math.floor(baseDamage - state.player.character.defense / 2));
       const newPlayerHealth = Math.max(0, state.player.character.health - finalDamage);
       
-      // Add damage number for player
       const damageNumber: DamageNumber = {
         id: `player-damage-${Date.now()}`,
         value: finalDamage,
@@ -396,47 +435,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let newY = enemy.position.y;
         let lastAction = enemy.lastAction;
         
-        // AI Decision Making
         if (distanceToPlayer <= enemy.detectionRadius && enemy.state !== 'chase') {
           newState = 'chase';
         } else if (enemy.state === 'chase' && distanceToPlayer > enemy.detectionRadius * 1.5) {
           newState = 'patrol';
         }
         
-        // Movement and Attack AI
         if (newState === 'chase') {
-          // Move towards player
           const dx = state.player.position.x - enemy.position.x;
           const dy = state.player.position.y - enemy.position.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance > 50) { // Not in attack range - move closer
-            const moveSpeed = enemy.speed * 0.8; // Slightly slower when chasing
+          if (distance > 50) {
+            const moveSpeed = enemy.speed * 0.8;
             newX += (dx / distance) * moveSpeed;
             newY += (dy / distance) * moveSpeed;
           } else {
-            // In attack range - attack if enough time has passed
             const now = Date.now();
             const attackCooldown = enemy.aiDifficulty === 'easy' ? 2000 : 
                                  enemy.aiDifficulty === 'medium' ? 1500 : 1000;
             
             if (now - lastAction > attackCooldown) {
-              // Trigger enemy attack
               setTimeout(() => {
-                // Use a timeout to avoid infinite loops in reducer
-                // This will be handled by the enemy attack action
               }, 100);
               lastAction = now;
             }
           }
         } else if (newState === 'patrol') {
-          // Random patrol movement
           const angle = Math.random() * Math.PI * 2;
-          const moveSpeed = enemy.speed * 0.3; // Slower when patrolling
+          const moveSpeed = enemy.speed * 0.3;
           newX += Math.cos(angle) * moveSpeed;
           newY += Math.sin(angle) * moveSpeed;
           
-          // Keep within patrol radius
           const distanceFromCenter = Math.sqrt(
             Math.pow(newX - enemy.patrolCenter.x, 2) +
             Math.pow(newY - enemy.patrolCenter.y, 2)
@@ -452,7 +482,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         }
         
-        // Keep enemies within world bounds
         newX = Math.max(0, Math.min(state.currentWorld.size.width, newX));
         newY = Math.max(0, Math.min(state.currentWorld.size.height, newY));
         
@@ -465,7 +494,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       });
       
-      // Check for enemies that should attack
       const now = Date.now();
       updatedEnemies.forEach(enemy => {
         if (enemy.state === 'chase' && enemy.health > 0) {
@@ -479,9 +507,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                                  enemy.aiDifficulty === 'medium' ? 1500 : 1000;
             
             if (now - enemy.lastAction > attackCooldown) {
-              // Dispatch enemy attack action
               setTimeout(() => {
-                // This creates a new action to handle the attack
                 gameReducer(state, { type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
               }, 100);
             }
@@ -524,9 +550,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let lightLevel = 1.0;
       
       if (currentTime < 6 || currentTime > 18) {
-        lightLevel = 0.3; // Night
+        lightLevel = 0.3;
       } else if (currentTime < 8 || currentTime > 16) {
-        lightLevel = 0.7; // Dawn/Dusk
+        lightLevel = 0.7;
       }
       
       return {
@@ -566,13 +592,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const { price, item } = action.payload;
       
       if (state.player.currency < price) {
-        return state; // Not enough coins
+        return state;
       }
       
       let updatedCharacter = { ...state.player.character };
       let updatedInventory = [...state.player.inventory];
       
-      // Apply item effects
       if (item.type === 'upgrade') {
         switch (item.effect?.type) {
           case 'health':
@@ -590,7 +615,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             break;
         }
       } else {
-        // Add to inventory
         updatedInventory.push(item);
       }
       
@@ -621,16 +645,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let updatedEquippedItems = { ...state.player.equippedItems };
       let updatedCharacter = { ...state.player.character };
       
-      // Remove item from inventory
       const itemIndex = updatedInventory.findIndex(i => i.id === item.id);
       if (itemIndex !== -1) {
         updatedInventory.splice(itemIndex, 1);
       }
       
-      // If there's already an item equipped in this slot, return it to inventory
       if (item.type === 'weapon' && updatedEquippedItems.weapon) {
         updatedInventory.push(updatedEquippedItems.weapon);
-        // Remove old weapon stats
         if (updatedEquippedItems.weapon.effect) {
           switch (updatedEquippedItems.weapon.effect.type) {
             case 'boost-attack':
@@ -649,7 +670,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       } else if (item.type === 'armor' && updatedEquippedItems.armor) {
         updatedInventory.push(updatedEquippedItems.armor);
-        // Remove old armor stats
         if (updatedEquippedItems.armor.effect) {
           switch (updatedEquippedItems.armor.effect.type) {
             case 'boost-attack':
@@ -668,14 +688,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
       
-      // Equip new item
       if (item.type === 'weapon') {
         updatedEquippedItems.weapon = item;
       } else if (item.type === 'armor') {
         updatedEquippedItems.armor = item;
       }
       
-      // Apply new item stats
       if (item.effect) {
         switch (item.effect.type) {
           case 'boost-attack':
@@ -712,10 +730,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       const equippedItem = updatedEquippedItems[itemType];
       if (equippedItem) {
-        // Return item to inventory
         updatedInventory.push(equippedItem);
         
-        // Remove item stats
         if (equippedItem.effect) {
           switch (equippedItem.effect.type) {
             case 'boost-attack':
@@ -733,7 +749,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         }
         
-        // Remove from equipped items
         delete updatedEquippedItems[itemType];
       }
       
@@ -832,13 +847,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
   };
   
-  // Enhanced game loops with enemy attack handling
   useEffect(() => {
     const aiUpdateInterval = setInterval(() => {
       updateEnemyAI();
-    }, 100); // Update AI every 100ms
+    }, 100);
     
-    // Separate interval for enemy attacks
     const enemyAttackInterval = setInterval(() => {
       const now = Date.now();
       state.currentWorld.enemies.forEach(enemy => {
@@ -858,21 +871,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
           }
         }
       });
-    }, 500); // Check for attacks every 500ms
+    }, 500);
     
     const dayNightInterval = setInterval(() => {
       dispatch({ type: 'UPDATE_DAY_NIGHT' });
-    }, 1000); // Update day/night every second
+    }, 1000);
     
     const cooldownInterval = setInterval(() => {
-      // Update move cooldowns
-      // This would need a separate action type for proper implementation
     }, 1000);
     
     const damageNumberCleanup = setInterval(() => {
       const now = Date.now();
       state.combat.damageNumbers.forEach(dn => {
-        if (now - dn.timestamp > 2000) { // Remove after 2 seconds
+        if (now - dn.timestamp > 2000) {
           dispatch({ type: 'REMOVE_DAMAGE_NUMBER', payload: { id: dn.id } });
         }
       });
@@ -916,7 +927,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 function useGame() {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new error('useGame must be used within a GameProvider');
+    throw new Error('useGame must be used within a GameProvider');
   }
   return context;
 }

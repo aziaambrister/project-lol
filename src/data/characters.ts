@@ -6,15 +6,13 @@ export const characters: Character[] = [
     name: 'Ninja',
     class: 'balanced-fighter',
     level: 1,
-    health: 100,
-    maxHealth: 100,
-    stamina: 100,
-    maxStamina: 100,
+    health: 50,
+    maxHealth: 50,
     experience: 0,
     experienceToNextLevel: 100,
     attack: 10,
     defense: 8,
-    speed: 12, // Increased from 8 to 12 for much faster movement
+    speed: 12,
     unlocked: true,
     moveSet: [
       {
@@ -29,6 +27,18 @@ export const characters: Character[] = [
         description: 'A quick jab that can start combos',
         animation: 'punch',
         comboChain: ['basic-kick', 'uppercut']
+      },
+      {
+        id: 'shuriken-throw',
+        name: 'Shuriken Throw',
+        type: 'special',
+        damage: 10,
+        staminaCost: 15,
+        cooldown: 2,
+        currentCooldown: 0,
+        range: 150,
+        description: 'Throws a shuriken at enemies',
+        animation: 'throw'
       },
       {
         id: 'basic-kick',
@@ -96,13 +106,11 @@ export const characters: Character[] = [
     level: 1,
     health: 80,
     maxHealth: 80,
-    stamina: 120,
-    maxStamina: 120,
     experience: 0,
     experienceToNextLevel: 100,
     attack: 8,
     defense: 6,
-    speed: 14, // Increased from 10 to 14 for faster movement
+    speed: 14,
     unlocked: false,
     price: 500,
     moveSet: [
@@ -161,13 +169,11 @@ export const characters: Character[] = [
     level: 1,
     health: 150,
     maxHealth: 150,
-    stamina: 80,
-    maxStamina: 80,
     experience: 0,
     experienceToNextLevel: 100,
     attack: 15,
     defense: 12,
-    speed: 6, // Increased from 4 to 6 for slightly faster movement
+    speed: 6,
     unlocked: false,
     price: 800,
     moveSet: [
@@ -225,13 +231,11 @@ export const characters: Character[] = [
     level: 1,
     health: 120,
     maxHealth: 120,
-    stamina: 90,
-    maxStamina: 90,
     experience: 0,
     experienceToNextLevel: 100,
     attack: 9,
     defense: 15,
-    speed: 7, // Increased from 5 to 7 for slightly faster movement
+    speed: 7,
     unlocked: false,
     price: 600,
     moveSet: [

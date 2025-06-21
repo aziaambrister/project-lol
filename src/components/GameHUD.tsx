@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { Heart, Shield, Zap, Coins, Clock, Target } from 'lucide-react';
+import { Heart, Zap, Coins, Clock, Target } from 'lucide-react';
 
 const GameHUD: React.FC = () => {
   const { state } = useGame();
@@ -52,23 +52,6 @@ const GameHUD: React.FC = () => {
                 <div 
                   className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
                   style={{ width: `${(player.character.health / player.character.maxHealth) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Stamina */}
-          <div className="flex items-center">
-            <Zap className="text-blue-500 mr-2" size={16} />
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-white">{player.character.stamina}</span>
-                <span className="text-gray-300">/{player.character.maxStamina}</span>
-              </div>
-              <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
-                  style={{ width: `${(player.character.stamina / player.character.maxStamina) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -142,10 +125,14 @@ const GameHUD: React.FC = () => {
             >
               <div className="text-xs text-white font-bold">{index + 1}</div>
               <div className="text-2xl">
-                {move.type === 'basic-attack' ? '👊' :
-                 move.type === 'special' ? '⚡' :
-                 move.type === 'block' ? '🛡️' :
-                 move.type === 'dodge' ? '💨' : '⚔️'}
+                {move.id === 'shuriken-throw' ? (
+                  <img src="/shuriken.png" alt="Shuriken" className="w-6 h-6" />
+                ) : (
+                  move.type === 'basic-attack' ? '👊' :
+                  move.type === 'special' ? '⚡' :
+                  move.type === 'block' ? '🛡️' :
+                  move.type === 'dodge' ? '💨' : '⚔️'
+                )}
               </div>
               {move.currentCooldown > 0 && (
                 <div className="absolute inset-0 flex items-center justify-center">
