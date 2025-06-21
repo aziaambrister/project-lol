@@ -13,7 +13,6 @@ const GameWorld: React.FC = () => {
   const [lastMoveTime, setLastMoveTime] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
-  const [waterSplashes, setWaterSplashes] = useState<Array<{id: number, x: number, y: number, timestamp: number}>>([]);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
   // Handle keyboard input
@@ -143,41 +142,23 @@ const GameWorld: React.FC = () => {
       else if (keysPressed.has('d')) direction = 'right';
       
       if (direction) {
-        const wasInWater = state.player.isSwimming;
         movePlayer(direction);
-        
-        // Check if player just entered water and create splash
-        if (!wasInWater && state.player.isSwimming) {
-          createWaterSplash(state.player.position.x, state.player.position.y);
-        }
-        
         setLastMoveTime(now);
       }
     }, 16); // 60 FPS
     
     return () => clearInterval(moveInterval);
-  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, state.player.isSwimming, state.player.position, lastMoveTime, showEscMenu]);
+  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime, showEscMenu]);
 
-  // Clean up water splashes and shurikens
+  // Clean up shurikens
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
       const now = Date.now();
-      setWaterSplashes(prev => prev.filter(splash => now - splash.timestamp < 1000));
       setShurikens(prev => prev.filter(shuriken => now - shuriken.timestamp < 1000));
     }, 100);
     
     return () => clearInterval(cleanupInterval);
   }, []);
-
-  const createWaterSplash = (x: number, y: number) => {
-    const newSplash = {
-      id: Date.now() + Math.random(),
-      x,
-      y,
-      timestamp: Date.now()
-    };
-    setWaterSplashes(prev => [...prev, newSplash]);
-  };
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
@@ -221,7 +202,7 @@ const GameWorld: React.FC = () => {
     return nearestBuilding;
   };
 
-  // Calculate camera offset
+  // Calculate camera offset - Fixed to prevent enemy shifting
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
@@ -261,62 +242,6 @@ const GameWorld: React.FC = () => {
           style={{ zIndex: -1 }}
         ></div>
       </div>
-
-      {/* Enhanced Water Bodies with RPG styling - positioned to match map */}
-      {state.currentWorld.waterBodies.map(water => (
-        <div
-          key={water.id}
-          className="absolute rounded-lg overflow-hidden"
-          style={{
-            left: water.position.x - cameraX,
-            top: water.position.y - cameraY,
-            width: water.size.width,
-            height: water.size.height,
-            background: 'linear-gradient(45deg, #3b82f6, #1d4ed8, #1e40af, #1e3a8a)',
-            boxShadow: 'inset 0 0 40px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.4)',
-            opacity: 0.8
-          }}
-        >
-          {/* Enhanced water animation effects */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-300/25 to-transparent animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-transparent to-blue-600/20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-          
-          {/* Enhanced water surface sparkles */}
-          <div className="absolute top-3 left-6 w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
-          <div className="absolute top-8 right-12 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-          <div className="absolute bottom-6 left-1/2 w-1.5 h-1.5 bg-white rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/3 left-1/4 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '2.5s' }}></div>
-          <div className="absolute bottom-1/3 right-1/4 w-1.5 h-1.5 bg-white rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
-        </div>
-      ))}
-
-      {/* Water Splash Effects */}
-      {waterSplashes.map(splash => (
-        <div
-          key={splash.id}
-          className="absolute pointer-events-none z-25"
-          style={{
-            left: splash.x - cameraX - 20,
-            top: splash.y - cameraY - 20,
-            width: 40,
-            height: 40
-          }}
-        >
-          {/* Multiple splash particles */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-ping opacity-80"></div>
-          </div>
-          <div className="absolute top-2 left-6 w-2 h-2 bg-blue-300 rounded-full animate-ping opacity-60" style={{ animationDelay: '0.1s' }}></div>
-          <div className="absolute bottom-3 right-5 w-2 h-2 bg-blue-300 rounded-full animate-ping opacity-60" style={{ animationDelay: '0.2s' }}></div>
-          <div className="absolute top-6 right-2 w-1.5 h-1.5 bg-blue-200 rounded-full animate-ping opacity-40" style={{ animationDelay: '0.3s' }}></div>
-          <div className="absolute bottom-1 left-3 w-1.5 h-1.5 bg-blue-200 rounded-full animate-ping opacity-40" style={{ animationDelay: '0.4s' }}></div>
-          
-          {/* Ripple effect */}
-          <div className="absolute inset-0 border-2 border-blue-400 rounded-full animate-ping opacity-30"></div>
-          <div className="absolute inset-2 border border-blue-300 rounded-full animate-ping opacity-20" style={{ animationDelay: '0.2s' }}></div>
-        </div>
-      ))}
 
       {/* Shuriken Animation */}
       {shurikens.map(shuriken => {

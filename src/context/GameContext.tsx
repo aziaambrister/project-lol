@@ -128,14 +128,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
-      // Check for water collision
-      const isInWater = state.currentWorld.waterBodies.some(water => 
-        newX >= water.position.x && 
-        newX <= water.position.x + water.size.width &&
-        newY >= water.position.y && 
-        newY <= water.position.y + water.size.height
-      );
-      
       // Calculate camera position with boundaries
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
@@ -155,7 +147,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           position: { x: newX, y: newY },
           direction,
           isMoving: true,
-          isSwimming: isInWater
+          isSwimming: false // No water bodies anymore
         },
         camera: {
           ...state.camera,
@@ -435,7 +427,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let newY = enemy.position.y;
         let lastAction = enemy.lastAction;
         
-        if (distanceToPlayer <= enemy.detectionRadius && enemy.state !== 'chase') {
+        // Enemies move freely and patrol regardless of player position
+        if (distanceToPlayer <= enemy.detectionRadius) {
           newState = 'chase';
         } else if (enemy.state === 'chase' && distanceToPlayer > enemy.detectionRadius * 1.5) {
           newState = 'patrol';
@@ -461,7 +454,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               lastAction = now;
             }
           }
-        } else if (newState === 'patrol') {
+        } else {
+          // Always move in patrol mode - enemies move freely
           const angle = Math.random() * Math.PI * 2;
           const moveSpeed = enemy.speed * 0.3;
           newX += Math.cos(angle) * moveSpeed;

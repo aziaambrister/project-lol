@@ -133,63 +133,10 @@ export const gameWorld: GameWorld = {
         exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
       }
     }
-    // All trees removed - no more collision objects
   ],
   
   waterBodies: [
-    // Large Lake (positioned to match the map's lake)
-    {
-      id: 'central-lake',
-      type: 'lake',
-      position: { x: 2400, y: 2800 },
-      size: { width: 800, height: 600 },
-      swimmable: true,
-      currentStrength: 0.5
-    },
-    // Northern River (scaled)
-    {
-      id: 'northern-river',
-      type: 'river',
-      position: { x: 600, y: 300 },
-      size: { width: 450, height: 60 },
-      swimmable: true,
-      currentStrength: 1.0
-    },
-    // Eastern Pond (scaled)
-    {
-      id: 'eastern-pond',
-      type: 'pond',
-      position: { x: 2100, y: 1200 },
-      size: { width: 180, height: 150 },
-      swimmable: true,
-      currentStrength: 0.3
-    },
-    // Western Coast (scaled)
-    {
-      id: 'western-coast',
-      type: 'ocean',
-      position: { x: 75, y: 600 },
-      size: { width: 150, height: 1200 },
-      swimmable: true,
-      currentStrength: 2.0
-    },
-    // Additional water bodies for expanded map
-    {
-      id: 'southern-lake',
-      type: 'lake',
-      position: { x: 1800, y: 2400 },
-      size: { width: 240, height: 180 },
-      swimmable: true,
-      currentStrength: 0.4
-    },
-    {
-      id: 'mountain-stream',
-      type: 'river',
-      position: { x: 2400, y: 1500 },
-      size: { width: 300, height: 45 },
-      swimmable: true,
-      currentStrength: 1.5
-    }
+    // All water bodies removed as requested
   ],
   
   enemies: [
@@ -197,13 +144,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'forest-zombie-1',
       name: 'Mindless Zombie',
-      type: 'aggressive', // Changed to aggressive so they chase player
+      type: 'aggressive',
       health: 60,
       maxHealth: 60,
       attack: 8,
       defense: 4,
       speed: 4,
-      detectionRadius: 120, // Increased detection radius
+      detectionRadius: 120,
       patrolRadius: 100,
       experience: 25,
       loot: [
@@ -241,13 +188,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'forest-zombie-2',
       name: 'Mindless Zombie',
-      type: 'aggressive', // Changed to aggressive so they chase player
+      type: 'aggressive',
       health: 60,
       maxHealth: 60,
       attack: 8,
       defense: 4,
       speed: 4,
-      detectionRadius: 120, // Increased detection radius
+      detectionRadius: 120,
       patrolRadius: 100,
       experience: 25,
       loot: [
@@ -291,7 +238,7 @@ export const gameWorld: GameWorld = {
       attack: 10,
       defense: 2,
       speed: 6,
-      detectionRadius: 150, // Increased detection radius
+      detectionRadius: 150,
       patrolRadius: 150,
       experience: 20,
       loot: [
@@ -309,7 +256,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 900, y: 1800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/wolf.png', // Using the wolf image provided
+      sprite: '/wolf.png',
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -354,7 +301,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/wolf.png', // Using the wolf image
+      sprite: '/wolf.png',
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -419,7 +366,7 @@ export const gameWorld: GameWorld = {
     {
       id: 'plains-goblin-1',
       name: 'Goblin Scout',
-      type: 'aggressive', // Changed to aggressive
+      type: 'aggressive',
       health: 45,
       maxHealth: 45,
       attack: 7,
@@ -464,7 +411,7 @@ export const gameWorld: GameWorld = {
     {
       id: 'plains-goblin-2',
       name: 'Goblin Warrior',
-      type: 'aggressive', // Changed to aggressive
+      type: 'aggressive',
       health: 55,
       maxHealth: 55,
       attack: 9,
@@ -506,7 +453,7 @@ export const gameWorld: GameWorld = {
         }
       ]
     },
-    // Lake/Water Area Enemies
+    // Lake/Water Area Enemies - Lake Serpent with dragon snake image
     {
       id: 'water-serpent',
       name: 'Lake Serpent',
@@ -534,7 +481,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/dragonsnake copy.png', // Using the dragon snake image provided
       aiDifficulty: 'medium',
       moveSet: [
         {

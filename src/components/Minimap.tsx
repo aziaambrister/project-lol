@@ -13,25 +13,21 @@ const Minimap: React.FC = () => {
       <div className="bg-black/80 backdrop-blur-sm rounded-lg p-2 border border-white/20">
         <h3 className="text-white text-sm font-bold mb-2 text-center">Map</h3>
         <div 
-          className="relative bg-green-800 rounded border border-green-600"
+          className="relative bg-green-800 rounded border border-green-600 overflow-hidden"
           style={{ width: mapSize, height: mapSize }}
         >
+          {/* Map Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: 'url(/map copy copy.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          ></div>
+          
           {/* World Boundaries */}
           <div className="absolute inset-1 border border-green-400 rounded"></div>
-          
-          {/* Water Bodies */}
-          {currentWorld.waterBodies.map(water => (
-            <div
-              key={water.id}
-              className="absolute bg-blue-500 rounded"
-              style={{
-                left: (water.position.x * mapScale),
-                top: (water.position.y * mapScale),
-                width: (water.size.width * mapScale),
-                height: (water.size.height * mapScale)
-              }}
-            ></div>
-          ))}
           
           {/* Buildings */}
           {currentWorld.buildings.map(building => (
