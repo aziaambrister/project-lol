@@ -132,6 +132,61 @@ export const gameWorld: GameWorld = {
         items: [],
         exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
       }
+    },
+    // Trees for collision and hiding - positioned throughout the forest areas
+    {
+      id: 'tree-1',
+      name: 'Large Oak Tree',
+      type: 'house', // Using house type but not enterable
+      position: { x: 800, y: 1200 },
+      size: { width: 80, height: 100 },
+      enterable: false,
+      sprite: '🌳'
+    },
+    {
+      id: 'tree-2',
+      name: 'Pine Tree',
+      type: 'house',
+      position: { x: 1000, y: 1400 },
+      size: { width: 60, height: 90 },
+      enterable: false,
+      sprite: '🌲'
+    },
+    {
+      id: 'tree-3',
+      name: 'Ancient Tree',
+      type: 'house',
+      position: { x: 700, y: 1600 },
+      size: { width: 90, height: 110 },
+      enterable: false,
+      sprite: '🌳'
+    },
+    {
+      id: 'tree-4',
+      name: 'Forest Tree',
+      type: 'house',
+      position: { x: 1200, y: 1100 },
+      size: { width: 70, height: 95 },
+      enterable: false,
+      sprite: '🌲'
+    },
+    {
+      id: 'tree-5',
+      name: 'Old Oak',
+      type: 'house',
+      position: { x: 900, y: 1700 },
+      size: { width: 85, height: 105 },
+      enterable: false,
+      sprite: '🌳'
+    },
+    {
+      id: 'tree-6',
+      name: 'Tall Pine',
+      type: 'house',
+      position: { x: 1100, y: 1800 },
+      size: { width: 65, height: 100 },
+      enterable: false,
+      sprite: '🌲'
     }
   ],
   
@@ -192,10 +247,10 @@ export const gameWorld: GameWorld = {
   ],
   
   enemies: [
-    // Forest Area Enemies - positioned in forest areas
+    // Forest Area Enemies - renamed to Mindless Zombie
     {
-      id: 'forest-bandit-1',
-      name: 'Forest Bandit',
+      id: 'forest-zombie-1',
+      name: 'Mindless Zombie',
       type: 'patrol',
       health: 60,
       maxHealth: 60,
@@ -207,39 +262,39 @@ export const gameWorld: GameWorld = {
       experience: 25,
       loot: [
         {
-          id: 'bandit-coin',
-          name: 'Stolen Coin',
+          id: 'zombie-coin',
+          name: 'Rotting Coin',
           type: 'material',
           rarity: 'common',
           value: 10,
           icon: '🪙',
-          description: 'A coin stolen by bandits'
+          description: 'A coin found on a zombie'
         }
       ],
       position: { x: 800, y: 1000 }, // Forest area
       patrolCenter: { x: 800, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
       aiDifficulty: 'easy',
       moveSet: [
         {
-          id: 'bandit-slash',
-          name: 'Rusty Blade',
+          id: 'zombie-claw',
+          name: 'Rotting Claw',
           type: 'basic-attack',
           damage: 12,
           staminaCost: 10,
           cooldown: 0,
           currentCooldown: 0,
           range: 30,
-          description: 'A crude sword attack',
-          animation: 'slash'
+          description: 'A diseased claw attack',
+          animation: 'claw'
         }
       ]
     },
     {
-      id: 'forest-bandit-2',
-      name: 'Forest Bandit',
+      id: 'forest-zombie-2',
+      name: 'Mindless Zombie',
       type: 'patrol',
       health: 60,
       maxHealth: 60,
@@ -251,33 +306,33 @@ export const gameWorld: GameWorld = {
       experience: 25,
       loot: [
         {
-          id: 'bandit-coin',
-          name: 'Stolen Coin',
+          id: 'zombie-coin',
+          name: 'Rotting Coin',
           type: 'material',
           rarity: 'common',
           value: 10,
           icon: '🪙',
-          description: 'A coin stolen by bandits'
+          description: 'A coin found on a zombie'
         }
       ],
       position: { x: 1200, y: 1500 }, // Forest area
       patrolCenter: { x: 1200, y: 1500 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
       aiDifficulty: 'easy',
       moveSet: [
         {
-          id: 'bandit-slash',
-          name: 'Rusty Blade',
+          id: 'zombie-claw',
+          name: 'Rotting Claw',
           type: 'basic-attack',
           damage: 12,
           staminaCost: 10,
           cooldown: 0,
           currentCooldown: 0,
           range: 30,
-          description: 'A crude sword attack',
-          animation: 'slash'
+          description: 'A diseased claw attack',
+          animation: 'claw'
         }
       ]
     },

@@ -127,6 +127,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
+      // Check for tree collision
+      const isCollidingWithTree = state.currentWorld.buildings.some(building => {
+        if (!building.sprite.includes('🌳') && !building.sprite.includes('🌲')) return false;
+        
+        const playerRadius = 25; // Player collision radius
+        const treeLeft = building.position.x;
+        const treeRight = building.position.x + building.size.width;
+        const treeTop = building.position.y;
+        const treeBottom = building.position.y + building.size.height;
+        
+        return (
+          newX + playerRadius > treeLeft &&
+          newX - playerRadius < treeRight &&
+          newY + playerRadius > treeTop &&
+          newY - playerRadius < treeBottom
+        );
+      });
+      
+      // If colliding with tree, don't move
+      if (isCollidingWithTree) {
+        return state;
+      }
+      
       // Check for water collision
       const isInWater = state.currentWorld.waterBodies.some(water => 
         newX >= water.position.x && 
