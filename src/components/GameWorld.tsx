@@ -14,6 +14,7 @@ const GameWorld: React.FC = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [waterSplashes, setWaterSplashes] = useState<Array<{id: number, x: number, y: number, timestamp: number}>>([]);
+  const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
   // Handle keyboard input
   useEffect(() => {
@@ -61,7 +62,21 @@ const GameWorld: React.FC = () => {
       if (key === '2') {
         const nearestEnemy = findNearestEnemy();
         if (nearestEnemy) {
-          performAttack('shuriken-throw', nearestEnemy.id);
+          // Create shuriken animation
+          const newShuriken = {
+            id: Date.now(),
+            x: state.player.position.x,
+            y: state.player.position.y,
+            targetX: nearestEnemy.position.x,
+            targetY: nearestEnemy.position.y,
+            timestamp: Date.now()
+          };
+          setShurikens(prev => [...prev, newShuriken]);
+          
+          // Perform the attack after a short delay for animation
+          setTimeout(() => {
+            performAttack('shuriken-throw', nearestEnemy.id);
+          }, 300);
         }
       }
       if (key === '3') performAttack('dodge-roll');
@@ -89,7 +104,7 @@ const GameWorld: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu]);
+  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu, state.player.position]);
 
   // Check if map image loads
   useEffect(() => {
@@ -143,11 +158,12 @@ const GameWorld: React.FC = () => {
     return () => clearInterval(moveInterval);
   }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, state.player.isSwimming, state.player.position, lastMoveTime, showEscMenu]);
 
-  // Clean up water splashes
+  // Clean up water splashes and shurikens
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
       const now = Date.now();
       setWaterSplashes(prev => prev.filter(splash => now - splash.timestamp < 1000));
+      setShurikens(prev => prev.filter(shuriken => now - shuriken.timestamp < 1000));
     }, 100);
     
     return () => clearInterval(cleanupInterval);
@@ -227,7 +243,7 @@ const GameWorld: React.FC = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          imageRendering: 'pixelated', // Keeps pixel art crisp
+          imageRendering: 'pixelated',
           minWidth: '100vw',
           minHeight: '100vh'
         }}
@@ -258,7 +274,7 @@ const GameWorld: React.FC = () => {
             height: water.size.height,
             background: 'linear-gradient(45deg, #3b82f6, #1d4ed8, #1e40af, #1e3a8a)',
             boxShadow: 'inset 0 0 40px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.4)',
-            opacity: 0.8 // Make water slightly transparent to blend with map
+            opacity: 0.8
           }}
         >
           {/* Enhanced water animation effects */}
@@ -301,6 +317,32 @@ const GameWorld: React.FC = () => {
           <div className="absolute inset-2 border border-blue-300 rounded-full animate-ping opacity-20" style={{ animationDelay: '0.2s' }}></div>
         </div>
       ))}
+
+      {/* Shuriken Animation */}
+      {shurikens.map(shuriken => {
+        const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1); // 300ms animation
+        const currentX = shuriken.x + (shuriken.targetX - shuriken.x) * progress;
+        const currentY = shuriken.y + (shuriken.targetY - shuriken.y) * progress;
+        
+        return (
+          <div
+            key={shuriken.id}
+            className="absolute pointer-events-none z-30"
+            style={{
+              left: currentX - cameraX - 8,
+              top: currentY - cameraY - 8,
+              transform: `rotate(${progress * 720}deg)`, // Spinning effect
+              transition: 'none'
+            }}
+          >
+            <img 
+              src="/shuriken.png" 
+              alt="Shuriken" 
+              className="w-4 h-4 object-contain"
+            />
+          </div>
+        );
+      })}
 
       {/* Buildings with enhanced RPG styling */}
       {state.currentWorld.buildings.map(building => (

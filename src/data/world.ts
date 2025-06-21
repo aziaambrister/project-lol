@@ -3,9 +3,9 @@ import { GameWorld, Enemy, Building, WaterBody, NPC, Item } from '../types/game'
 export const gameWorld: GameWorld = {
   id: 'main-world',
   name: 'Realm of Fighters',
-  size: { width: 4000, height: 4000 }, // Increased size to ensure full coverage
-  terrain: [], // Will be generated procedurally
-  spawnPoint: { x: 200, y: 3800 }, // Bottom left of the map
+  size: { width: 4000, height: 4000 },
+  terrain: [],
+  spawnPoint: { x: 200, y: 3800 },
   
   buildings: [
     // Forest Area Buildings - positioned to match the map
@@ -13,7 +13,7 @@ export const gameWorld: GameWorld = {
       id: 'forest-cabin-1',
       name: 'Forest Cabin',
       type: 'house',
-      position: { x: 600, y: 800 }, // Top left house in forest
+      position: { x: 600, y: 800 },
       size: { width: 120, height: 90 },
       enterable: true,
       sprite: '🏠',
@@ -28,7 +28,7 @@ export const gameWorld: GameWorld = {
       id: 'forest-cabin-2',
       name: 'Forest Cabin',
       type: 'house',
-      position: { x: 600, y: 2200 }, // Bottom left house in forest
+      position: { x: 600, y: 2200 },
       size: { width: 120, height: 90 },
       enterable: true,
       sprite: '🏠',
@@ -44,7 +44,7 @@ export const gameWorld: GameWorld = {
       id: 'snow-cabin',
       name: 'Snow Cabin',
       type: 'house',
-      position: { x: 2800, y: 1200 }, // Snow area cabin
+      position: { x: 2800, y: 1200 },
       size: { width: 120, height: 90 },
       enterable: true,
       sprite: '🏠',
@@ -141,7 +141,7 @@ export const gameWorld: GameWorld = {
     {
       id: 'central-lake',
       type: 'lake',
-      position: { x: 2400, y: 2800 }, // Bottom right lake from the map
+      position: { x: 2400, y: 2800 },
       size: { width: 800, height: 600 },
       swimmable: true,
       currentStrength: 0.5
@@ -197,13 +197,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'forest-zombie-1',
       name: 'Mindless Zombie',
-      type: 'patrol',
+      type: 'aggressive', // Changed to aggressive so they chase player
       health: 60,
       maxHealth: 60,
       attack: 8,
       defense: 4,
       speed: 4,
-      detectionRadius: 80,
+      detectionRadius: 120, // Increased detection radius
       patrolRadius: 100,
       experience: 25,
       loot: [
@@ -217,11 +217,11 @@ export const gameWorld: GameWorld = {
           description: 'A coin found on a zombie'
         }
       ],
-      position: { x: 800, y: 1000 }, // Forest area
+      position: { x: 800, y: 1000 },
       patrolCenter: { x: 800, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/zombie.png', // Fixed sprite path to use the zombie image
+      sprite: '/zombie.png',
       aiDifficulty: 'easy',
       moveSet: [
         {
@@ -241,13 +241,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'forest-zombie-2',
       name: 'Mindless Zombie',
-      type: 'patrol',
+      type: 'aggressive', // Changed to aggressive so they chase player
       health: 60,
       maxHealth: 60,
       attack: 8,
       defense: 4,
       speed: 4,
-      detectionRadius: 80,
+      detectionRadius: 120, // Increased detection radius
       patrolRadius: 100,
       experience: 25,
       loot: [
@@ -261,11 +261,11 @@ export const gameWorld: GameWorld = {
           description: 'A coin found on a zombie'
         }
       ],
-      position: { x: 1200, y: 1500 }, // Forest area
+      position: { x: 1200, y: 1500 },
       patrolCenter: { x: 1200, y: 1500 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/zombie.png', // Fixed sprite path to use the zombie image
+      sprite: '/zombie.png',
       aiDifficulty: 'easy',
       moveSet: [
         {
@@ -291,7 +291,7 @@ export const gameWorld: GameWorld = {
       attack: 10,
       defense: 2,
       speed: 6,
-      detectionRadius: 100,
+      detectionRadius: 150, // Increased detection radius
       patrolRadius: 150,
       experience: 20,
       loot: [
@@ -305,11 +305,11 @@ export const gameWorld: GameWorld = {
           description: 'Thick fur from a wild wolf'
         }
       ],
-      position: { x: 900, y: 1800 }, // Forest area
+      position: { x: 900, y: 1800 },
       patrolCenter: { x: 900, y: 1800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/wolf.png', // Using the wolf image provided
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -336,7 +336,7 @@ export const gameWorld: GameWorld = {
       attack: 12,
       defense: 4,
       speed: 7,
-      detectionRadius: 110,
+      detectionRadius: 160,
       patrolRadius: 160,
       experience: 30,
       loot: [
@@ -350,11 +350,11 @@ export const gameWorld: GameWorld = {
           description: 'Thick white fur from a snow wolf'
         }
       ],
-      position: { x: 2600, y: 800 }, // Snow area
+      position: { x: 2600, y: 800 },
       patrolCenter: { x: 2600, y: 800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/2062324/pexels-photo-2062324.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/wolf.png', // Using the wolf image
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -380,7 +380,7 @@ export const gameWorld: GameWorld = {
       attack: 18,
       defense: 10,
       speed: 4,
-      detectionRadius: 100,
+      detectionRadius: 140,
       patrolRadius: 140,
       experience: 60,
       loot: [
@@ -394,7 +394,7 @@ export const gameWorld: GameWorld = {
           description: 'Sharp claw from an ice bear'
         }
       ],
-      position: { x: 3000, y: 1000 }, // Snow area
+      position: { x: 3000, y: 1000 },
       patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
@@ -419,13 +419,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'plains-goblin-1',
       name: 'Goblin Scout',
-      type: 'patrol',
+      type: 'aggressive', // Changed to aggressive
       health: 45,
       maxHealth: 45,
       attack: 7,
       defense: 3,
       speed: 7,
-      detectionRadius: 70,
+      detectionRadius: 100,
       patrolRadius: 140,
       experience: 18,
       loot: [
@@ -440,7 +440,7 @@ export const gameWorld: GameWorld = {
           description: 'A small, rusty blade'
         }
       ],
-      position: { x: 1800, y: 2000 }, // Open grassland
+      position: { x: 1800, y: 2000 },
       patrolCenter: { x: 1800, y: 2000 },
       state: 'patrol',
       lastAction: 0,
@@ -464,13 +464,13 @@ export const gameWorld: GameWorld = {
     {
       id: 'plains-goblin-2',
       name: 'Goblin Warrior',
-      type: 'patrol',
+      type: 'aggressive', // Changed to aggressive
       health: 55,
       maxHealth: 55,
       attack: 9,
       defense: 4,
       speed: 6,
-      detectionRadius: 75,
+      detectionRadius: 110,
       patrolRadius: 120,
       experience: 25,
       loot: [
@@ -485,7 +485,7 @@ export const gameWorld: GameWorld = {
           description: 'A crude goblin blade'
         }
       ],
-      position: { x: 2000, y: 1600 }, // Open grassland
+      position: { x: 2000, y: 1600 },
       patrolCenter: { x: 2000, y: 1600 },
       state: 'patrol',
       lastAction: 0,
@@ -516,7 +516,7 @@ export const gameWorld: GameWorld = {
       attack: 14,
       defense: 6,
       speed: 6,
-      detectionRadius: 120,
+      detectionRadius: 150,
       patrolRadius: 100,
       experience: 45,
       loot: [
@@ -530,7 +530,7 @@ export const gameWorld: GameWorld = {
           description: 'A shimmering scale from a lake serpent'
         }
       ],
-      position: { x: 2600, y: 3000 }, // Near the large lake
+      position: { x: 2600, y: 3000 },
       patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
@@ -571,8 +571,8 @@ export const gameWorld: GameWorld = {
   ],
   
   dayNightCycle: {
-    currentTime: 12, // Noon
-    dayLength: 300, // 5 minutes real time = 24 hours game time
+    currentTime: 12,
+    dayLength: 300,
     lightLevel: 1.0
   },
   

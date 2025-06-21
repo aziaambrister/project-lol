@@ -60,15 +60,19 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     return 'from-red-600 to-red-400';
   };
 
-  // Check if this is a mindless zombie to apply special styling
+  // Check enemy type for special sizing
   const isMindlessZombie = enemy.name === 'Mindless Zombie';
-  const enemySize = isMindlessZombie ? 30 : 12; // 50% bigger: 20 * 1.5 = 30
+  const isWildWolf = enemy.name === 'Wild Wolf';
+  
+  // Zombie: 50% bigger than before (30 * 1.5 = 45)
+  // Wolf: Large size to match the image
+  const enemySize = isMindlessZombie ? 45 : isWildWolf ? 20 : 12;
 
   return (
     <div 
       className="absolute z-15 cursor-pointer transition-all duration-200"
       style={{
-        left: enemy.position.x - cameraX - (enemySize * 2), // Adjust positioning for bigger size
+        left: enemy.position.x - cameraX - (enemySize * 2),
         top: enemy.position.y - cameraY - (enemySize * 2)
       }}
       onClick={handleEnemyClick}
