@@ -5,17 +5,30 @@ import Enemy from './Enemy';
 import Building from './Building';
 import GameHUD from './GameHUD';
 import Minimap from './Minimap';
+import EscapeMenu from './EscapeMenu';
 
 const GameWorld: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, enterBuilding } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [lastMoveTime, setLastMoveTime] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [showEscMenu, setShowEscMenu] = useState(false);
+  const [waterSplashes, setWaterSplashes] = useState<Array<{id: number, x: number, y: number, timestamp: number}>>([]);
 
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      // ESC key to toggle menu
+      if (key === 'escape') {
+        e.preventDefault();
+        setShowEscMenu(!showEscMenu);
+        return;
+      }
+      
+      // Don't process other keys if ESC menu is open
+      if (showEscMenu) return;
       
       // Movement keys
       if (['w', 'a', 's', 'd'].includes(key)) {
@@ -71,7 +84,7 @@ const GameWorld: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [state.player.character.moveSet, performAttack, enterBuilding]);
+  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu]);
 
   // Check if map image loads
   useEffect(() => {
@@ -91,7 +104,7 @@ const GameWorld: React.FC = () => {
   useEffect(() => {
     const moveInterval = setInterval(() => {
       const now = Date.now();
-      if (keysPressed.size === 0) {
+      if (keysPressed.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
         }
@@ -110,13 +123,40 @@ const GameWorld: React.FC = () => {
       else if (keysPressed.has('d')) direction = 'right';
       
       if (direction) {
+        const wasInWater = state.player.isSwimming;
         movePlayer(direction);
+        
+        // Check if player just entered water and create splash
+        if (!wasInWater && state.player.isSwimming) {
+          createWaterSplash(state.player.position.x, state.player.position.y);
+        }
+        
         setLastMoveTime(now);
       }
     }, 16); // 60 FPS
     
     return () => clearInterval(moveInterval);
-  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime]);
+  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, state.player.isSwimming, state.player.position, lastMoveTime, showEscMenu]);
+
+  // Clean up water splashes
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      setWaterSplashes(prev => prev.filter(splash => now - splash.timestamp < 1000));
+    }, 100);
+    
+    return () => clearInterval(cleanupInterval);
+  }, []);
+
+  const createWaterSplash = (x: number, y: number) => {
+    const newSplash = {
+      id: Date.now() + Math.random(),
+      x,
+      y,
+      timestamp: Date.now()
+    };
+    setWaterSplashes(prev => [...prev, newSplash]);
+  };
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
@@ -230,6 +270,33 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
+      {/* Water Splash Effects */}
+      {waterSplashes.map(splash => (
+        <div
+          key={splash.id}
+          className="absolute pointer-events-none z-25"
+          style={{
+            left: splash.x - cameraX - 20,
+            top: splash.y - cameraY - 20,
+            width: 40,
+            height: 40
+          }}
+        >
+          {/* Multiple splash particles */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-ping opacity-80"></div>
+          </div>
+          <div className="absolute top-2 left-6 w-2 h-2 bg-blue-300 rounded-full animate-ping opacity-60" style={{ animationDelay: '0.1s' }}></div>
+          <div className="absolute bottom-3 right-5 w-2 h-2 bg-blue-300 rounded-full animate-ping opacity-60" style={{ animationDelay: '0.2s' }}></div>
+          <div className="absolute top-6 right-2 w-1.5 h-1.5 bg-blue-200 rounded-full animate-ping opacity-40" style={{ animationDelay: '0.3s' }}></div>
+          <div className="absolute bottom-1 left-3 w-1.5 h-1.5 bg-blue-200 rounded-full animate-ping opacity-40" style={{ animationDelay: '0.4s' }}></div>
+          
+          {/* Ripple effect */}
+          <div className="absolute inset-0 border-2 border-blue-400 rounded-full animate-ping opacity-30"></div>
+          <div className="absolute inset-2 border border-blue-300 rounded-full animate-ping opacity-20" style={{ animationDelay: '0.2s' }}></div>
+        </div>
+      ))}
+
       {/* Buildings with enhanced RPG styling */}
       {state.currentWorld.buildings.map(building => (
         <Building key={building.id} building={building} cameraX={cameraX} cameraY={cameraY} />
@@ -289,22 +356,30 @@ const GameWorld: React.FC = () => {
       )}
 
       {/* Game HUD */}
-      <GameHUD />
+      {!showEscMenu && <GameHUD />}
 
       {/* Minimap */}
-      {state.ui.showMinimap && <Minimap />}
+      {state.ui.showMinimap && !showEscMenu && <Minimap />}
 
       {/* Enhanced Controls Help */}
-      <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
-        <div className="space-y-2">
-          <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-          <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
-          <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
-          <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
-          <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
-          <div>⚔️ <span className="text-yellow-300">1-4</span> - Special Moves</div>
+      {!showEscMenu && (
+        <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
+          <div className="space-y-2">
+            <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
+            <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
+            <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
+            <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
+            <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
+            <div>⚔️ <span className="text-yellow-300">1-4</span> - Special Moves</div>
+            <div>⚙️ <span className="text-yellow-300">ESC</span> - Menu</div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ESC Menu */}
+      {showEscMenu && (
+        <EscapeMenu onClose={() => setShowEscMenu(false)} />
+      )}
 
       {/* CSS for enhanced animations */}
       <style jsx>{`

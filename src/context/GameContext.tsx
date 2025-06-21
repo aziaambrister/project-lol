@@ -127,15 +127,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
-      // Check for tree collision
+      // Enhanced tree collision detection
       const isCollidingWithTree = state.currentWorld.buildings.some(building => {
         if (!building.sprite.includes('🌳') && !building.sprite.includes('🌲')) return false;
         
         const playerRadius = 25; // Player collision radius
-        const treeLeft = building.position.x;
-        const treeRight = building.position.x + building.size.width;
-        const treeTop = building.position.y;
-        const treeBottom = building.position.y + building.size.height;
+        const treeLeft = building.position.x - 10; // Add some padding
+        const treeRight = building.position.x + building.size.width + 10;
+        const treeTop = building.position.y - 10;
+        const treeBottom = building.position.y + building.size.height + 10;
         
         return (
           newX + playerRadius > treeLeft &&
@@ -916,7 +916,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 function useGame() {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new Error('useGame must be used within a GameProvider');
+    throw new error('useGame must be used within a GameProvider');
   }
   return context;
 }
