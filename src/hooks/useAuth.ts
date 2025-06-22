@@ -79,6 +79,7 @@ export function useAuth() {
     loading: authState.loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    supabase // Export the supabase client
   };
 }

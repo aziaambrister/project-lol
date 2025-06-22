@@ -11,7 +11,7 @@ interface ShopProps {
 
 const Shop: React.FC<ShopProps> = ({ onClose }) => {
   const { state, purchaseItem } = useGame();
-  const { user } = useAuth();
+  const { user, supabase } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<'weapons' | 'armor' | 'consumables' | 'upgrades' | 'premium'>('weapons');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,10 +129,17 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     setCheckoutError(null);
 
     try {
+      // Get the current user's session to obtain the access token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.access_token) {
+        throw new Error('Failed to authenticate user');
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
