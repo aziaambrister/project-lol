@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Sword, Shield, Zap, Crown, Star, Gamepad2, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface WelcomePageProps {
   onEnter: () => void;
@@ -15,13 +16,15 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     password: ''
   });
   const [signupData, setSignupData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  const { user, loading, signUp, signIn, signOut } = useAuth();
 
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
@@ -49,51 +52,62 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     setShowLogin(false);
     setShowSignup(false);
     setLoginData({ email: '', password: '' });
-    setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
+    setSignupData({ email: '', password: '', confirmPassword: '' });
     setAuthError('');
     setAuthSuccess('');
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    setIsAuthLoading(true);
     
     // Basic validation
     if (!loginData.email || !loginData.password) {
       setAuthError('Please fill in all fields');
+      setIsAuthLoading(false);
       return;
     }
 
-    // Simulate login process
-    console.log('Logging in with:', loginData);
-    
-    // For demo purposes, accept any email/password combination
-    setAuthSuccess('Login successful! Welcome back!');
-    
-    setTimeout(() => {
-      closeModals();
-      // You could store user session here
-      localStorage.setItem('userEmail', loginData.email);
-    }, 1500);
+    try {
+      const { error } = await signIn(loginData.email, loginData.password);
+      
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setAuthSuccess('Login successful! Welcome back!');
+        setTimeout(() => {
+          closeModals();
+        }, 1500);
+      }
+    } catch (error: any) {
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsAuthLoading(false);
+    }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    setIsAuthLoading(true);
     
     // Basic validation
-    if (!signupData.username || !signupData.email || !signupData.password || !signupData.confirmPassword) {
+    if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
       setAuthError('Please fill in all fields');
+      setIsAuthLoading(false);
       return;
     }
 
     if (signupData.password !== signupData.confirmPassword) {
       setAuthError('Passwords do not match');
+      setIsAuthLoading(false);
       return;
     }
 
     if (signupData.password.length < 6) {
       setAuthError('Password must be at least 6 characters long');
+      setIsAuthLoading(false);
       return;
     }
 
@@ -101,49 +115,70 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(signupData.email)) {
       setAuthError('Please enter a valid email address');
+      setIsAuthLoading(false);
       return;
     }
 
-    // Simulate account creation
-    console.log('Creating account for:', signupData);
-    
-    setAuthSuccess(`Account created successfully for ${signupData.username}! You can now login.`);
-    
-    // Store user data (in a real app, this would be sent to a server)
-    localStorage.setItem('registeredUsers', JSON.stringify([
-      ...(JSON.parse(localStorage.getItem('registeredUsers') || '[]')),
-      {
-        username: signupData.username,
-        email: signupData.email,
-        password: signupData.password // In real app, this would be hashed
+    try {
+      const { error } = await signUp(signupData.email, signupData.password);
+      
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setAuthSuccess('Account created successfully! You are now logged in.');
+        setTimeout(() => {
+          closeModals();
+        }, 2000);
       }
-    ]));
-    
-    setTimeout(() => {
-      setShowSignup(false);
-      setShowLogin(true);
-      setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
-    }, 2000);
+    } catch (error: any) {
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 via-indigo-900 to-black text-white relative overflow-hidden">
       {/* Login/Signup Buttons */}
       <div className="absolute top-4 right-4 z-50 flex space-x-3">
-        <button
-          onClick={handleLoginClick}
-          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
-        >
-          <LogIn size={18} className="mr-2" />
-          Login
-        </button>
-        <button
-          onClick={handleSignupClick}
-          className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
-        >
-          <UserPlus size={18} className="mr-2" />
-          Sign Up
-        </button>
+        {user ? (
+          <div className="flex items-center space-x-3">
+            <div className="text-sm">
+              <div className="text-white font-bold">Welcome, {user.email}</div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={handleLoginClick}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
+            >
+              <LogIn size={18} className="mr-2" />
+              Login
+            </button>
+            <button
+              onClick={handleSignupClick}
+              className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
+            >
+              <UserPlus size={18} className="mr-2" />
+              Sign Up
+            </button>
+          </>
+        )}
       </div>
 
       {/* Login Modal */}
@@ -174,6 +209,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Enter your email"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
               <div>
@@ -185,19 +221,22 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Enter your password"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-bold transition-colors"
+                  disabled={isAuthLoading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Login
+                  {isAuthLoading ? 'Logging in...' : 'Login'}
                 </button>
                 <button
                   type="button"
                   onClick={closeModals}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg font-bold transition-colors"
+                  disabled={isAuthLoading}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -210,7 +249,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   setShowLogin(false);
                   setShowSignup(true);
                 }}
-                className="text-blue-400 hover:text-blue-300 text-sm"
+                disabled={isAuthLoading}
+                className="text-blue-400 hover:text-blue-300 text-sm disabled:opacity-50"
               >
                 Don't have an account? Sign up here
               </button>
@@ -239,17 +279,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Username</label>
-                <input
-                  type="text"
-                  value={signupData.username}
-                  onChange={(e) => setSignupData({...signupData, username: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
-                  placeholder="Choose a username"
-                  required
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
@@ -258,6 +287,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
                   placeholder="Enter your email"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
               <div>
@@ -269,6 +299,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
                   placeholder="Create a password (min 6 characters)"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
               <div>
@@ -280,19 +311,22 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
                   placeholder="Confirm your password"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-500 py-2 rounded-lg font-bold transition-colors"
+                  disabled={isAuthLoading}
+                  className="flex-1 bg-green-600 hover:bg-green-500 py-2 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Create Account
+                  {isAuthLoading ? 'Creating Account...' : 'Create Account'}
                 </button>
                 <button
                   type="button"
                   onClick={closeModals}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg font-bold transition-colors"
+                  disabled={isAuthLoading}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -305,7 +339,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   setShowSignup(false);
                   setShowLogin(true);
                 }}
-                className="text-green-400 hover:text-green-300 text-sm"
+                disabled={isAuthLoading}
+                className="text-green-400 hover:text-green-300 text-sm disabled:opacity-50"
               >
                 Already have an account? Login here
               </button>

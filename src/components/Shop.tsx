@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { ArrowLeft, Coins, ShoppingCart, Star, CreditCard, Crown, Zap } from 'lucide-react';
 import { allItems } from '../data/items';
+import { stripeProducts } from '../stripe-config';
+import { useAuth } from '../hooks/useAuth';
 
 interface ShopProps {
   onClose: () => void;
@@ -9,10 +11,11 @@ interface ShopProps {
 
 const Shop: React.FC<ShopProps> = ({ onClose }) => {
   const { state, purchaseItem } = useGame();
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<'weapons' | 'armor' | 'consumables' | 'upgrades' | 'premium'>('weapons');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [selectedPremiumItem, setSelectedPremiumItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   
   const { player } = state;
   
@@ -89,70 +92,22 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         price: 160
       }
     ],
-    premium: [
-      // Coin Packages
-      {
-        id: 'coins-1000',
-        name: '1,000 Coins',
-        description: 'Get 1,000 coins instantly to upgrade your gear!',
-        type: 'premium' as const,
-        value: 1000,
-        rarity: 'common' as const,
-        usable: true,
-        icon: '🪙',
-        realPrice: '$1.99',
-        coins: 1000
-      },
-      {
-        id: 'coins-5000',
-        name: '5,000 Coins',
-        description: 'Get 5,000 coins instantly - best value!',
-        type: 'premium' as const,
-        value: 5000,
-        rarity: 'uncommon' as const,
-        usable: true,
-        icon: '💰',
-        realPrice: '$4.99',
-        coins: 5000
-      },
-      {
-        id: 'coins-10000',
-        name: '10,000 Coins',
-        description: 'Get 10,000 coins instantly - ultimate package!',
-        type: 'premium' as const,
-        value: 10000,
-        rarity: 'rare' as const,
-        usable: true,
-        icon: '💎',
-        realPrice: '$9.99',
-        coins: 10000
-      },
-      // Founder's Bundle
-      {
-        id: 'founders-bundle',
-        name: "Founder's Glory Bundle",
-        description: 'Exclusive founder character with 400 health + legendary Founder\'s Scepterblade with 50 damage!',
-        type: 'premium' as const,
-        value: 0,
-        rarity: 'legendary' as const,
-        usable: true,
-        icon: '👑',
-        realPrice: '$9.99',
-        bundle: true,
-        includes: [
-          {
-            name: 'The Founder',
-            description: 'Exclusive founder character with 400 health',
-            icon: '👑'
-          },
-          {
-            name: "Founder's Scepterblade",
-            description: 'Legendary weapon with 50 damage',
-            icon: '⚔️'
-          }
-        ]
-      }
-    ]
+    premium: stripeProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      type: 'premium' as const,
+      value: product.coins || 0,
+      rarity: product.bundle ? 'legendary' as const : 'rare' as const,
+      usable: true,
+      icon: product.bundle ? '👑' : '🪙',
+      realPrice: product.price,
+      coins: product.coins,
+      bundle: product.bundle,
+      includes: product.includes,
+      priceId: product.priceId,
+      mode: product.mode
+    }))
   };
   
   const currentItems = shopItems[selectedCategory];
@@ -164,25 +119,48 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     }
   };
 
-  const handlePremiumPurchase = (item: any) => {
-    setSelectedPremiumItem(item);
-    setShowPayment(true);
-  };
-
-  const handlePaymentComplete = () => {
-    // Simulate payment completion
-    if (selectedPremiumItem) {
-      if (selectedPremiumItem.coins) {
-        // Add coins to player
-        // This would integrate with real payment processing
-        alert(`Payment successful! ${selectedPremiumItem.coins} coins added to your account.`);
-      } else if (selectedPremiumItem.bundle) {
-        // Add founder character and weapon
-        alert('Payment successful! Founder\'s Glory Bundle unlocked!');
-      }
+  const handlePremiumPurchase = async (item: any) => {
+    if (!user) {
+      setCheckoutError('Please log in to make purchases');
+      return;
     }
-    setShowPayment(false);
-    setSelectedPremiumItem(null);
+
+    setIsLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          price_id: item.priceId,
+          mode: item.mode,
+          success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}/shop`,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
+      
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      setCheckoutError(error.message || 'Failed to start checkout process');
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const getRarityColor = (rarity: string) => {
@@ -268,20 +246,34 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 <span>Support development</span>
               </div>
             </div>
+            {!user && (
+              <div className="mt-4 bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3">
+                <div className="text-yellow-400 font-bold text-sm">⚠️ Login Required</div>
+                <div className="text-white text-xs">Please log in to purchase premium items</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {checkoutError && (
+          <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+            <div className="text-red-400 font-bold">Payment Error</div>
+            <div className="text-white text-sm">{checkoutError}</div>
           </div>
         )}
         
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentItems.map((item) => {
-            const canAfford = selectedCategory === 'premium' ? true : player.currency >= item.price;
+            const canAfford = selectedCategory === 'premium' ? !!user : player.currency >= item.price;
             const isSelected = selectedItem === item.id;
             const isPremium = selectedCategory === 'premium';
             
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800 rounded-lg p-6 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
+                className={`bg-gray-800 rounded-lg p-6 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
                   isSelected ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 
                   canAfford ? 'border-gray-600 hover:border-gray-500' : 'border-red-600 opacity-60'
                 } ${isPremium ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30' : ''}`}
@@ -370,86 +362,27 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                         handlePurchase(item, item.price);
                       }
                     }}
-                    disabled={!canAfford && !isPremium}
+                    disabled={(!canAfford && !isPremium) || (isPremium && isLoading)}
                     className={`px-4 py-2 rounded-lg font-bold transition-all duration-300 flex items-center ${
                       isPremium
-                        ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
+                        ? canAfford
+                          ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
+                          : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                         : canAfford
                         ? 'bg-green-600 hover:bg-green-500 text-white'
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
                     <ShoppingCart size={16} className="mr-2" />
-                    {isPremium ? 'Buy Now' : canAfford ? 'Buy' : 'Too Expensive'}
+                    {isLoading && isPremium ? 'Processing...' : 
+                     isPremium ? (canAfford ? 'Buy Now' : 'Login Required') : 
+                     canAfford ? 'Buy' : 'Too Expensive'}
                   </button>
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* Payment Modal */}
-        {showPayment && selectedPremiumItem && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-xl p-8 w-96 border border-gray-600">
-              <h2 className="text-2xl font-bold mb-6 text-center">Complete Purchase</h2>
-              
-              <div className="text-center mb-6">
-                <div className="text-6xl mb-4">{selectedPremiumItem.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{selectedPremiumItem.name}</h3>
-                <div className="text-2xl font-bold text-green-400">{selectedPremiumItem.realPrice}</div>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Card Number</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
-                    placeholder="1234 5678 9012 3456"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Expiry</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
-                      placeholder="MM/YY"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">CVV</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
-                      placeholder="123"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={handlePaymentComplete}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 py-3 rounded-lg font-bold transition-colors"
-                >
-                  Complete Purchase
-                </button>
-                <button
-                  onClick={() => setShowPayment(false)}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-3 rounded-lg font-bold transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-
-              <div className="mt-4 text-xs text-gray-400 text-center">
-                🔒 Secure payment processing • 30-day money back guarantee
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Shop Info */}
         <div className="mt-12 bg-gray-800/50 rounded-lg p-6 border border-gray-600">
