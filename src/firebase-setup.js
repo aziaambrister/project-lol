@@ -12,8 +12,8 @@ const firebaseConfig = {
   projectId: "d-game-78982",
   storageBucket: "d-game-78982.firebasestorage.app",
   messagingSenderId: "562825312065",
-  appId: "1:562825312065:web:e70de88bfcf714269e13c0",
-  measurementId: "G-FWC8BK37YT"
+  appId: "1:562825312065:web:e2f6b003fd1c02899e13c0",
+  measurementId: "G-PX9PD7THS4"
 };
 
 // Initialize Firebase
