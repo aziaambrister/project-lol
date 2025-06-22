@@ -16,6 +16,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     password: ''
   });
   const [signupData, setSignupData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -52,7 +53,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     setShowLogin(false);
     setShowSignup(false);
     setLoginData({ email: '', password: '' });
-    setSignupData({ email: '', password: '', confirmPassword: '' });
+    setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
     setAuthError('');
     setAuthSuccess('');
   };
@@ -93,7 +94,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     setIsAuthLoading(true);
     
     // Basic validation
-    if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
+    if (!signupData.username || !signupData.email || !signupData.password || !signupData.confirmPassword) {
       setAuthError('Please fill in all fields');
       setIsAuthLoading(false);
       return;
@@ -111,6 +112,12 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
       return;
     }
 
+    if (signupData.username.length < 3) {
+      setAuthError('Username must be at least 3 characters long');
+      setIsAuthLoading(false);
+      return;
+    }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(signupData.email)) {
@@ -120,7 +127,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     }
 
     try {
-      const { error } = await signUp(signupData.email, signupData.password);
+      const { error } = await signUp(signupData.email, signupData.password, signupData.username);
       
       if (error) {
         setAuthError(error.message);
@@ -278,6 +285,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             )}
             
             <form onSubmit={handleSignupSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Username</label>
+                <input
+                  type="text"
+                  value={signupData.username}
+                  onChange={(e) => setSignupData({...signupData, username: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
+                  placeholder="Choose a username (min 3 characters)"
+                  required
+                  disabled={isAuthLoading}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
                 <input
@@ -450,7 +469,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         {/* Game Stats */}
         <div className="flex flex-wrap justify-center gap-8 mb-16">
           <div className="bg-black/40 backdrop-blur-sm rounded-xl px-6 py-4 border border-yellow-400/30">
-            <div className="text-3xl font-bold text-yellow-400">4+</div>
+            <div className="text-3xl font-bold text-yellow-400">6+</div>
             <div className="text-gray-300 text-sm">Fighter Classes</div>
           </div>
           <div className="bg-black/40 backdrop-blur-sm rounded-xl px-6 py-4 border border-green-400/30">
@@ -458,7 +477,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             <div className="text-gray-300 text-sm">Enemy Types</div>
           </div>
           <div className="bg-black/40 backdrop-blur-sm rounded-xl px-6 py-4 border border-blue-400/30">
-            <div className="text-3xl font-bold text-blue-400">50+</div>
+            <div className="text-3xl font-bold text-blue-400">100+</div>
             <div className="text-gray-300 text-sm">Shop Items</div>
           </div>
           <div className="bg-black/40 backdrop-blur-sm rounded-xl px-6 py-4 border border-purple-400/30">

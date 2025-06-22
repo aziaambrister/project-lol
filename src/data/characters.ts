@@ -360,5 +360,80 @@ export const characters: Character[] = [
       block: "/Founder's glory bundle.png",
       hurt: "/Founder's glory bundle.png"
     }
+  },
+  // New Mystic Alchemist Character
+  {
+    id: 'mystic-alchemist',
+    name: 'Mystic Alchemist',
+    class: 'mystic-alchemist',
+    level: 1,
+    health: 90,
+    maxHealth: 90,
+    experience: 0,
+    experienceToNextLevel: 100,
+    attack: 12,
+    defense: 8,
+    speed: 9,
+    unlocked: false,
+    price: 999, // High price since it's premium
+    moveSet: [
+      {
+        id: 'vial-throw',
+        name: 'Vial Throw',
+        type: 'basic-attack',
+        damage: 18,
+        staminaCost: 12,
+        cooldown: 0,
+        currentCooldown: 0,
+        range: 45,
+        description: 'Throws explosive alchemical vials',
+        animation: 'vial-throw'
+      },
+      {
+        id: 'poison-cloud',
+        name: 'Poison Cloud',
+        type: 'special',
+        damage: 25,
+        staminaCost: 25,
+        cooldown: 4,
+        currentCooldown: 0,
+        range: 60,
+        description: 'Creates a toxic cloud that damages enemies over time',
+        animation: 'poison-cloud'
+      },
+      {
+        id: 'healing-mist',
+        name: 'Healing Mist',
+        type: 'special',
+        damage: 0,
+        staminaCost: 20,
+        cooldown: 6,
+        currentCooldown: 0,
+        range: 0,
+        description: 'Restores health with alchemical magic',
+        animation: 'healing-mist'
+      },
+      {
+        id: 'staff-strike',
+        name: 'Vialborne Staff Strike',
+        type: 'basic-attack',
+        damage: 22,
+        staminaCost: 18,
+        cooldown: 0,
+        currentCooldown: 0,
+        range: 35,
+        description: 'Powerful strike with the legendary Vialborne Staff',
+        animation: 'staff-strike'
+      }
+    ],
+    portrait: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+    sprite: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+    animations: {
+      idle: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+      walk: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+      attack: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+      block: "/MYSTIC ALCHEMIST BUNDLE.PNG",
+      hurt: "/MYSTIC ALCHEMIST BUNDLE.PNG"
+    }
   }
 ];

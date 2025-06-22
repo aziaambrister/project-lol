@@ -9,6 +9,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  zoom: 0.8; /* Zoom out to make everything more visible */
 }
 
 /* Animation classes */

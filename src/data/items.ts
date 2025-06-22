@@ -99,6 +99,91 @@ export const weapons: Item[] = [
       value: 50
     },
     icon: '⚔️'
+  },
+  // New Weapons
+  {
+    id: 'crystal-sword',
+    name: 'Crystal Sword',
+    description: 'A blade made from pure crystal that gleams with inner light.',
+    type: 'weapon',
+    value: 300,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 22
+    },
+    icon: '⚔️'
+  },
+  {
+    id: 'flame-spear',
+    name: 'Flame Spear',
+    description: 'A spear that burns with eternal fire.',
+    type: 'weapon',
+    value: 350,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 24
+    },
+    icon: '🔥'
+  },
+  {
+    id: 'ice-hammer',
+    name: 'Ice Hammer',
+    description: 'A massive hammer that freezes enemies on impact.',
+    type: 'weapon',
+    value: 450,
+    rarity: 'epic',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 28
+    },
+    icon: '🔨'
+  },
+  {
+    id: 'void-dagger',
+    name: 'Void Dagger',
+    description: 'A dagger that seems to absorb light itself.',
+    type: 'weapon',
+    value: 280,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 19
+    },
+    icon: '🗡️'
+  },
+  {
+    id: 'thunder-axe',
+    name: 'Thunder Axe',
+    description: 'An axe that crackles with lightning energy.',
+    type: 'weapon',
+    value: 380,
+    rarity: 'epic',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 26
+    },
+    icon: '⚡'
+  },
+  {
+    id: 'vialborne-staff',
+    name: 'Vialborne Staff',
+    description: 'The legendary staff of the Mystic Alchemist, filled with powerful potions.',
+    type: 'weapon',
+    value: 900,
+    rarity: 'legendary',
+    usable: false,
+    effect: {
+      type: 'damage',
+      value: 40
+    },
+    icon: '🧪'
   }
 ];
 
@@ -172,6 +257,91 @@ export const armors: Item[] = [
       value: 20
     },
     icon: '🧥'
+  },
+  // New Armor
+  {
+    id: 'crystal-mail',
+    name: 'Crystal Mail',
+    description: 'Armor made from crystallized magic that deflects spells.',
+    type: 'armor',
+    value: 200,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 10
+    },
+    icon: '💎'
+  },
+  {
+    id: 'flame-guard',
+    name: 'Flame Guard',
+    description: 'Armor that burns enemies who dare to strike you.',
+    type: 'armor',
+    value: 220,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 11
+    },
+    icon: '🔥'
+  },
+  {
+    id: 'ice-plate',
+    name: 'Ice Plate',
+    description: 'Frozen armor that slows attackers.',
+    type: 'armor',
+    value: 280,
+    rarity: 'epic',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 13
+    },
+    icon: '❄️'
+  },
+  {
+    id: 'void-shroud',
+    name: 'Void Shroud',
+    description: 'A shroud that makes you partially invisible.',
+    type: 'armor',
+    value: 320,
+    rarity: 'epic',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 14
+    },
+    icon: '🌑'
+  },
+  {
+    id: 'thunder-vest',
+    name: 'Thunder Vest',
+    description: 'A vest that electrifies attackers.',
+    type: 'armor',
+    value: 240,
+    rarity: 'rare',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 12
+    },
+    icon: '⚡'
+  },
+  {
+    id: 'alchemist-robes',
+    name: 'Alchemist Robes',
+    description: 'Robes infused with protective alchemical compounds.',
+    type: 'armor',
+    value: 350,
+    rarity: 'epic',
+    usable: false,
+    effect: {
+      type: 'buff',
+      value: 16
+    },
+    icon: '🧪'
   }
 ];
 
@@ -247,6 +417,110 @@ export const consumables: Item[] = [
       duration: 3
     },
     icon: '💪'
+  },
+  // New Consumables
+  {
+    id: 'mana-potion',
+    name: 'Mana Potion',
+    description: 'Restores magical energy for special abilities.',
+    type: 'consumable',
+    value: 40,
+    rarity: 'common',
+    usable: true,
+    effect: {
+      type: 'heal',
+      value: 30
+    },
+    icon: '🔮'
+  },
+  {
+    id: 'defense-tonic',
+    name: 'Defense Tonic',
+    description: 'Temporarily increases defense against attacks.',
+    type: 'consumable',
+    value: 70,
+    rarity: 'uncommon',
+    usable: true,
+    effect: {
+      type: 'buff',
+      value: 8,
+      duration: 4
+    },
+    icon: '🛡️'
+  },
+  {
+    id: 'speed-serum',
+    name: 'Speed Serum',
+    description: 'Dramatically increases movement speed.',
+    type: 'consumable',
+    value: 90,
+    rarity: 'rare',
+    usable: true,
+    effect: {
+      type: 'buff',
+      value: 5,
+      duration: 6
+    },
+    icon: '💨'
+  },
+  {
+    id: 'berserker-brew',
+    name: 'Berserker Brew',
+    description: 'Increases attack but reduces defense.',
+    type: 'consumable',
+    value: 100,
+    rarity: 'epic',
+    usable: true,
+    effect: {
+      type: 'buff',
+      value: 15,
+      duration: 3
+    },
+    icon: '🍺'
+  },
+  {
+    id: 'phoenix-feather',
+    name: 'Phoenix Feather',
+    description: 'Revives you with full health when defeated.',
+    type: 'consumable',
+    value: 200,
+    rarity: 'legendary',
+    usable: true,
+    effect: {
+      type: 'heal',
+      value: 999
+    },
+    icon: '🪶'
+  },
+  {
+    id: 'invisibility-potion',
+    name: 'Invisibility Potion',
+    description: 'Makes you invisible to enemies for a short time.',
+    type: 'consumable',
+    value: 150,
+    rarity: 'epic',
+    usable: true,
+    effect: {
+      type: 'buff',
+      value: 0,
+      duration: 5
+    },
+    icon: '👻'
+  },
+  {
+    id: 'alchemist-elixir',
+    name: 'Alchemist Elixir',
+    description: 'A powerful mixture that enhances all abilities.',
+    type: 'consumable',
+    value: 180,
+    rarity: 'legendary',
+    usable: true,
+    effect: {
+      type: 'buff',
+      value: 12,
+      duration: 8
+    },
+    icon: '🧪'
   }
 ];
 

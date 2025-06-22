@@ -453,7 +453,7 @@ export const gameWorld: GameWorld = {
         }
       ]
     },
-    // Lake/Water Area Enemies - Lake Serpent with dragon snake image
+    // Lake/Water Area Enemies - Lake Serpent with updated dragon snake image
     {
       id: 'water-serpent',
       name: 'Lake Serpent',
@@ -481,7 +481,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/dragonsnake copy.png', // Using the dragon snake image provided
+      sprite: '/dragonsnake.png', // Updated to use the new dragon snake image
       aiDifficulty: 'medium',
       moveSet: [
         {

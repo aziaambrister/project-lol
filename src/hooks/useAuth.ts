@@ -9,6 +9,7 @@ const supabase = createClient(
 interface User {
   id: string;
   email: string;
+  username?: string;
 }
 
 interface AuthState {
@@ -28,7 +29,8 @@ export function useAuth() {
       setAuthState({
         user: session?.user ? {
           id: session.user.id,
-          email: session.user.email || ''
+          email: session.user.email || '',
+          username: session.user.user_metadata?.username
         } : null,
         loading: false
       });
@@ -40,7 +42,8 @@ export function useAuth() {
         setAuthState({
           user: session?.user ? {
             id: session.user.id,
-            email: session.user.email || ''
+            email: session.user.email || '',
+            username: session.user.user_metadata?.username
           } : null,
           loading: false
         });
@@ -50,12 +53,15 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, username: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: undefined // Disable email confirmation
+        emailRedirectTo: undefined, // Disable email confirmation
+        data: {
+          username: username
+        }
       }
     });
     return { data, error };

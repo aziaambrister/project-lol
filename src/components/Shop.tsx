@@ -19,28 +19,46 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   
   const { player } = state;
   
-  // Shop inventory with prices
+  // Shop inventory with prices - Expanded items
   const shopItems = {
     weapons: [
       { ...allItems.find(item => item.id === 'ninja-katana')!, price: 150 },
       { ...allItems.find(item => item.id === 'mystic-bow')!, price: 200 },
       { ...allItems.find(item => item.id === 'battle-staff')!, price: 250 },
+      { ...allItems.find(item => item.id === 'crystal-sword')!, price: 300 },
+      { ...allItems.find(item => item.id === 'flame-spear')!, price: 350 },
+      { ...allItems.find(item => item.id === 'thunder-axe')!, price: 380 },
       { ...allItems.find(item => item.id === 'plasma-cannon')!, price: 400 },
-      { ...allItems.find(item => item.id === 'legendary-blade')!, price: 800 }
+      { ...allItems.find(item => item.id === 'ice-hammer')!, price: 450 },
+      { ...allItems.find(item => item.id === 'legendary-blade')!, price: 800 },
+      { ...allItems.find(item => item.id === 'vialborne-staff')!, price: 900 }
     ],
     armor: [
       { ...allItems.find(item => item.id === 'ninja-garb')!, price: 80 },
       { ...allItems.find(item => item.id === 'archer-cloak')!, price: 120 },
       { ...allItems.find(item => item.id === 'mage-robes')!, price: 180 },
+      { ...allItems.find(item => item.id === 'crystal-mail')!, price: 200 },
+      { ...allItems.find(item => item.id === 'flame-guard')!, price: 220 },
+      { ...allItems.find(item => item.id === 'thunder-vest')!, price: 240 },
       { ...allItems.find(item => item.id === 'knight-armor')!, price: 250 },
+      { ...allItems.find(item => item.id === 'ice-plate')!, price: 280 },
+      { ...allItems.find(item => item.id === 'void-shroud')!, price: 320 },
+      { ...allItems.find(item => item.id === 'alchemist-robes')!, price: 350 },
       { ...allItems.find(item => item.id === 'shadow-cloak')!, price: 500 }
     ],
     consumables: [
       { ...allItems.find(item => item.id === 'health-potion')!, price: 30 },
-      { ...allItems.find(item => item.id === 'greater-health-potion')!, price: 60 },
-      { ...allItems.find(item => item.id === 'super-health-potion')!, price: 120 },
+      { ...allItems.find(item => item.id === 'mana-potion')!, price: 40 },
       { ...allItems.find(item => item.id === 'energy-drink')!, price: 50 },
-      { ...allItems.find(item => item.id === 'strength-elixir')!, price: 80 }
+      { ...allItems.find(item => item.id === 'greater-health-potion')!, price: 60 },
+      { ...allItems.find(item => item.id === 'defense-tonic')!, price: 70 },
+      { ...allItems.find(item => item.id === 'strength-elixir')!, price: 80 },
+      { ...allItems.find(item => item.id === 'speed-serum')!, price: 90 },
+      { ...allItems.find(item => item.id === 'berserker-brew')!, price: 100 },
+      { ...allItems.find(item => item.id === 'super-health-potion')!, price: 120 },
+      { ...allItems.find(item => item.id === 'invisibility-potion')!, price: 150 },
+      { ...allItems.find(item => item.id === 'alchemist-elixir')!, price: 180 },
+      { ...allItems.find(item => item.id === 'phoenix-feather')!, price: 200 }
     ],
     upgrades: [
       {
@@ -90,24 +108,125 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         effect: { type: 'defense' as const, value: 2 },
         icon: '🛡️',
         price: 160
+      },
+      {
+        id: 'mega-health-upgrade',
+        name: 'Mega Health Boost',
+        description: 'Permanently increases maximum health by 50 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'rare' as const,
+        usable: false,
+        effect: { type: 'health' as const, value: 50 },
+        icon: '💖',
+        price: 350
+      },
+      {
+        id: 'super-speed-upgrade',
+        name: 'Super Speed Boost',
+        description: 'Permanently increases movement speed by 4 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'rare' as const,
+        usable: false,
+        effect: { type: 'speed' as const, value: 4 },
+        icon: '🌪️',
+        price: 280
+      },
+      {
+        id: 'power-upgrade',
+        name: 'Power Boost',
+        description: 'Permanently increases attack damage by 6 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'rare' as const,
+        usable: false,
+        effect: { type: 'damage' as const, value: 6 },
+        icon: '💥',
+        price: 320
+      },
+      {
+        id: 'fortress-upgrade',
+        name: 'Fortress Defense',
+        description: 'Permanently increases defense by 5 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'rare' as const,
+        usable: false,
+        effect: { type: 'defense' as const, value: 5 },
+        icon: '🏰',
+        price: 300
+      },
+      {
+        id: 'ultimate-upgrade',
+        name: 'Ultimate Enhancement',
+        description: 'Permanently increases all stats by 3 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'epic' as const,
+        usable: false,
+        effect: { type: 'damage' as const, value: 3 },
+        icon: '⭐',
+        price: 500
+      },
+      {
+        id: 'legendary-upgrade',
+        name: 'Legendary Ascension',
+        description: 'Permanently increases all stats by 5 points.',
+        type: 'upgrade' as const,
+        value: 0,
+        rarity: 'legendary' as const,
+        usable: false,
+        effect: { type: 'damage' as const, value: 5 },
+        icon: '👑',
+        price: 800
       }
     ],
-    premium: stripeProducts.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      type: 'premium' as const,
-      value: product.coins || 0,
-      rarity: product.bundle ? 'legendary' as const : 'rare' as const,
-      usable: true,
-      icon: product.bundle ? '👑' : '🪙',
-      realPrice: product.price,
-      coins: product.coins,
-      bundle: product.bundle,
-      includes: product.includes,
-      priceId: product.priceId,
-      mode: product.mode
-    }))
+    premium: [
+      ...stripeProducts.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        type: 'premium' as const,
+        value: product.coins || 0,
+        rarity: product.bundle ? 'legendary' as const : 'rare' as const,
+        usable: true,
+        icon: product.bundle ? '👑' : '🪙',
+        realPrice: product.price,
+        coins: product.coins,
+        bundle: product.bundle,
+        includes: product.includes,
+        priceId: product.priceId,
+        mode: product.mode
+      })),
+      // New Mystic Alchemist Bundle
+      {
+        id: 'mystic-alchemist-bundle',
+        name: "Mystic Alchemist's Bundle",
+        description: 'Exclusive Mystic Alchemist character + legendary Vialborne Staff with 40 damage!',
+        type: 'premium' as const,
+        value: 0,
+        rarity: 'legendary' as const,
+        usable: true,
+        icon: '🧪',
+        realPrice: '$12.99',
+        bundle: true,
+        includes: [
+          {
+            name: 'Mystic Alchemist',
+            description: 'Exclusive alchemist character with unique abilities',
+            icon: '🧙‍♂️'
+          },
+          {
+            name: 'Vialborne Staff',
+            description: 'Legendary staff with 40 damage and alchemical powers',
+            icon: '🧪'
+          }
+        ],
+        priceId: 'price_mystic_alchemist', // This would need to be created in Stripe
+        mode: 'payment' as const
+      }
+    ]
   };
   
   const currentItems = shopItems[selectedCategory];
@@ -183,7 +302,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
@@ -271,7 +390,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         )}
         
         {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {currentItems.map((item) => {
             const canAfford = selectedCategory === 'premium' ? !!user : player.currency >= item.price;
             const isSelected = selectedItem === item.id;
@@ -280,7 +399,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800 rounded-lg p-6 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
+                className={`bg-gray-800 rounded-lg p-4 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
                   isSelected ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 
                   canAfford ? 'border-gray-600 hover:border-gray-500' : 'border-red-600 opacity-60'
                 } ${isPremium ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30' : ''}`}
@@ -301,24 +420,24 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 )}
                 
                 {/* Item Icon */}
-                <div className="text-center mb-4">
-                  <div className="text-6xl mb-2">{item.icon}</div>
-                  <h3 className="text-xl font-bold">{item.name}</h3>
-                  <div className={`text-sm px-2 py-1 rounded-full inline-block mt-2 border ${getRarityColor(item.rarity)}`}>
+                <div className="text-center mb-3">
+                  <div className="text-4xl mb-2">{item.icon}</div>
+                  <h3 className="text-lg font-bold">{item.name}</h3>
+                  <div className={`text-xs px-2 py-1 rounded-full inline-block mt-1 border ${getRarityColor(item.rarity)}`}>
                     {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                   </div>
                 </div>
                 
                 {/* Item Description */}
-                <p className="text-gray-300 text-sm mb-4 text-center">{item.description}</p>
+                <p className="text-gray-300 text-xs mb-3 text-center">{item.description}</p>
 
                 {/* Bundle Contents */}
                 {item.includes && (
-                  <div className="bg-gray-700/50 rounded-lg p-3 mb-4">
-                    <div className="text-yellow-400 text-sm font-bold mb-2">Bundle Includes:</div>
+                  <div className="bg-gray-700/50 rounded-lg p-2 mb-3">
+                    <div className="text-yellow-400 text-xs font-bold mb-1">Bundle Includes:</div>
                     {item.includes.map((bundleItem: any, index: number) => (
-                      <div key={index} className="flex items-center text-sm mb-1">
-                        <span className="mr-2">{bundleItem.icon}</span>
+                      <div key={index} className="flex items-center text-xs mb-1">
+                        <span className="mr-1">{bundleItem.icon}</span>
                         <div>
                           <div className="font-medium">{bundleItem.name}</div>
                           <div className="text-gray-400 text-xs">{bundleItem.description}</div>
@@ -330,9 +449,9 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 
                 {/* Item Effect */}
                 {item.effect && (
-                  <div className="bg-gray-700 rounded-lg p-3 mb-4">
-                    <div className="text-green-400 text-sm font-bold">Effect:</div>
-                    <div className="text-white text-sm">
+                  <div className="bg-gray-700 rounded-lg p-2 mb-3">
+                    <div className="text-green-400 text-xs font-bold">Effect:</div>
+                    <div className="text-white text-xs">
                       {item.effect.type === 'heal' && `Restores ${item.effect.value} health`}
                       {item.effect.type === 'damage' && `+${item.effect.value} Attack Damage`}
                       {item.effect.type === 'buff' && `+${item.effect.value} Defense`}
@@ -349,13 +468,13 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   <div className="flex items-center">
                     {isPremium ? (
                       <>
-                        <CreditCard className="text-green-400 mr-2" size={16} />
-                        <span className="text-green-400 font-bold">{item.realPrice}</span>
+                        <CreditCard className="text-green-400 mr-1" size={12} />
+                        <span className="text-green-400 font-bold text-sm">{item.realPrice}</span>
                       </>
                     ) : (
                       <>
-                        <Coins className="text-yellow-400 mr-2" size={16} />
-                        <span className="text-yellow-400 font-bold">{item.price}</span>
+                        <Coins className="text-yellow-400 mr-1" size={12} />
+                        <span className="text-yellow-400 font-bold text-sm">{item.price}</span>
                       </>
                     )}
                   </div>
@@ -370,7 +489,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                       }
                     }}
                     disabled={(!canAfford && !isPremium) || (isPremium && isLoading)}
-                    className={`px-4 py-2 rounded-lg font-bold transition-all duration-300 flex items-center ${
+                    className={`px-3 py-1 rounded-lg font-bold transition-all duration-300 flex items-center text-xs ${
                       isPremium
                         ? canAfford
                           ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
@@ -380,7 +499,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    <ShoppingCart size={16} className="mr-2" />
+                    <ShoppingCart size={12} className="mr-1" />
                     {isLoading && isPremium ? 'Processing...' : 
                      isPremium ? (canAfford ? 'Buy Now' : 'Login Required') : 
                      canAfford ? 'Buy' : 'Too Expensive'}
@@ -420,7 +539,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               <h4 className="font-bold text-white mb-2">💳 Premium Store:</h4>
               <ul className="space-y-1">
                 <li>• Instant coin packages available</li>
-                <li>• Exclusive founder character bundle</li>
+                <li>• Exclusive character bundles</li>
                 <li>• Support game development</li>
                 <li>• Secure payment processing</li>
               </ul>
