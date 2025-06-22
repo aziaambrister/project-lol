@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Sword, Shield, Zap, Crown, Star, Gamepad2, LogIn, UserPlus, Mail, Check } from 'lucide-react';
+import { Play, Sword, Shield, Zap, Crown, Star, Gamepad2, LogIn, UserPlus } from 'lucide-react';
 
 interface WelcomePageProps {
   onEnter: () => void;
@@ -10,14 +10,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const [signupData, setSignupData] = useState({
-    username: '',
+  const [loginData, setLoginData] = useState({
     email: '',
     password: ''
   });
-  const [verificationCode, setVerificationCode] = useState('');
-  const [isVerified, setIsVerified] = useState(false);
+  const [signupData, setSignupData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [authError, setAuthError] = useState('');
+  const [authSuccess, setAuthSuccess] = useState('');
 
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
@@ -31,53 +35,95 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
 
   const handleLoginClick = () => {
     setShowLogin(true);
+    setAuthError('');
+    setAuthSuccess('');
   };
 
   const handleSignupClick = () => {
     setShowSignup(true);
+    setAuthError('');
+    setAuthSuccess('');
   };
 
   const closeModals = () => {
     setShowLogin(false);
     setShowSignup(false);
-    setShowVerification(false);
-    setSignupData({ username: '', email: '', password: '' });
-    setVerificationCode('');
-    setIsVerified(false);
+    setLoginData({ email: '', password: '' });
+    setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
+    setAuthError('');
+    setAuthSuccess('');
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    
+    // Basic validation
+    if (!loginData.email || !loginData.password) {
+      setAuthError('Please fill in all fields');
+      return;
+    }
+
+    // Simulate login process
+    console.log('Logging in with:', loginData);
+    
+    // For demo purposes, accept any email/password combination
+    setAuthSuccess('Login successful! Welcome back!');
+    
+    setTimeout(() => {
+      closeModals();
+      // You could store user session here
+      localStorage.setItem('userEmail', loginData.email);
+    }, 1500);
   };
 
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError('');
+    
+    // Basic validation
+    if (!signupData.username || !signupData.email || !signupData.password || !signupData.confirmPassword) {
+      setAuthError('Please fill in all fields');
+      return;
+    }
+
+    if (signupData.password !== signupData.confirmPassword) {
+      setAuthError('Passwords do not match');
+      return;
+    }
+
+    if (signupData.password.length < 6) {
+      setAuthError('Password must be at least 6 characters long');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(signupData.email)) {
+      setAuthError('Please enter a valid email address');
+      return;
+    }
+
+    // Simulate account creation
     console.log('Creating account for:', signupData);
     
-    setShowSignup(false);
-    setShowVerification(true);
+    setAuthSuccess(`Account created successfully for ${signupData.username}! You can now login.`);
     
-    // Simulate sending verification email with proper demo message
+    // Store user data (in a real app, this would be sent to a server)
+    localStorage.setItem('registeredUsers', JSON.stringify([
+      ...(JSON.parse(localStorage.getItem('registeredUsers') || '[]')),
+      {
+        username: signupData.username,
+        email: signupData.email,
+        password: signupData.password // In real app, this would be hashed
+      }
+    ]));
+    
     setTimeout(() => {
-      alert(`✅ Verification email sent to ${signupData.email}!\n\n📧 Check your email for the verification code.\n\n🎮 Demo: Use code "123456" to verify and get 100 bonus coins!`);
-    }, 500);
-  };
-
-  const handleVerificationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (verificationCode === '123456' || verificationCode.length >= 6) {
-      setIsVerified(true);
-      
-      alert('🎉 Email verified successfully!\n\n💰 You received 100 bonus coins!\n\nWelcome to Fighter\'s Realm!');
-      
-      setTimeout(() => {
-        closeModals();
-      }, 2000);
-    } else {
-      alert('❌ Invalid verification code.\n\n💡 Try "123456" for demo.');
-    }
-  };
-
-  const skipVerification = () => {
-    alert('✅ Account created successfully!\n\n📧 You can verify your email later in settings to get bonus coins.');
-    closeModals();
+      setShowSignup(false);
+      setShowLogin(true);
+      setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
+    }, 2000);
   };
 
   return (
@@ -105,21 +151,40 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-8 w-96 border border-gray-600">
             <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-            <form className="space-y-4">
+            
+            {authError && (
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-center">
+                <div className="text-red-400 text-sm">{authError}</div>
+              </div>
+            )}
+            
+            {authSuccess && (
+              <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 mb-4 text-center">
+                <div className="text-green-400 text-sm">{authSuccess}</div>
+              </div>
+            )}
+            
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Enter your email"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
                 <input
                   type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Enter your password"
+                  required
                 />
               </div>
               <div className="flex space-x-3 mt-6">
@@ -138,6 +203,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                 </button>
               </div>
             </form>
+            
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                  setShowLogin(false);
+                  setShowSignup(true);
+                }}
+                className="text-blue-400 hover:text-blue-300 text-sm"
+              >
+                Don't have an account? Sign up here
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -147,6 +224,19 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-8 w-96 border border-gray-600">
             <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
+            
+            {authError && (
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-center">
+                <div className="text-red-400 text-sm">{authError}</div>
+              </div>
+            )}
+            
+            {authSuccess && (
+              <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 mb-4 text-center">
+                <div className="text-green-400 text-sm">{authSuccess}</div>
+              </div>
+            )}
+            
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Username</label>
@@ -177,7 +267,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   value={signupData.password}
                   onChange={(e) => setSignupData({...signupData, password: e.target.value})}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 6 characters)"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Confirm Password</label>
+                <input
+                  type="password"
+                  value={signupData.confirmPassword}
+                  onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-green-500"
+                  placeholder="Confirm your password"
                   required
                 />
               </div>
@@ -197,76 +298,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Email Verification Modal */}
-      {showVerification && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-xl p-8 w-96 border border-gray-600">
-            {!isVerified ? (
-              <>
-                <div className="text-center mb-6">
-                  <Mail className="mx-auto mb-4 text-blue-400" size={48} />
-                  <h2 className="text-2xl font-bold mb-2">Verify Your Email</h2>
-                  <p className="text-gray-300 text-sm">
-                    We sent a verification code to<br />
-                    <span className="text-blue-400 font-bold">{signupData.email}</span>
-                  </p>
-                </div>
-                
-                <form onSubmit={handleVerificationSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Verification Code</label>
-                    <input
-                      type="text"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-center text-lg tracking-widest"
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                      required
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Demo: Use "123456" to verify</p>
-                  </div>
-                  
-                  <div className="bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3 text-center">
-                    <div className="text-yellow-400 font-bold text-sm">🎁 Verification Bonus</div>
-                    <div className="text-white text-xs">Get 100 free coins when you verify!</div>
-                  </div>
-                  
-                  <div className="flex space-x-3 mt-6">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-bold transition-colors"
-                    >
-                      Verify Email
-                    </button>
-                    <button
-                      type="button"
-                      onClick={skipVerification}
-                      className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg font-bold transition-colors"
-                    >
-                      Skip for Now
-                    </button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <div className="text-center">
-                <Check className="mx-auto mb-4 text-green-400" size={48} />
-                <h2 className="text-2xl font-bold mb-2 text-green-400">Email Verified!</h2>
-                <p className="text-gray-300 mb-4">
-                  Welcome to Fighter's Realm, <span className="text-yellow-400 font-bold">{signupData.username}</span>!
-                </p>
-                <div className="bg-green-500/20 border border-green-400/50 rounded-lg p-3 mb-4">
-                  <div className="text-green-400 font-bold">🎉 Bonus Awarded!</div>
-                  <div className="text-white">+100 coins added to your account</div>
-                </div>
-                <div className="text-sm text-gray-400">Redirecting to game...</div>
-              </div>
-            )}
+            
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                  setShowSignup(false);
+                  setShowLogin(true);
+                }}
+                className="text-green-400 hover:text-green-300 text-sm"
+              >
+                Already have an account? Login here
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -294,7 +337,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-blue-500/30 to-transparent animate-pulse" style={{ animationDelay: '1.5s' }}></div>
       </div>
 
-      <div className={`max-w-6xl w-full text-center relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <div className={`w-full text-center relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         
         {/* Main Title */}
         <div className="mb-12">
