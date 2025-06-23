@@ -5,7 +5,6 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// This block waits until the HTML is fully loaded before running your code!
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('supabase-signup-form')
   const messageDiv = document.getElementById('supabase-signup-message')
