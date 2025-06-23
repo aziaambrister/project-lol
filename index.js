@@ -5,27 +5,27 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-const form = document.getElementById('signup-form')
-const messageDiv = document.getElementById('message')
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('supabase-signup-form')
+  const messageDiv = document.getElementById('supabase-signup-message')
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  const email = document.getElementById('email').value
-  const password = document.getElementById('password').value
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const email = document.getElementById('supabase-email').value
+    const password = document.getElementById('supabase-password').value
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    // Optional: add a redirect URL after verification if you want
-    // options: { emailRedirectTo: 'https://your-app.com/after-verification' }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password
+    })
+
+    if (error) {
+      messageDiv.textContent = 'Sign up error: ' + error.message
+      messageDiv.style.color = 'red'
+    } else {
+      messageDiv.textContent = 'Sign up successful! Check your email for the verification link.'
+      messageDiv.style.color = 'green'
+      form.reset()
+    }
   })
-
-  if (error) {
-    messageDiv.textContent = 'Sign up error: ' + error.message
-    messageDiv.style.color = 'red'
-  } else {
-    messageDiv.textContent = 'Sign up successful! Check your email for the verification link.'
-    messageDiv.style.color = 'green'
-    form.reset()
-  }
 })
