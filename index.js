@@ -1,8 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// Replace these with your actual Supabase project credentials:
-const supabaseUrl = 'https://your-project.supabase.co'
-const supabaseAnonKey = 'your-anon-key'
+const supabaseUrl = 'https://xirleopytfmlfbfpluha.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpcmxlb3B5dGZtbGZiZnBsdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2MTgyOTQsImV4cCI6MjA2NjE5NDI5NH0.2_-wW0GlN_FHNzOtg4otairz_qqLR1H6TAvw8_zLCwA'
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
