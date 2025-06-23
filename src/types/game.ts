@@ -169,6 +169,12 @@ export interface DamageNumber {
   timestamp: number;
 }
 
+export interface DebugState {
+  enabled: boolean;
+  showEnemyStates: boolean;
+  showPerformanceMetrics: boolean;
+}
+
 export interface GameState {
   gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu';
   player: {
@@ -202,4 +208,5 @@ export interface GameState {
     sfxVolume: number;
     difficulty: 'easy' | 'medium' | 'hard';
   };
+  debug: DebugState;
 }

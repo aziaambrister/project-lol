@@ -6,9 +6,10 @@ import Building from './Building';
 import GameHUD from './GameHUD';
 import Minimap from './Minimap';
 import EscapeMenu from './EscapeMenu';
+import EnemyDebugOverlay from './EnemyDebugOverlay';
 
 const GameWorld: React.FC = () => {
-  const { state, movePlayer, stopMoving, performAttack, enterBuilding } = useGame();
+  const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [lastMoveTime, setLastMoveTime] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -24,6 +25,13 @@ const GameWorld: React.FC = () => {
       if (key === 'escape') {
         e.preventDefault();
         setShowEscMenu(!showEscMenu);
+        return;
+      }
+      
+      // Debug mode toggle
+      if (key === 'f3') {
+        e.preventDefault();
+        toggleDebugMode();
         return;
       }
       
@@ -103,7 +111,7 @@ const GameWorld: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu, state.player.position]);
+  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
 
   // Check if map image loads
   useEffect(() => {
@@ -327,6 +335,16 @@ const GameWorld: React.FC = () => {
         ></div>
       )}
 
+      {/* Enemy Debug Overlay */}
+      <EnemyDebugOverlay
+        enemies={state.currentWorld.enemies}
+        aiSystem={aiSystem}
+        playerPosition={state.player.position}
+        cameraX={cameraX}
+        cameraY={cameraY}
+        debugEnabled={state.debug?.enabled || false}
+      />
+
       {/* Game HUD */}
       {!showEscMenu && <GameHUD />}
 
@@ -345,6 +363,7 @@ const GameWorld: React.FC = () => {
             <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
             <div>⚔️ <span className="text-yellow-300">1-4</span> - Special Moves</div>
             <div>⚙️ <span className="text-yellow-300">ESC</span> - Menu</div>
+            <div>🐛 <span className="text-yellow-300">F3</span> - Debug Mode</div>
           </div>
         </div>
       )}
