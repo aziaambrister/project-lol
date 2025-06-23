@@ -237,8 +237,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         body: JSON.stringify({
           price_id: item.priceId,
           mode: item.mode,
-          success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}/shop`,
+          success_url: `${window.location.origin}?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}`,
         }),
       });
 

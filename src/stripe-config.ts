@@ -64,12 +64,12 @@ export const stripeProducts: StripeProduct[] = [
     ]
   },
   {
-    id: 'prod_MysticAlchemist',
-    priceId: 'price_mystic_alchemist_bundle',
+    id: 'prod_SYJZYzLbffPFd9',
+    priceId: 'price_1RdCwSP0VJGKhWxllrqyVM9O',
     name: "Mystic Alchemist's Bundle",
-    description: 'Exclusive Mystic Alchemist character + legendary Vialborne Staff with 40 damage!',
+    description: 'Exclusive alchemist character with unique abilities and Legendary staff with 40 damage and alchemical powers',
     mode: 'payment',
-    price: '$12.99',
+    price: '$9.99',
     bundle: true,
     includes: [
       {
