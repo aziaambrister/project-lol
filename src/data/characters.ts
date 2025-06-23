@@ -171,7 +171,7 @@ export const characters: Character[] = [
     maxHealth: 150,
     experience: 0,
     experienceToNextLevel: 100,
-    attack: 15,
+    attack: 18,
     defense: 12,
     speed: 6,
     unlocked: false,
@@ -181,24 +181,24 @@ export const characters: Character[] = [
         id: 'heavy-slam',
         name: 'Ground Slam',
         type: 'special',
-        damage: 35,
+        damage: 40,
         staminaCost: 40,
         cooldown: 6,
         currentCooldown: 0,
         range: 50,
-        description: 'Devastating area attack',
+        description: 'Devastating area attack that shakes the ground',
         animation: 'slam'
       },
       {
         id: 'power-punch',
-        name: 'Power Punch',
+        name: 'Crusher Punch',
         type: 'basic-attack',
-        damage: 20,
+        damage: 25,
         staminaCost: 20,
         cooldown: 0,
         currentCooldown: 0,
         range: 30,
-        description: 'Slow but powerful strike',
+        description: 'Bone-crushing punch with devastating force',
         animation: 'heavy-punch'
       },
       {
@@ -210,18 +210,42 @@ export const characters: Character[] = [
         cooldown: 0,
         currentCooldown: 0,
         range: 0,
-        description: 'Reduces damage by 75%',
+        description: 'Reduces damage by 75% with unbreakable defense',
         animation: 'heavy-block'
+      },
+      {
+        id: 'berserker-rage',
+        name: 'Berserker Rage',
+        type: 'special',
+        damage: 30,
+        staminaCost: 35,
+        cooldown: 8,
+        currentCooldown: 0,
+        range: 40,
+        description: 'Unleashes crushing fury on all nearby enemies',
+        animation: 'rage'
+      },
+      {
+        id: 'earthquake-stomp',
+        name: 'Earthquake Stomp',
+        type: 'special',
+        damage: 35,
+        staminaCost: 45,
+        cooldown: 10,
+        currentCooldown: 0,
+        range: 60,
+        description: 'Stomps the ground creating devastating shockwaves',
+        animation: 'stomp'
       }
     ],
-    portrait: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=128',
-    sprite: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64',
+    portrait: '/MAGNUS THE CRUSHER.png',
+    sprite: '/MAGNUS THE CRUSHER.png',
     animations: {
-      idle: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64',
-      walk: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64',
-      attack: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64',
-      block: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64',
-      hurt: 'https://images.pexels.com/photos/6633084/pexels-photo-6633084.jpeg?auto=compress&cs=tinysrgb&w=64'
+      idle: '/MAGNUS THE CRUSHER.png',
+      walk: '/MAGNUS THE CRUSHER.png',
+      attack: '/MAGNUS THE CRUSHER.png',
+      block: '/MAGNUS THE CRUSHER.png',
+      hurt: '/MAGNUS THE CRUSHER.png'
     }
   },
   {
