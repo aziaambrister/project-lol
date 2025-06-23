@@ -198,34 +198,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         includes: product.includes,
         priceId: product.priceId,
         mode: product.mode
-      })),
-      // New Mystic Alchemist Bundle
-      {
-        id: 'mystic-alchemist-bundle',
-        name: "Mystic Alchemist's Bundle",
-        description: 'Exclusive Mystic Alchemist character + legendary Vialborne Staff with 40 damage!',
-        type: 'premium' as const,
-        value: 0,
-        rarity: 'legendary' as const,
-        usable: true,
-        icon: '🧪',
-        realPrice: '$12.99',
-        bundle: true,
-        includes: [
-          {
-            name: 'Mystic Alchemist',
-            description: 'Exclusive alchemist character with unique abilities',
-            icon: '🧙‍♂️'
-          },
-          {
-            name: 'Vialborne Staff',
-            description: 'Legendary staff with 40 damage and alchemical powers',
-            icon: '🧪'
-          }
-        ],
-        priceId: 'price_mystic_alchemist', // This would need to be created in Stripe
-        mode: 'payment' as const
-      }
+      }))
     ]
   };
   
@@ -301,8 +274,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white p-4 overflow-hidden">
+      <div className="max-w-7xl mx-auto h-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
@@ -390,7 +363,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         )}
         
         {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-h-96 overflow-y-auto">
           {currentItems.map((item) => {
             const canAfford = selectedCategory === 'premium' ? !!user : player.currency >= item.price;
             const isSelected = selectedItem === item.id;

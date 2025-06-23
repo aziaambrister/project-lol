@@ -211,7 +211,7 @@ const GameWorld: React.FC = () => {
   const overlayOpacity = 1 - lightLevel;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
       {/* Map Background - Full Coverage */}
       <div 
         className="absolute"

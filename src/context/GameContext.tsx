@@ -439,10 +439,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let newY = enemy.position.y;
         let lastAction = enemy.lastAction;
         
-        // 150% wider detection range as requested
-        if (distanceToPlayer <= enemy.detectionRadius) {
+        // Enhanced detection range - enemies can see player from screen distance
+        const screenDistance = Math.max(window.innerWidth, window.innerHeight) * 0.6;
+        if (distanceToPlayer <= screenDistance) {
           newState = 'chase';
-        } else if (enemy.state === 'chase' && distanceToPlayer > enemy.detectionRadius * 1.5) {
+        } else if (enemy.state === 'chase' && distanceToPlayer > screenDistance * 1.2) {
           newState = 'patrol';
         }
         
@@ -452,16 +453,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           if (distance > 50) {
-            const moveSpeed = enemy.speed * 0.8;
+            // Move towards player more aggressively
+            const moveSpeed = enemy.speed * 1.2; // Increased chase speed
             newX += (dx / distance) * moveSpeed;
             newY += (dy / distance) * moveSpeed;
           } else {
+            // Attack every 2 seconds as requested
             const now = Date.now();
-            const attackCooldown = enemy.aiDifficulty === 'easy' ? 2000 : 
-                                 enemy.aiDifficulty === 'medium' ? 1500 : 1000;
+            const attackCooldown = 2000; // Fixed 2 second attack rate
             
             if (now - lastAction > attackCooldown) {
               setTimeout(() => {
+                // This will be handled by the enemy attack interval
               }, 100);
               lastAction = now;
             }
@@ -498,27 +501,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           currentTarget: newState === 'chase' ? state.player.character.id : undefined,
           lastAction
         };
-      });
-      
-      const now = Date.now();
-      updatedEnemies.forEach(enemy => {
-        if (enemy.state === 'chase' && enemy.health > 0) {
-          const distanceToPlayer = Math.sqrt(
-            Math.pow(enemy.position.x - state.player.position.x, 2) +
-            Math.pow(enemy.position.y - state.player.position.y, 2)
-          );
-          
-          if (distanceToPlayer <= 50) {
-            const attackCooldown = enemy.aiDifficulty === 'easy' ? 2000 : 
-                                 enemy.aiDifficulty === 'medium' ? 1500 : 1000;
-            
-            if (now - enemy.lastAction > attackCooldown) {
-              setTimeout(() => {
-                gameReducer(state, { type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
-              }, 100);
-            }
-          }
-        }
       });
       
       return {
@@ -862,6 +844,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       updateEnemyAI();
     }, 100);
     
+    // Fixed 2-second enemy attack interval as requested
     const enemyAttackInterval = setInterval(() => {
       const now = Date.now();
       state.currentWorld.enemies.forEach(enemy => {
@@ -872,8 +855,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           );
           
           if (distanceToPlayer <= 50) {
-            const attackCooldown = enemy.aiDifficulty === 'easy' ? 2000 : 
-                                 enemy.aiDifficulty === 'medium' ? 1500 : 1000;
+            const attackCooldown = 2000; // Fixed 2 second attack rate
             
             if (now - enemy.lastAction > attackCooldown) {
               dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
@@ -881,7 +863,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           }
         }
       });
-    }, 500);
+    }, 2000); // Check every 2 seconds for attacks
     
     const dayNightInterval = setInterval(() => {
       dispatch({ type: 'UPDATE_DAY_NIGHT' });

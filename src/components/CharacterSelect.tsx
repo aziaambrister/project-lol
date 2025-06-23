@@ -35,7 +35,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4 overflow-hidden">
       {/* Back Button */}
       <button
         onClick={onBack}
@@ -50,10 +50,11 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
       </h1>
       <p className="text-gray-300 mb-8 text-lg">Select your character to begin your journey</p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl mb-12">
         {characters.map(character => {
           const isUnlocked = character.unlocked;
           const isSelected = selectedClass === character.class;
+          const isPremium = character.class === 'founder' || character.class === 'mystic-alchemist';
           
           return (
             <div 
@@ -72,11 +73,15 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                   alt={character.name} 
                   className="w-full h-full object-cover"
                 />
-                {!isUnlocked && character.class !== 'founder' && (
+                {!isUnlocked && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-4xl mb-2">🔒</div>
-                      <div className="text-yellow-400 font-bold">{character.price} coins</div>
+                      {isPremium ? (
+                        <div className="text-yellow-400 font-bold">Premium Purchase Required</div>
+                      ) : (
+                        <div className="text-yellow-400 font-bold">{character.price} coins</div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -89,11 +94,13 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                 {character.class === 'heavy-hitter' && 'Devastating power with strong defense'}
                 {character.class === 'defensive-tank' && 'Master of defense and counter-attacks'}
                 {character.class === 'founder' && 'Legendary founder with ultimate power'}
+                {character.class === 'mystic-alchemist' && 'Master of alchemical arts and potions'}
               </div>
               
               {/* Stats Display */}
               <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="flex items-center bg-slate-700 p-3 rounded-lg"> <Heart className="text-red-500 mr-2" size={20} />
+                <div className="flex items-center bg-slate-700 p-3 rounded-lg">
+                  <Heart className="text-red-500 mr-2" size={20} />
                   <div>
                     <div className="text-xs text-gray-400">Health</div>
                     <div className="font-bold text-lg">{character.health}</div>
