@@ -274,16 +274,28 @@ export const characters: Character[] = [
         range: 30,
         description: 'Automatic counter after blocking',
         animation: 'counter'
+      },
+      {
+        id: 'guardian-charge',
+        name: 'Guardian Charge',
+        type: 'special',
+        damage: 18,
+        staminaCost: 30,
+        cooldown: 5,
+        currentCooldown: 0,
+        range: 50,
+        description: 'Charges forward with shield raised',
+        animation: 'charge'
       }
     ],
-    portrait: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=128',
-    sprite: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
+    portrait: '/ARIA THE GUARDIAN.png',
+    sprite: '/ARIA THE GUARDIAN.png',
     animations: {
-      idle: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
-      walk: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
-      attack: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
-      block: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64',
-      hurt: 'https://images.pexels.com/photos/14391128/pexels-photo-14391128.jpeg?auto=compress&cs=tinysrgb&w=64'
+      idle: '/ARIA THE GUARDIAN.png',
+      walk: '/ARIA THE GUARDIAN.png',
+      attack: '/ARIA THE GUARDIAN.png',
+      block: '/ARIA THE GUARDIAN.png',
+      hurt: '/ARIA THE GUARDIAN.png'
     }
   },
   // New Founder Character
