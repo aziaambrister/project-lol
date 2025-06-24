@@ -11,7 +11,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   width: 100vw;
-  height: 90vh;
+  height: 100vh;
   background: linear-gradient(135deg, #0f172a, #1e1b4b, #000);
 }
 
