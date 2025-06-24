@@ -10,11 +10,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  zoom: 0.7; /* Increased zoom out to fit more content */
   width: 100vw;
   height: 100vh;
-  transform-origin: top left;
-  background: #000; /* Remove white background */
+  background: linear-gradient(135deg, #0f172a, #1e1b4b, #000);
 }
 
 html {
@@ -23,7 +21,7 @@ html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #000; /* Remove white background */
+  background: #000;
 }
 
 #root {
@@ -32,46 +30,8 @@ html {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  transform: scale(0.75); /* Additional scaling for better fit */
-  transform-origin: top left;
-  background: transparent;
-}
-
-/* Responsive scaling for different screen sizes */
-@media (max-width: 1600px) {
-  body {
-    zoom: 0.65;
-  }
-  #root {
-    transform: scale(0.7);
-  }
-}
-
-@media (max-width: 1200px) {
-  body {
-    zoom: 0.6;
-  }
-  #root {
-    transform: scale(0.65);
-  }
-}
-
-@media (max-width: 768px) {
-  body {
-    zoom: 0.55;
-  }
-  #root {
-    transform: scale(0.6);
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    zoom: 0.5;
-  }
-  #root {
-    transform: scale(0.55);
-  }
+  display: flex;
+  flex-direction: column;
 }
 
 /* Remove any potential white space */
@@ -82,42 +42,71 @@ html {
 /* Ensure all containers fit within viewport */
 .min-h-screen {
   min-height: 100vh;
-  max-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 }
 
-/* Compact layout utilities - more aggressive */
-.compact-container {
-  max-height: 100vh;
+/* Page container that fills entire viewport */
+.page-container {
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
-  padding: 0.25rem;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.compact-grid {
-  gap: 0.5rem;
+/* Responsive text scaling */
+@media (max-width: 1200px) {
+  .responsive-text-lg {
+    font-size: 1rem;
+  }
+  .responsive-text-xl {
+    font-size: 1.125rem;
+  }
+  .responsive-text-2xl {
+    font-size: 1.25rem;
+  }
+  .responsive-text-3xl {
+    font-size: 1.5rem;
+  }
+  .responsive-text-4xl {
+    font-size: 1.75rem;
+  }
 }
 
-.compact-text {
-  font-size: 0.8em;
-  line-height: 1.2;
+@media (max-width: 768px) {
+  .responsive-text-lg {
+    font-size: 0.875rem;
+  }
+  .responsive-text-xl {
+    font-size: 1rem;
+  }
+  .responsive-text-2xl {
+    font-size: 1.125rem;
+  }
+  .responsive-text-3xl {
+    font-size: 1.25rem;
+  }
+  .responsive-text-4xl {
+    font-size: 1.5rem;
+  }
 }
 
-.compact-spacing {
-  padding: 0.25rem;
-  margin: 0.125rem;
-}
-
-/* Ensure buttons and interactive elements remain accessible */
-button, .clickable {
-  min-height: 28px;
-  min-width: 28px;
-}
-
-/* Remove default margins and paddings */
-h1, h2, h3, h4, h5, h6, p, div {
-  margin: 0;
-  padding: 0;
+/* Responsive spacing */
+@media (max-width: 768px) {
+  .responsive-p-4 {
+    padding: 0.75rem;
+  }
+  .responsive-p-6 {
+    padding: 1rem;
+  }
+  .responsive-gap-4 {
+    gap: 0.75rem;
+  }
+  .responsive-gap-6 {
+    gap: 1rem;
+  }
 }
 
 /* Animation classes */
@@ -209,25 +198,14 @@ h1, h2, h3, h4, h5, h6, p, div {
   }
 }
 
-/* Force all pages to fit viewport */
-.page-container {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+/* Ensure buttons remain accessible */
+button, .clickable {
+  min-height: 32px;
+  min-width: 32px;
 }
 
-/* Remove white backgrounds globally */
-.bg-gray-100 {
-  background: #1a1a1a !important;
-}
-
-.bg-white {
-  background: #2a2a2a !important;
-}
-
-/* Ensure text remains readable */
-.text-black {
-  color: #ffffff !important;
+/* Remove default margins and paddings */
+h1, h2, h3, h4, h5, h6, p, div {
+  margin: 0;
+  padding: 0;
 }
