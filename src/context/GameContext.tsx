@@ -74,7 +74,7 @@ const initialState: GameState = {
   camera: {
     x: 200,
     y: 3800,
-    zoom: 0
+    zoom: 1
   },
   ui: {
     showMinimap: true,
