@@ -56,8 +56,76 @@ html {
   position: relative;
 }
 
-/* Responsive text scaling */
+/* Responsive text scaling - improved for better readability */
+.responsive-text-sm {
+  font-size: 0.875rem;
+}
+
+.responsive-text-base {
+  font-size: 1rem;
+}
+
+.responsive-text-lg {
+  font-size: 1.125rem;
+}
+
+.responsive-text-xl {
+  font-size: 1.25rem;
+}
+
+.responsive-text-2xl {
+  font-size: 1.5rem;
+}
+
+.responsive-text-3xl {
+  font-size: 1.875rem;
+}
+
+.responsive-text-4xl {
+  font-size: 2.25rem;
+}
+
+.responsive-text-5xl {
+  font-size: 3rem;
+}
+
+.responsive-text-6xl {
+  font-size: 3.75rem;
+}
+
+/* Medium screens */
 @media (max-width: 1200px) {
+  .responsive-text-lg {
+    font-size: 1rem;
+  }
+  .responsive-text-xl {
+    font-size: 1.125rem;
+  }
+  .responsive-text-2xl {
+    font-size: 1.375rem;
+  }
+  .responsive-text-3xl {
+    font-size: 1.625rem;
+  }
+  .responsive-text-4xl {
+    font-size: 2rem;
+  }
+  .responsive-text-5xl {
+    font-size: 2.5rem;
+  }
+  .responsive-text-6xl {
+    font-size: 3rem;
+  }
+}
+
+/* Small screens */
+@media (max-width: 768px) {
+  .responsive-text-sm {
+    font-size: 0.8rem;
+  }
+  .responsive-text-base {
+    font-size: 0.9rem;
+  }
   .responsive-text-lg {
     font-size: 1rem;
   }
@@ -73,27 +141,55 @@ html {
   .responsive-text-4xl {
     font-size: 1.75rem;
   }
-}
-
-@media (max-width: 768px) {
-  .responsive-text-lg {
-    font-size: 0.875rem;
+  .responsive-text-5xl {
+    font-size: 2.25rem;
   }
-  .responsive-text-xl {
-    font-size: 1rem;
-  }
-  .responsive-text-2xl {
-    font-size: 1.125rem;
-  }
-  .responsive-text-3xl {
-    font-size: 1.25rem;
-  }
-  .responsive-text-4xl {
-    font-size: 1.5rem;
+  .responsive-text-6xl {
+    font-size: 2.5rem;
   }
 }
 
 /* Responsive spacing */
+.responsive-p-2 {
+  padding: 0.5rem;
+}
+
+.responsive-p-3 {
+  padding: 0.75rem;
+}
+
+.responsive-p-4 {
+  padding: 1rem;
+}
+
+.responsive-p-6 {
+  padding: 1.5rem;
+}
+
+.responsive-p-8 {
+  padding: 2rem;
+}
+
+.responsive-gap-2 {
+  gap: 0.5rem;
+}
+
+.responsive-gap-3 {
+  gap: 0.75rem;
+}
+
+.responsive-gap-4 {
+  gap: 1rem;
+}
+
+.responsive-gap-6 {
+  gap: 1.5rem;
+}
+
+.responsive-gap-8 {
+  gap: 2rem;
+}
+
 @media (max-width: 768px) {
   .responsive-p-4 {
     padding: 0.75rem;
@@ -101,11 +197,17 @@ html {
   .responsive-p-6 {
     padding: 1rem;
   }
+  .responsive-p-8 {
+    padding: 1.25rem;
+  }
   .responsive-gap-4 {
     gap: 0.75rem;
   }
   .responsive-gap-6 {
     gap: 1rem;
+  }
+  .responsive-gap-8 {
+    gap: 1.25rem;
   }
 }
 
@@ -200,12 +302,33 @@ html {
 
 /* Ensure buttons remain accessible */
 button, .clickable {
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 36px;
+  min-width: 36px;
 }
 
 /* Remove default margins and paddings */
 h1, h2, h3, h4, h5, h6, p, div {
   margin: 0;
   padding: 0;
+}
+
+/* Content container for better spacing */
+.content-container {
+  max-width: 90vw;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    max-width: 85vw;
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-container {
+    max-width: 80vw;
+    padding: 2rem;
+  }
 }
