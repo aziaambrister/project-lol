@@ -18,9 +18,43 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        background: '/forestcabin.png',
         npcs: [],
-        items: [],
+        items: [
+          {
+            id: 'cabin-bread',
+            name: 'Fresh Bread',
+            type: 'consumable',
+            rarity: 'common',
+            value: 0,
+            effect: { type: 'heal', value: 30 },
+            icon: '🍞',
+            description: 'Freshly baked bread that restores 30 health',
+            usable: true
+          },
+          {
+            id: 'cabin-apple',
+            name: 'Red Apple',
+            type: 'consumable',
+            rarity: 'common',
+            value: 0,
+            effect: { type: 'heal', value: 20 },
+            icon: '🍎',
+            description: 'A crisp red apple that restores 20 health',
+            usable: true
+          },
+          {
+            id: 'cabin-cheese',
+            name: 'Cheese Wheel',
+            type: 'consumable',
+            rarity: 'common',
+            value: 0,
+            effect: { type: 'heal', value: 25 },
+            icon: '🧀',
+            description: 'Aged cheese that restores 25 health',
+            usable: true
+          }
+        ],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
     },
@@ -55,22 +89,7 @@ export const gameWorld: GameWorld = {
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
     },
-    // Desert Area Buildings (scaled positions)
-    {
-      id: 'desert-outpost',
-      name: 'Desert Outpost',
-      type: 'inn',
-      position: { x: 1350, y: 2100 },
-      size: { width: 135, height: 105 },
-      enterable: true,
-      sprite: '🏜️',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 67, y: 105, leadsTo: 'main-world' }]
-      }
-    },
+    // Desert Area Buildings (scaled positions) - REMOVED DESERT OUTPOST
     {
       id: 'desert-temple',
       name: 'Ancient Temple',

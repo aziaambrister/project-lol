@@ -4,11 +4,12 @@ import WelcomePage from './components/WelcomePage';
 import StartScreen from './components/StartScreen';
 import CharacterSelect from './components/CharacterSelect';
 import GameWorld from './components/GameWorld';
+import ForestCabinInterior from './components/ForestCabinInterior';
 import SuccessPage from './components/SuccessPage';
 
 function App() {
   const { state } = useGame();
-  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing' | 'success'>('welcome');
+  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing' | 'cabin-interior' | 'success'>('welcome');
 
   // Check if we're on the success page
   React.useEffect(() => {
@@ -17,6 +18,15 @@ function App() {
       setGameState('success');
     }
   }, []);
+
+  // Listen for cabin entry
+  React.useEffect(() => {
+    if (state.gameMode === 'building-interior' && state.player.currentBuilding === 'forest-cabin-1') {
+      setGameState('cabin-interior');
+    } else if (state.gameMode === 'world-exploration' && gameState === 'cabin-interior') {
+      setGameState('playing');
+    }
+  }, [state.gameMode, state.player.currentBuilding, gameState]);
 
   const handleEnterGame = () => {
     console.log('handleEnterGame called - transitioning to start screen');
@@ -72,6 +82,12 @@ function App() {
       {gameState === 'playing' && (
         <div className="absolute inset-0 z-10">
           <GameWorld />
+        </div>
+      )}
+
+      {gameState === 'cabin-interior' && (
+        <div className="absolute inset-0 z-10">
+          <ForestCabinInterior />
         </div>
       )}
 

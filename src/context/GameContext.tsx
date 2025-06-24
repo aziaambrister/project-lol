@@ -47,7 +47,8 @@ type GameAction =
   | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } }
   | { type: 'SHURIKEN_THROW'; payload: { targetId: string } }
   | { type: 'CONTACT_DAMAGE'; payload: { enemyId: string } }
-  | { type: 'TOGGLE_DEBUG_MODE' };
+  | { type: 'TOGGLE_DEBUG_MODE' }
+  | { type: 'HEAL_PLAYER'; payload: { amount: number } };
 
 const initialState: GameState = {
   gameMode: 'character-select',
@@ -494,6 +495,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     
+    case 'HEAL_PLAYER': {
+      const { amount } = action.payload;
+      const newHealth = Math.min(
+        state.player.character.maxHealth,
+        state.player.character.health + amount
+      );
+      
+      const healNumber: DamageNumber = {
+        id: `heal-${Date.now()}`,
+        value: amount,
+        position: { x: state.player.position.x, y: state.player.position.y - 30 },
+        type: 'heal',
+        timestamp: Date.now()
+      };
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          character: {
+            ...state.player.character,
+            health: newHealth
+          }
+        },
+        combat: {
+          ...state.combat,
+          damageNumbers: [...state.combat.damageNumbers, healNumber]
+        }
+      };
+    }
+    
     case 'UPDATE_DAY_NIGHT': {
       const currentTime = (state.currentWorld.dayNightCycle.currentTime + 0.1) % 24;
       let lightLevel = 1.0;
@@ -798,6 +830,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   
   const toggleDebugMode = () => {
     dispatch({ type: 'TOGGLE_DEBUG_MODE' });
+  };
+  
+  const healPlayer = (amount: number) => {
+    dispatch({ type: 'HEAL_PLAYER', payload: { amount } });
   };
   
   useEffect(() => {
