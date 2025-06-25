@@ -238,10 +238,24 @@ const GameWorld: React.FC = () => {
   const lightLevel = state.currentWorld.dayNightCycle.lightLevel;
   const overlayOpacity = 1 - lightLevel;
 
+ import React, { useRef } from 'react';
+
+function GameWorld() {
+  const gameAreaRef = useRef(null);
+
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
+    <div
+      ref={gameAreaRef}
+      tabIndex={0}
+      className="relative w-full h-screen overflow-hidden"
+      style={{ margin: 0, padding: 0 }}
+      onClick={() => gameAreaRef.current && gameAreaRef.current.focus()}
+    >
       {/* Map Background - Full Coverage */}
-      <div 
+      <div
+        // ...
+      >
+ 
         className="absolute"
         style={{
           left: -cameraX,
