@@ -35,8 +35,8 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-y-auto">
-      <div className="flex flex-col items-center justify-start p-4 min-h-screen">
+    <div className="w-full h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-y-auto">
+      <div className="flex flex-col items-center justify-start p-4">
         {/* Back Button */}
         <button
           onClick={onBack}
@@ -53,7 +53,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
           </h1>
           <p className="text-gray-300 mb-6 text-xl text-center">Select your character to begin your journey</p>
           
-          {/* CHARACTER GRID - Now Scrollable */}
+          {/* CHARACTER GRID - Now Properly Scrollable */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mb-8">
             {characters.map(character => {
               const isUnlocked = character.unlocked;
