@@ -35,23 +35,24 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden">
-      {/* Back Button */}
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden p-1">
+      {/* Back Button - TINY */}
       <button
         onClick={onBack}
-        className="absolute top-1 left-1 flex items-center px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors z-50"
+        className="absolute top-0.5 left-0.5 flex items-center px-1 py-0.5 bg-gray-700 hover:bg-gray-600 rounded text-xs transition-colors z-50"
       >
-        <ArrowLeft size={8} className="mr-1" />
+        <ArrowLeft size={6} className="mr-0.5" />
         <span className="text-xs">Back</span>
       </button>
 
-      <div className="content-container">
-        <h1 className="text-lg font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 text-center">
+      <div className="w-full max-w-7xl">
+        <h1 className="text-sm font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 text-center">
           Choose Your Fighter
         </h1>
-        <p className="text-gray-300 mb-2 text-xs text-center">Select your character to begin your journey</p>
+        <p className="text-gray-300 mb-1 text-xs text-center">Select your character</p>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 w-full max-w-6xl mb-2">
+        {/* SUPER TINY CHARACTER GRID */}
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full mb-1">
           {characters.map(character => {
             const isUnlocked = character.unlocked;
             const isSelected = selectedClass === character.class;
@@ -60,15 +61,15 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
             return (
               <div 
                 key={character.id}
-                className={`relative border-2 rounded-lg p-2 transition-all duration-300 transform cursor-pointer ${
+                className={`relative border rounded p-1 transition-all duration-300 transform cursor-pointer ${
                   isSelected 
-                    ? 'border-yellow-400 scale-105 bg-slate-700 shadow-2xl shadow-yellow-400/30' 
-                    : 'border-slate-600 bg-slate-800 hover:bg-slate-700 hover:scale-102'
+                    ? 'border-yellow-400 scale-105 bg-slate-700 shadow-lg shadow-yellow-400/30' 
+                    : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
                 } ${!isUnlocked ? 'opacity-60' : ''}`}
                 onClick={() => handleCharacterClick(character.class, isUnlocked)}
               >
-                {/* Character Portrait - KEEP VISIBLE */}
-                <div className="w-full h-16 mb-1 overflow-hidden rounded-lg bg-slate-900 flex items-center justify-center relative">
+                {/* Character Portrait - KEEP VISIBLE BUT SMALLER */}
+                <div className="w-full h-8 mb-0.5 overflow-hidden rounded bg-slate-900 flex items-center justify-center relative">
                   <img 
                     src={character.portrait} 
                     alt={character.name} 
@@ -77,9 +78,9 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                   {!isUnlocked && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-sm mb-1">🔒</div>
+                        <div className="text-xs">🔒</div>
                         {isPremium ? (
-                          <div className="text-yellow-400 font-bold text-xs">Premium</div>
+                          <div className="text-yellow-400 font-bold text-xs">$</div>
                         ) : (
                           <div className="text-yellow-400 font-bold text-xs">{character.price}</div>
                         )}
@@ -88,53 +89,24 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                   )}
                 </div>
                 
-                <h3 className="text-sm font-bold mb-1">{character.name}</h3>
-                <div className="mb-1 text-xs text-gray-300">
-                  {character.class === 'balanced-fighter' && 'Balanced stats'}
-                  {character.class === 'speed-demon' && 'Fast attacks'}
-                  {character.class === 'heavy-hitter' && 'High damage'}
-                  {character.class === 'defensive-tank' && 'Strong defense'}
-                  {character.class === 'founder' && 'Ultimate power'}
-                  {character.class === 'mystic-alchemist' && 'Alchemical arts'}
-                </div>
+                <h3 className="text-xs font-bold mb-0.5 truncate">{character.name}</h3>
                 
-                {/* Stats Display - TINY */}
-                <div className="grid grid-cols-2 gap-1 mb-1">
-                  <div className="flex items-center bg-slate-700 p-1 rounded text-xs">
-                    <Heart className="text-red-500 mr-1" size={6} />
-                    <span>{character.health}</span>
+                {/* TINY Stats Display */}
+                <div className="grid grid-cols-2 gap-0.5 mb-0.5">
+                  <div className="flex items-center bg-slate-700 p-0.5 rounded text-xs">
+                    <Heart className="text-red-500 mr-0.5" size={4} />
+                    <span className="text-xs">{character.health}</span>
                   </div>
-                  <div className="flex items-center bg-slate-700 p-1 rounded text-xs">
-                    <Sword className="text-orange-500 mr-1" size={6} />
-                    <span>{character.attack}</span>
+                  <div className="flex items-center bg-slate-700 p-0.5 rounded text-xs">
+                    <Sword className="text-orange-500 mr-0.5" size={4} />
+                    <span className="text-xs">{character.attack}</span>
                   </div>
-                  <div className="flex items-center bg-slate-700 p-1 rounded text-xs">
-                    <Shield className="text-blue-500 mr-1" size={6} />
-                    <span>{character.defense}</span>
-                  </div>
-                  <div className="flex items-center bg-slate-700 p-1 rounded text-xs">
-                    <Zap className="text-yellow-500 mr-1" size={6} />
-                    <span>{character.speed}</span>
-                  </div>
-                </div>
-                
-                {/* Move Set Preview - TINY */}
-                <div className="text-xs text-gray-400">
-                  <h4 className="font-semibold mb-1 text-white text-xs">Moves:</h4>
-                  <ul className="space-y-0">
-                    {character.moveSet.filter(move => move.type === 'special').slice(0, 1).map(move => (
-                      <li key={move.id} className="flex items-center">
-                        <div className="w-1 h-1 bg-yellow-400 rounded-full mr-1"></div>
-                        <span className="truncate text-xs">{move.name}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
 
                 {/* Selection indicator */}
                 {isSelected && (
-                  <div className="absolute top-1 right-1 z-10">
-                    <div className="bg-yellow-400 text-black font-bold px-1 py-0.5 rounded-full text-xs animate-pulse">
+                  <div className="absolute top-0 right-0 z-10">
+                    <div className="bg-yellow-400 text-black font-bold px-0.5 py-0 rounded text-xs">
                       ✓
                     </div>
                   </div>
@@ -144,39 +116,35 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
           })}
         </div>
         
-        {/* Current selection display */}
-        <div className="mb-2 text-center">
-          <p className="text-sm text-gray-300">
-            Selected: <span className="text-yellow-400 font-bold text-base">
+        {/* Current selection display - TINY */}
+        <div className="mb-1 text-center">
+          <p className="text-xs text-gray-300">
+            Selected: <span className="text-yellow-400 font-bold text-sm">
               {characters.find(c => c.class === selectedClass)?.name || 'None'}
             </span>
           </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Ready to enter the world of combat!
-          </p>
         </div>
         
-        {/* START GAME BUTTON */}
+        {/* START GAME BUTTON - VISIBLE */}
         <div className="relative text-center">
           <button 
             type="button"
-            className={`px-8 py-2 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold text-base text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden ${
+            className={`px-4 py-1.5 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-lg font-bold text-sm text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-xl relative overflow-hidden ${
               isStarting ? 'opacity-75 scale-95' : 'hover:shadow-yellow-500/50'
             }`}
             onClick={handleStartGame}
             disabled={isStarting}
             style={{ 
-              minWidth: '120px',
-              minHeight: '32px',
+              minWidth: '100px',
+              minHeight: '28px',
               zIndex: 1000,
               position: 'relative'
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-full hover:translate-x-[-200%] transition-transform duration-1000"></div>
             <div className="relative z-10 flex items-center justify-center">
               {isStarting ? (
                 <>
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-black mr-1"></div>
+                  <div className="animate-spin rounded-full h-2 w-2 border-b border-black mr-1"></div>
                   Starting...
                 </>
               ) : (
@@ -186,13 +154,11 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
               )}
             </div>
           </button>
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-xl blur-xl opacity-40 animate-pulse pointer-events-none"></div>
         </div>
         
-        {/* Controls hint */}
-        <div className="mt-2 text-center text-xs text-gray-400">
-          <div>🎮 WASD to move • 👊 Space to attack • 🥷 2 to throw shuriken</div>
-          <div>🛡️ Shift to block • 🏠 Enter buildings • 💬 Talk to NPCs</div>
+        {/* Controls hint - TINY */}
+        <div className="mt-1 text-center text-xs text-gray-400">
+          <div>🎮 WASD move • 👊 Space attack • 🥷 2 shuriken • 🛡️ Shift block</div>
         </div>
       </div>
     </div>

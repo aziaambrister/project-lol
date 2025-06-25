@@ -108,78 +108,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         effect: { type: 'defense' as const, value: 2 },
         icon: '🛡️',
         price: 160
-      },
-      {
-        id: 'mega-health-upgrade',
-        name: 'Mega Health Boost',
-        description: 'Permanently increases maximum health by 50 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'rare' as const,
-        usable: false,
-        effect: { type: 'health' as const, value: 50 },
-        icon: '💖',
-        price: 350
-      },
-      {
-        id: 'super-speed-upgrade',
-        name: 'Super Speed Boost',
-        description: 'Permanently increases movement speed by 4 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'rare' as const,
-        usable: false,
-        effect: { type: 'speed' as const, value: 4 },
-        icon: '🌪️',
-        price: 280
-      },
-      {
-        id: 'power-upgrade',
-        name: 'Power Boost',
-        description: 'Permanently increases attack damage by 6 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'rare' as const,
-        usable: false,
-        effect: { type: 'damage' as const, value: 6 },
-        icon: '💥',
-        price: 320
-      },
-      {
-        id: 'fortress-upgrade',
-        name: 'Fortress Defense',
-        description: 'Permanently increases defense by 5 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'rare' as const,
-        usable: false,
-        effect: { type: 'defense' as const, value: 5 },
-        icon: '🏰',
-        price: 300
-      },
-      {
-        id: 'ultimate-upgrade',
-        name: 'Ultimate Enhancement',
-        description: 'Permanently increases all stats by 3 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'epic' as const,
-        usable: false,
-        effect: { type: 'damage' as const, value: 3 },
-        icon: '⭐',
-        price: 500
-      },
-      {
-        id: 'legendary-upgrade',
-        name: 'Legendary Ascension',
-        description: 'Permanently increases all stats by 5 points.',
-        type: 'upgrade' as const,
-        value: 0,
-        rarity: 'legendary' as const,
-        usable: false,
-        effect: { type: 'damage' as const, value: 5 },
-        icon: '👑',
-        price: 800
       }
     ],
     premium: [
@@ -274,96 +202,81 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white p-4 overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white p-1 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        {/* Header - TINY */}
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
             <button
               onClick={onClose}
-              className="mr-4 p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              className="mr-1 p-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
             >
-              <ArrowLeft size={24} />
+              <ArrowLeft size={8} />
             </button>
             <div>
-              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+              <h1 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
                 Fighter's Shop
               </h1>
-              <p className="text-gray-300 mt-2">Upgrade your arsenal and abilities</p>
+              <p className="text-gray-300 text-xs">Upgrade your arsenal</p>
             </div>
           </div>
           
-          {/* Currency Display */}
-          <div className="flex items-center bg-yellow-500/20 rounded-lg px-6 py-3 border border-yellow-400/50">
-            <Coins className="text-yellow-400 mr-3" size={24} />
+          {/* Currency Display - TINY */}
+          <div className="flex items-center bg-yellow-500/20 rounded px-2 py-1 border border-yellow-400/50">
+            <Coins className="text-yellow-400 mr-1" size={8} />
             <div>
-              <div className="text-yellow-400 font-bold text-xl">{player.currency}</div>
-              <div className="text-yellow-300 text-sm">Coins</div>
+              <div className="text-yellow-400 font-bold text-xs">{player.currency}</div>
+              <div className="text-yellow-300 text-xs">Coins</div>
             </div>
           </div>
         </div>
         
-        {/* Category Tabs */}
-        <div className="flex space-x-4 mb-8 overflow-x-auto">
+        {/* Category Tabs - TINY */}
+        <div className="flex space-x-1 mb-1 overflow-x-auto">
           {Object.keys(shopItems).map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category as any)}
-              className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex items-center ${
+              className={`px-2 py-1 rounded font-bold transition-all duration-300 whitespace-nowrap flex items-center text-xs ${
                 selectedCategory === category
                   ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black'
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
             >
-              {category === 'premium' && <CreditCard className="mr-2" size={18} />}
+              {category === 'premium' && <CreditCard className="mr-1" size={6} />}
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Premium Section Header */}
+        {/* Premium Section Header - TINY */}
         {selectedCategory === 'premium' && (
-          <div className="mb-8 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg p-6 border border-purple-500/50">
-            <div className="flex items-center mb-4">
-              <Crown className="text-yellow-400 mr-3" size={32} />
+          <div className="mb-1 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded p-1 border border-purple-500/50">
+            <div className="flex items-center mb-1">
+              <Crown className="text-yellow-400 mr-1" size={8} />
               <div>
-                <h2 className="text-2xl font-bold text-yellow-400">Premium Store</h2>
-                <p className="text-gray-300">Purchase with real money for instant rewards</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center">
-                <Zap className="text-blue-400 mr-2" size={16} />
-                <span>Instant delivery</span>
-              </div>
-              <div className="flex items-center">
-                <Star className="text-yellow-400 mr-2" size={16} />
-                <span>Exclusive content</span>
-              </div>
-              <div className="flex items-center">
-                <Crown className="text-purple-400 mr-2" size={16} />
-                <span>Support development</span>
+                <h2 className="text-sm font-bold text-yellow-400">Premium Store</h2>
+                <p className="text-gray-300 text-xs">Purchase with real money</p>
               </div>
             </div>
             {!user && (
-              <div className="mt-4 bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3">
-                <div className="text-yellow-400 font-bold text-sm">⚠️ Login Required</div>
-                <div className="text-white text-xs">Please log in to purchase premium items</div>
+              <div className="bg-yellow-500/20 border border-yellow-400/50 rounded p-1">
+                <div className="text-yellow-400 font-bold text-xs">⚠️ Login Required</div>
               </div>
             )}
           </div>
         )}
 
-        {/* Error Message */}
+        {/* Error Message - TINY */}
         {checkoutError && (
-          <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-lg p-4">
-            <div className="text-red-400 font-bold">Payment Error</div>
-            <div className="text-white text-sm">{checkoutError}</div>
+          <div className="mb-1 bg-red-500/20 border border-red-500/50 rounded p-1">
+            <div className="text-red-400 font-bold text-xs">Payment Error</div>
+            <div className="text-white text-xs">{checkoutError}</div>
           </div>
         )}
         
-        {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-h-96 overflow-y-auto">
+        {/* Items Grid - SUPER TINY */}
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1 max-h-64 overflow-y-auto">
           {currentItems.map((item) => {
             const canAfford = selectedCategory === 'premium' ? !!user : player.currency >= item.price;
             const isSelected = selectedItem === item.id;
@@ -372,7 +285,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800 rounded-lg p-4 border-2 transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
+                className={`bg-gray-800 rounded p-1 border transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
                   isSelected ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 
                   canAfford ? 'border-gray-600 hover:border-gray-500' : 'border-red-600 opacity-60'
                 } ${isPremium ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30' : ''}`}
@@ -380,74 +293,32 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               >
                 {/* Premium Badge */}
                 {isPremium && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-2 py-1 rounded-full text-xs font-bold">
-                    PREMIUM
-                  </div>
-                )}
-
-                {/* Bundle Badge */}
-                {item.bundle && (
-                  <div className="absolute -top-2 -left-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    BUNDLE
+                  <div className="absolute -top-0.5 -right-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-1 rounded-full text-xs font-bold">
+                    $
                   </div>
                 )}
                 
                 {/* Item Icon */}
-                <div className="text-center mb-3">
-                  <div className="text-4xl mb-2">{item.icon}</div>
-                  <h3 className="text-lg font-bold">{item.name}</h3>
-                  <div className={`text-xs px-2 py-1 rounded-full inline-block mt-1 border ${getRarityColor(item.rarity)}`}>
-                    {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+                <div className="text-center mb-1">
+                  <div className="text-lg mb-0.5">{item.icon}</div>
+                  <h3 className="text-xs font-bold truncate">{item.name}</h3>
+                  <div className={`text-xs px-1 rounded-full inline-block border ${getRarityColor(item.rarity)}`}>
+                    {item.rarity.charAt(0).toUpperCase()}
                   </div>
                 </div>
-                
-                {/* Item Description */}
-                <p className="text-gray-300 text-xs mb-3 text-center">{item.description}</p>
-
-                {/* Bundle Contents */}
-                {item.includes && (
-                  <div className="bg-gray-700/50 rounded-lg p-2 mb-3">
-                    <div className="text-yellow-400 text-xs font-bold mb-1">Bundle Includes:</div>
-                    {item.includes.map((bundleItem: any, index: number) => (
-                      <div key={index} className="flex items-center text-xs mb-1">
-                        <span className="mr-1">{bundleItem.icon}</span>
-                        <div>
-                          <div className="font-medium">{bundleItem.name}</div>
-                          <div className="text-gray-400 text-xs">{bundleItem.description}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Item Effect */}
-                {item.effect && (
-                  <div className="bg-gray-700 rounded-lg p-2 mb-3">
-                    <div className="text-green-400 text-xs font-bold">Effect:</div>
-                    <div className="text-white text-xs">
-                      {item.effect.type === 'heal' && `Restores ${item.effect.value} health`}
-                      {item.effect.type === 'damage' && `+${item.effect.value} Attack Damage`}
-                      {item.effect.type === 'buff' && `+${item.effect.value} Defense`}
-                      {item.effect.type === 'health' && `+${item.effect.value} Max Health`}
-                      {item.effect.type === 'speed' && `+${item.effect.value} Movement Speed`}
-                      {item.effect.type === 'defense' && `+${item.effect.value} Defense`}
-                      {item.effect.duration && ` for ${item.effect.duration} turns`}
-                    </div>
-                  </div>
-                )}
                 
                 {/* Price and Purchase */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     {isPremium ? (
                       <>
-                        <CreditCard className="text-green-400 mr-1" size={12} />
-                        <span className="text-green-400 font-bold text-sm">{item.realPrice}</span>
+                        <CreditCard className="text-green-400 mr-0.5" size={4} />
+                        <span className="text-green-400 font-bold text-xs">{item.realPrice}</span>
                       </>
                     ) : (
                       <>
-                        <Coins className="text-yellow-400 mr-1" size={12} />
-                        <span className="text-yellow-400 font-bold text-sm">{item.price}</span>
+                        <Coins className="text-yellow-400 mr-0.5" size={4} />
+                        <span className="text-yellow-400 font-bold text-xs">{item.price}</span>
                       </>
                     )}
                   </div>
@@ -462,7 +333,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                       }
                     }}
                     disabled={(!canAfford && !isPremium) || (isPremium && isLoading)}
-                    className={`px-3 py-1 rounded-lg font-bold transition-all duration-300 flex items-center text-xs ${
+                    className={`px-1 py-0.5 rounded font-bold transition-all duration-300 flex items-center text-xs ${
                       isPremium
                         ? canAfford
                           ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
@@ -472,10 +343,10 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    <ShoppingCart size={12} className="mr-1" />
-                    {isLoading && isPremium ? 'Processing...' : 
-                     isPremium ? (canAfford ? 'Buy Now' : 'Login Required') : 
-                     canAfford ? 'Buy' : 'Too Expensive'}
+                    <ShoppingCart size={4} className="mr-0.5" />
+                    {isLoading && isPremium ? '...' : 
+                     isPremium ? (canAfford ? 'Buy' : 'Login') : 
+                     canAfford ? 'Buy' : 'X'}
                   </button>
                 </div>
               </div>
@@ -483,38 +354,32 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           })}
         </div>
         
-        {/* Shop Info */}
-        <div className="mt-12 bg-gray-800/50 rounded-lg p-6 border border-gray-600">
-          <div className="flex items-center mb-4">
-            <Star className="text-yellow-400 mr-2" size={24} />
-            <h3 className="text-xl font-bold">Shop Information</h3>
+        {/* Shop Info - TINY */}
+        <div className="mt-1 bg-gray-800/50 rounded p-1 border border-gray-600">
+          <div className="flex items-center mb-1">
+            <Star className="text-yellow-400 mr-1" size={8} />
+            <h3 className="text-xs font-bold">Shop Information</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs text-gray-300">
             <div>
-              <h4 className="font-bold text-white mb-2">💰 Earning Coins:</h4>
-              <ul className="space-y-1">
+              <h4 className="font-bold text-white mb-0.5 text-xs">💰 Earning Coins:</h4>
+              <ul className="space-y-0 text-xs">
                 <li>• Defeat enemies to earn coins</li>
                 <li>• Each enemy drops 10 coins</li>
-                <li>• Stronger enemies may drop more</li>
-                <li>• Complete quests for bonus rewards</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-2">🛡️ Equipment:</h4>
-              <ul className="space-y-1">
+              <h4 className="font-bold text-white mb-0.5 text-xs">🛡️ Equipment:</h4>
+              <ul className="space-y-0 text-xs">
                 <li>• Weapons increase attack damage</li>
                 <li>• Armor provides defense bonuses</li>
-                <li>• Upgrades are permanent improvements</li>
-                <li>• Higher rarity = better stats</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-2">💳 Premium Store:</h4>
-              <ul className="space-y-1">
+              <h4 className="font-bold text-white mb-0.5 text-xs">💳 Premium Store:</h4>
+              <ul className="space-y-0 text-xs">
                 <li>• Instant coin packages available</li>
                 <li>• Exclusive character bundles</li>
-                <li>• Support game development</li>
-                <li>• Secure payment processing</li>
               </ul>
             </div>
           </div>
