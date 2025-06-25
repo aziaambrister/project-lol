@@ -1,5 +1,5 @@
 // 2D Fighting Game Types
-export type CharacterClass = 'balanced-fighter' | 'speed-demon' | 'heavy-hitter' | 'defensive-tank' | 'founder' | 'mystic-alchemist';
+export type CharacterClass = 'balanced-fighter' | 'speed-demon' | 'heavy-hitter' | 'defensive-tank' | 'founder' | 'mystic-alchemist' | 'shadow-ninja';
 
 export interface Character {
   id: string;
