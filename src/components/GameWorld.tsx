@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import Player from './Player';
 import Enemy from './Enemy';
@@ -9,7 +9,6 @@ import EscapeMenu from './EscapeMenu';
 import EnemyDebugOverlay from './EnemyDebugOverlay';
 
 const GameWorld: React.FC = () => {
-    const gameAreaRef = useRef<HTMLDivElement>(null); // <-- Add this line
   const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -239,24 +238,10 @@ const GameWorld: React.FC = () => {
   const lightLevel = state.currentWorld.dayNightCycle.lightLevel;
   const overlayOpacity = 1 - lightLevel;
 
- import React, { useRef } from 'react';
-
-function GameWorld() {
-  const gameAreaRef = useRef(null);
-
   return (
-    <div
-      ref={gameAreaRef}
-      tabIndex={0}
-      className="relative w-full h-screen overflow-hidden"
-      style={{ margin: 0, padding: 0 }}
-      onClick={() => gameAreaRef.current && gameAreaRef.current.focus()}
-    >
+    <div className="relative w-full h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
       {/* Map Background - Full Coverage */}
-      <div
-        // ...
-      >
- 
+      <div 
         className="absolute"
         style={{
           left: -cameraX,
