@@ -60,16 +60,38 @@ export const gameWorld: GameWorld = {
     },
     {
       id: 'forest-cabin-2',
-      name: 'Forest Cabin',
+      name: 'Cozy Forest Cabin',
       type: 'house',
       position: { x: 600, y: 2200 },
       size: { width: 120, height: 90 },
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        background: '/forest cabin 2.png', // NEW FORESTCABIN2.PNG BACKGROUND
         npcs: [],
-        items: [],
+        items: [
+          {
+            id: 'cabin2-potion',
+            name: 'Health Potion',
+            type: 'consumable',
+            rarity: 'uncommon',
+            value: 0,
+            effect: { type: 'heal', value: 50 },
+            icon: '🧪',
+            description: 'A magical potion that restores 50 health',
+            usable: true
+          },
+          {
+            id: 'cabin2-scroll',
+            name: 'Ancient Scroll',
+            type: 'key',
+            rarity: 'rare',
+            value: 0,
+            icon: '📜',
+            description: 'An ancient scroll with mysterious writings',
+            usable: false
+          }
+        ],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
     },

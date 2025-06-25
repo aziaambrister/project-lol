@@ -15,15 +15,17 @@ const GameWorld: React.FC = () => {
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
-  // Handle keyboard input - COMPLETELY RESET WASD SYSTEM
+  // COMPLETELY RESET WASD SYSTEM - Fix all movement issues
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
-      // Prevent default browser behavior for WASD keys
+      // Prevent default for WASD keys
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
+        e.stopPropagation();
         setKeysPressed(prev => new Set(prev).add(key));
+        return;
       }
       
       // ESC key to toggle menu
@@ -109,6 +111,7 @@ const GameWorld: React.FC = () => {
       // WASD Movement keys - Remove from pressed keys set
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
+        e.stopPropagation();
         setKeysPressed(prev => {
           const newSet = new Set(prev);
           newSet.delete(key);
@@ -117,13 +120,13 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    // Add event listeners
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
+    // Use document instead of window for better event handling
+    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('keyup', handleKeyUp, true);
     
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('keyup', handleKeyUp, true);
     };
   }, [performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
 
@@ -141,7 +144,7 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // SIMPLE MOVEMENT LOOP - Process keys every frame
+  // FIXED MOVEMENT LOOP - Process keys continuously
   useEffect(() => {
     const moveInterval = setInterval(() => {
       // Stop movement if no keys pressed or ESC menu is open

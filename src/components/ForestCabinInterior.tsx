@@ -67,13 +67,29 @@ const ForestCabinInterior: React.FC = () => {
     console.log(`Picked up ${food.name} - Healed ${food.healAmount} HP`);
   };
 
+  // Determine which background to use based on current building
+  const getBackgroundImage = () => {
+    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
+    if (currentBuilding?.interior?.background) {
+      return currentBuilding.interior.background;
+    }
+    // Default fallback
+    return '/forestcabin.png';
+  };
+
+  // Get cabin name based on current building
+  const getCabinName = () => {
+    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
+    return currentBuilding?.name || 'Forest Cabin';
+  };
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Forest Cabin Background */}
+      {/* Forest Cabin Background - Dynamic based on current building */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: 'url(/forestcabin.png)',
+          backgroundImage: `url(${getBackgroundImage()})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -91,16 +107,16 @@ const ForestCabinInterior: React.FC = () => {
         Exit Cabin
       </button>
 
-      {/* Cabin Title */}
+      {/* Cabin Title - Dynamic */}
       <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30">
         <div className="bg-amber-800/90 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-amber-500">
-          <h1 className="text-2xl font-bold text-amber-100 text-center">🏠 Forest Cabin</h1>
+          <h1 className="text-2xl font-bold text-amber-100 text-center">🏠 {getCabinName()}</h1>
           <p className="text-amber-200 text-sm text-center mt-1">A cozy refuge in the woods</p>
         </div>
       </div>
 
-      {/* Food Items on Table */}
-      {foodItems.map((food) => (
+      {/* Food Items on Table - Only show for original cabin */}
+      {state.player.currentBuilding === 'forest-cabin-1' && foodItems.map((food) => (
         !food.picked && (
           <div
             key={food.id}
@@ -133,11 +149,21 @@ const ForestCabinInterior: React.FC = () => {
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30">
         <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-amber-500/50">
           <div className="text-center">
-            <h3 className="text-amber-400 font-bold mb-2">🍽️ Forest Cabin</h3>
+            <h3 className="text-amber-400 font-bold mb-2">🍽️ {getCabinName()}</h3>
             <div className="text-white text-sm space-y-1">
-              <div>🍞 Click on food items to restore health</div>
-              <div>🏠 A safe haven for weary travelers</div>
-              <div>🔥 Warm fireplace provides comfort</div>
+              {state.player.currentBuilding === 'forest-cabin-1' ? (
+                <>
+                  <div>🍞 Click on food items to restore health</div>
+                  <div>🏠 A safe haven for weary travelers</div>
+                  <div>🔥 Warm fireplace provides comfort</div>
+                </>
+              ) : (
+                <>
+                  <div>🏠 A cozy forest retreat</div>
+                  <div>📚 Books and scrolls line the shelves</div>
+                  <div>🕯️ Candlelight illuminates the room</div>
+                </>
+              )}
             </div>
           </div>
         </div>
