@@ -44,107 +44,107 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
       <div className={`content-container text-center relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         
         {/* Main Title */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Crown className="text-yellow-400 mr-3 animate-pulse" size={40} />
+        <div className="mb-12">
+          <div className="flex items-center justify-center mb-6">
+            <Crown className="text-yellow-400 mr-4 animate-pulse" size={48} />
             <h1 className="responsive-text-5xl lg:responsive-text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 animate-pulse">
               FIGHTER'S
             </h1>
-            <Crown className="text-yellow-400 ml-3 animate-pulse" size={40} />
+            <Crown className="text-yellow-400 ml-4 animate-pulse" size={48} />
           </div>
-          <h2 className="responsive-text-4xl lg:responsive-text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-400 mb-4">
+          <h2 className="responsive-text-4xl lg:responsive-text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-400 mb-6">
             REALM
           </h2>
-          <div className="flex items-center justify-center space-x-3 responsive-text-xl text-gray-300 mb-8">
-            <Sword className="text-red-400 animate-bounce" size={28} />
+          <div className="flex items-center justify-center space-x-4 responsive-text-xl text-gray-300 mb-8">
+            <Sword className="text-red-400 animate-bounce" size={32} />
             <span className="font-semibold">Epic 2D Combat Adventure</span>
-            <Shield className="text-blue-400 animate-bounce" size={28} style={{ animationDelay: '0.5s' }} />
+            <Shield className="text-blue-400 animate-bounce" size={32} style={{ animationDelay: '0.5s' }} />
           </div>
         </div>
 
         {/* Feature Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 responsive-gap-6 lg:responsive-gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 responsive-gap-8 mb-16 w-full max-w-6xl">
           <div 
-            className="bg-gradient-to-br from-red-900/40 to-red-700/20 backdrop-blur-sm responsive-p-6 lg:responsive-p-8 rounded-xl border border-red-500/30 transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-br from-red-900/40 to-red-700/20 backdrop-blur-sm responsive-p-8 rounded-xl border border-red-500/30 transition-all duration-300 transform hover:scale-105"
             onMouseEnter={() => setHoveredFeature('combat')}
             onMouseLeave={() => setHoveredFeature(null)}
           >
-            <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-              <Sword size={36} className="text-red-400" />
+            <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+              <Sword size={40} className="text-red-400" />
               {hoveredFeature === 'combat' && (
                 <div className="absolute inset-0 bg-red-500/30 rounded-full animate-ping"></div>
               )}
             </div>
-            <h3 className="responsive-text-xl font-bold mb-3 text-red-300">Intense Combat</h3>
-            <p className="text-gray-300 responsive-text-base leading-relaxed">
+            <h3 className="responsive-text-2xl font-bold mb-4 text-red-300">Intense Combat</h3>
+            <p className="text-gray-300 responsive-text-lg leading-relaxed">
               Master fluid combat mechanics with combos, special moves, and strategic timing.
             </p>
           </div>
 
           <div 
-            className="bg-gradient-to-br from-blue-900/40 to-blue-700/20 backdrop-blur-sm responsive-p-6 lg:responsive-p-8 rounded-xl border border-blue-500/30 transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-br from-blue-900/40 to-blue-700/20 backdrop-blur-sm responsive-p-8 rounded-xl border border-blue-500/30 transition-all duration-300 transform hover:scale-105"
             onMouseEnter={() => setHoveredFeature('world')}
             onMouseLeave={() => setHoveredFeature(null)}
           >
-            <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-              <Shield size={36} className="text-blue-400" />
+            <div className="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+              <Shield size={40} className="text-blue-400" />
               {hoveredFeature === 'world' && (
                 <div className="absolute inset-0 bg-blue-500/30 rounded-full animate-ping"></div>
               )}
             </div>
-            <h3 className="responsive-text-xl font-bold mb-3 text-blue-300">Open World</h3>
-            <p className="text-gray-300 responsive-text-base leading-relaxed">
+            <h3 className="responsive-text-2xl font-bold mb-4 text-blue-300">Open World</h3>
+            <p className="text-gray-300 responsive-text-lg leading-relaxed">
               Explore vast landscapes with enterable buildings and dynamic weather.
             </p>
           </div>
 
           <div 
-            className="bg-gradient-to-br from-purple-900/40 to-purple-700/20 backdrop-blur-sm responsive-p-6 lg:responsive-p-8 rounded-xl border border-purple-500/30 transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-br from-purple-900/40 to-purple-700/20 backdrop-blur-sm responsive-p-8 rounded-xl border border-purple-500/30 transition-all duration-300 transform hover:scale-105"
             onMouseEnter={() => setHoveredFeature('progression')}
             onMouseLeave={() => setHoveredFeature(null)}
           >
-            <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-              <Star size={36} className="text-purple-400" />
+            <div className="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+              <Star size={40} className="text-purple-400" />
               {hoveredFeature === 'progression' && (
                 <div className="absolute inset-0 bg-purple-500/30 rounded-full animate-ping"></div>
               )}
             </div>
-            <h3 className="responsive-text-xl font-bold mb-3 text-purple-300">Character Growth</h3>
-            <p className="text-gray-300 responsive-text-base leading-relaxed">
+            <h3 className="responsive-text-2xl font-bold mb-4 text-purple-300">Character Growth</h3>
+            <p className="text-gray-300 responsive-text-lg leading-relaxed">
               Choose from unique fighter classes and unlock powerful abilities.
             </p>
           </div>
         </div>
 
         {/* Game Stats */}
-        <div className="flex flex-wrap justify-center responsive-gap-4 mb-10">
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 border border-yellow-400/30">
-            <div className="responsive-text-3xl font-bold text-yellow-400">6+</div>
-            <div className="text-gray-300 responsive-text-sm">Fighter Classes</div>
+        <div className="flex flex-wrap justify-center responsive-gap-6 mb-12">
+          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-8 py-4 border border-yellow-400/30">
+            <div className="responsive-text-4xl font-bold text-yellow-400">6+</div>
+            <div className="text-gray-300 responsive-text-lg">Fighter Classes</div>
           </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 border border-green-400/30">
-            <div className="responsive-text-3xl font-bold text-green-400">15+</div>
-            <div className="text-gray-300 responsive-text-sm">Enemy Types</div>
+          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-8 py-4 border border-green-400/30">
+            <div className="responsive-text-4xl font-bold text-green-400">15+</div>
+            <div className="text-gray-300 responsive-text-lg">Enemy Types</div>
           </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 border border-blue-400/30">
-            <div className="responsive-text-3xl font-bold text-blue-400">100+</div>
-            <div className="text-gray-300 responsive-text-sm">Shop Items</div>
+          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-8 py-4 border border-blue-400/30">
+            <div className="responsive-text-4xl font-bold text-blue-400">100+</div>
+            <div className="text-gray-300 responsive-text-lg">Shop Items</div>
           </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 border border-purple-400/30">
-            <div className="responsive-text-3xl font-bold text-purple-400">∞</div>
-            <div className="text-gray-300 responsive-text-sm">Adventure</div>
+          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-8 py-4 border border-purple-400/30">
+            <div className="responsive-text-4xl font-bold text-purple-400">∞</div>
+            <div className="text-gray-300 responsive-text-lg">Adventure</div>
           </div>
         </div>
 
         {/* Main Enter Button */}
-        <div className="relative mb-10">
+        <div className="relative mb-12">
           <button 
             type="button"
-            className="group px-20 py-5 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold responsive-text-3xl text-black transition-all duration-500 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden"
+            className="group px-24 py-6 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold responsive-text-3xl text-black transition-all duration-500 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden"
             onClick={handleEnterClick}
             style={{ 
-              minWidth: '320px',
-              minHeight: '80px',
+              minWidth: '360px',
+              minHeight: '90px',
               zIndex: 1000,
               position: 'relative'
             }}
@@ -154,9 +154,9 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             
             {/* Button content */}
             <div className="relative z-10 flex items-center justify-center">
-              <Gamepad2 className="mr-4 animate-bounce" size={32} />
+              <Gamepad2 className="mr-4 animate-bounce" size={36} />
               <span>ENTER REALM</span>
-              <Play className="ml-4 animate-bounce" size={32} style={{ animationDelay: '0.5s' }} />
+              <Play className="ml-4 animate-bounce" size={36} style={{ animationDelay: '0.5s' }} />
             </div>
           </button>
           
@@ -165,51 +165,51 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         </div>
 
         {/* Game Features */}
-        <div className="grid grid-cols-2 md:grid-cols-4 responsive-gap-4 mb-8 responsive-text-base">
-          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-600/50">
-            <Zap className="text-yellow-400 mr-2" size={18} />
+        <div className="grid grid-cols-2 md:grid-cols-4 responsive-gap-4 mb-10 responsive-text-lg w-full max-w-4xl">
+          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-6 py-4 border border-gray-600/50">
+            <Zap className="text-yellow-400 mr-3" size={20} />
             <span>Real-time Combat</span>
           </div>
-          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-600/50">
-            <Crown className="text-purple-400 mr-2" size={18} />
+          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-6 py-4 border border-gray-600/50">
+            <Crown className="text-purple-400 mr-3" size={20} />
             <span>Character Progression</span>
           </div>
-          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-600/50">
-            <Shield className="text-blue-400 mr-2" size={18} />
+          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-6 py-4 border border-gray-600/50">
+            <Shield className="text-blue-400 mr-3" size={20} />
             <span>Strategic Defense</span>
           </div>
-          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-600/50">
-            <Star className="text-green-400 mr-2" size={18} />
+          <div className="flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg px-6 py-4 border border-gray-600/50">
+            <Star className="text-green-400 mr-3" size={20} />
             <span>Epic Rewards</span>
           </div>
         </div>
 
         {/* Controls Preview */}
-        <div className="bg-black/50 backdrop-blur-sm rounded-lg responsive-p-6 border border-gray-600/50 mb-6">
-          <h3 className="responsive-text-xl font-bold mb-4 text-yellow-400">⚔️ COMBAT CONTROLS ⚔️</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 responsive-gap-4 responsive-text-base">
+        <div className="bg-black/50 backdrop-blur-sm rounded-lg responsive-p-8 border border-gray-600/50 mb-8 w-full max-w-4xl">
+          <h3 className="responsive-text-2xl font-bold mb-6 text-yellow-400">⚔️ COMBAT CONTROLS ⚔️</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 responsive-gap-6 responsive-text-lg">
             <div className="text-center">
-              <div className="bg-gray-700 rounded-lg px-3 py-2 mb-2 font-mono responsive-text-base">WASD</div>
+              <div className="bg-gray-700 rounded-lg px-4 py-3 mb-3 font-mono responsive-text-xl">WASD</div>
               <div className="text-gray-300">Movement</div>
             </div>
             <div className="text-center">
-              <div className="bg-gray-700 rounded-lg px-3 py-2 mb-2 font-mono responsive-text-base">SPACE</div>
+              <div className="bg-gray-700 rounded-lg px-4 py-3 mb-3 font-mono responsive-text-xl">SPACE</div>
               <div className="text-gray-300">Attack</div>
             </div>
             <div className="text-center">
-              <div className="bg-gray-700 rounded-lg px-3 py-2 mb-2 font-mono responsive-text-base">2</div>
+              <div className="bg-gray-700 rounded-lg px-4 py-3 mb-3 font-mono responsive-text-xl">2</div>
               <div className="text-gray-300">Shuriken</div>
             </div>
             <div className="text-center">
-              <div className="bg-gray-700 rounded-lg px-3 py-2 mb-2 font-mono responsive-text-base">SHIFT</div>
+              <div className="bg-gray-700 rounded-lg px-4 py-3 mb-3 font-mono responsive-text-xl">SHIFT</div>
               <div className="text-gray-300">Block</div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-gray-400 responsive-text-base mb-6">
-          <p className="mb-2">🎮 Immerse yourself in epic battles • 🏆 Become the ultimate fighter</p>
+        <div className="text-gray-400 responsive-text-lg mb-8">
+          <p className="mb-3">🎮 Immerse yourself in epic battles • 🏆 Become the ultimate fighter</p>
           <p>💰 Earn coins through victory • 🛒 Upgrade your arsenal • ⚡ Master legendary techniques</p>
         </div>
 
@@ -218,7 +218,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
           href="https://bolt.new" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="inline-block bg-gray-800/60 backdrop-blur-sm px-6 py-3 rounded-full responsive-text-base font-medium hover:bg-gray-700/60 transition-all duration-300 border border-gray-600 hover:border-gray-400"
+          className="inline-block bg-gray-800/60 backdrop-blur-sm px-8 py-4 rounded-full responsive-text-lg font-medium hover:bg-gray-700/60 transition-all duration-300 border border-gray-600 hover:border-gray-400"
         >
           ⚡ Powered by Bolt.new
         </a>
