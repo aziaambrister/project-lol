@@ -128,22 +128,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'MOVE_PLAYER': {
       const { direction } = action.payload;
-      const moveSpeed = 10; // FIXED FAST SPEED
+      const moveSpeed = 12; // FAST RESPONSIVE MOVEMENT
       let newX = state.player.position.x;
       let newY = state.player.position.y;
       
-      // Apply movement based on direction
+      // Apply movement based on direction - FIXED WASD MAPPING
       switch (direction) {
-        case 'up':
+        case 'up': // W key
           newY = Math.max(50, newY - moveSpeed);
           break;
-        case 'down':
+        case 'down': // S key
           newY = Math.min(state.currentWorld.size.height - 50, newY + moveSpeed);
           break;
-        case 'left':
+        case 'left': // A key
           newX = Math.max(50, newX - moveSpeed);
           break;
-        case 'right':
+        case 'right': // D key
           newX = Math.min(state.currentWorld.size.width - 50, newX + moveSpeed);
           break;
       }

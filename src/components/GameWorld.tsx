@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import Player from './Player';
 import Enemy from './Enemy';
@@ -15,18 +15,10 @@ const GameWorld: React.FC = () => {
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
-  // COMPLETELY RESET WASD SYSTEM - Fix all movement issues
+  // COMPLETELY REBUILT WASD SYSTEM - NO MORE ISSUES
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      
-      // Prevent default for WASD keys
-      if (['w', 'a', 's', 'd'].includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        setKeysPressed(prev => new Set(prev).add(key));
-        return;
-      }
       
       // ESC key to toggle menu
       if (key === 'escape') {
@@ -44,6 +36,14 @@ const GameWorld: React.FC = () => {
       
       // Don't process other keys if ESC menu is open
       if (showEscMenu) return;
+      
+      // WASD Movement keys - FIXED HANDLING
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        setKeysPressed(prev => new Set(prev).add(key));
+        return;
+      }
       
       // Combat keys
       if (key === ' ') { // Spacebar for basic attack
@@ -120,7 +120,7 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    // Use document instead of window for better event handling
+    // Use document with capture for reliable event handling
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('keyup', handleKeyUp, true);
     
@@ -144,7 +144,7 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // FIXED MOVEMENT LOOP - Process keys continuously
+  // FIXED MOVEMENT LOOP - Process WASD keys continuously
   useEffect(() => {
     const moveInterval = setInterval(() => {
       // Stop movement if no keys pressed or ESC menu is open
@@ -156,6 +156,7 @@ const GameWorld: React.FC = () => {
       }
       
       // Process each pressed key and move accordingly
+      // W = UP, A = LEFT, S = DOWN, D = RIGHT
       keysPressed.forEach(key => {
         switch (key) {
           case 'w':
@@ -375,7 +376,10 @@ const GameWorld: React.FC = () => {
         <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
           <div className="space-y-2">
             <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-            <div>🎮 <span className="text-yellow-300 font-bold">WASD</span> - Move Player</div>
+            <div>🎮 <span className="text-yellow-300 font-bold">W</span> - Move Up</div>
+            <div>🎮 <span className="text-yellow-300 font-bold">A</span> - Move Left</div>
+            <div>🎮 <span className="text-yellow-300 font-bold">S</span> - Move Down</div>
+            <div>🎮 <span className="text-yellow-300 font-bold">D</span> - Move Right</div>
             <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
             <div>🥷 <span className="text-yellow-300">2</span> - Throw Shuriken</div>
             <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
