@@ -128,22 +128,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'MOVE_PLAYER': {
       const { direction } = action.payload;
-      const speed = 8; // INCREASED SPEED for more responsive movement
+      const moveSpeed = 10; // FIXED FAST SPEED
       let newX = state.player.position.x;
       let newY = state.player.position.y;
       
+      // Apply movement based on direction
       switch (direction) {
         case 'up':
-          newY = Math.max(50, newY - speed);
+          newY = Math.max(50, newY - moveSpeed);
           break;
         case 'down':
-          newY = Math.min(state.currentWorld.size.height - 50, newY + speed);
+          newY = Math.min(state.currentWorld.size.height - 50, newY + moveSpeed);
           break;
         case 'left':
-          newX = Math.max(50, newX - speed);
+          newX = Math.max(50, newX - moveSpeed);
           break;
         case 'right':
-          newX = Math.min(state.currentWorld.size.width - 50, newX + speed);
+          newX = Math.min(state.currentWorld.size.width - 50, newX + moveSpeed);
           break;
       }
       
@@ -175,17 +176,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newDamageNumbers.push(damageNumber);
       });
       
-      // Calculate camera position with boundaries - IMMEDIATE CAMERA FOLLOW
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const worldWidth = state.currentWorld.size.width;
-      const worldHeight = state.currentWorld.size.height;
-      
-      let cameraX = newX;
-      let cameraY = newY;
-      
-      cameraX = Math.max(screenWidth / 2, Math.min(worldWidth - screenWidth / 2, cameraX));
-      cameraY = Math.max(screenHeight / 2, Math.min(worldHeight - screenHeight / 2, cameraY));
+      // Update camera to follow player immediately
+      const cameraX = newX;
+      const cameraY = newY;
       
       return {
         ...state,

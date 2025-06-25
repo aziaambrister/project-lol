@@ -15,7 +15,7 @@ const GameWorld: React.FC = () => {
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
-  // Handle keyboard input - WASD Movement Controls
+  // Handle keyboard input - COMPLETELY RESET WASD SYSTEM
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -23,6 +23,7 @@ const GameWorld: React.FC = () => {
       // Prevent default browser behavior for WASD keys
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
+        setKeysPressed(prev => new Set(prev).add(key));
       }
       
       // ESC key to toggle menu
@@ -41,11 +42,6 @@ const GameWorld: React.FC = () => {
       
       // Don't process other keys if ESC menu is open
       if (showEscMenu) return;
-      
-      // WASD Movement keys - Add to pressed keys set
-      if (['w', 'a', 's', 'd'].includes(key)) {
-        setKeysPressed(prev => new Set(prev).add(key));
-      }
       
       // Combat keys
       if (key === ' ') { // Spacebar for basic attack
@@ -121,7 +117,7 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    // Add event listeners to document for global key handling
+    // Add event listeners
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
     
@@ -129,7 +125,7 @@ const GameWorld: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
+  }, [performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
 
   // Check if map image loads
   useEffect(() => {
@@ -145,7 +141,7 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // WASD Movement loop - HIGH FREQUENCY for smooth movement
+  // SIMPLE MOVEMENT LOOP - Process keys every frame
   useEffect(() => {
     const moveInterval = setInterval(() => {
       // Stop movement if no keys pressed or ESC menu is open
@@ -156,20 +152,24 @@ const GameWorld: React.FC = () => {
         return;
       }
       
-      // Determine movement direction based on WASD keys - IMMEDIATE RESPONSE
-      let direction: 'up' | 'down' | 'left' | 'right' | null = null;
-      
-      // Handle multiple keys pressed - prioritize last pressed or most recent
-      if (keysPressed.has('w')) direction = 'up';
-      if (keysPressed.has('s')) direction = 'down';
-      if (keysPressed.has('a')) direction = 'left';
-      if (keysPressed.has('d')) direction = 'right';
-      
-      // Apply movement immediately if direction is determined
-      if (direction) {
-        movePlayer(direction);
-      }
-    }, 16); // 60 FPS movement loop - VERY RESPONSIVE
+      // Process each pressed key and move accordingly
+      keysPressed.forEach(key => {
+        switch (key) {
+          case 'w':
+            movePlayer('up');
+            break;
+          case 'a':
+            movePlayer('left');
+            break;
+          case 's':
+            movePlayer('down');
+            break;
+          case 'd':
+            movePlayer('right');
+            break;
+        }
+      });
+    }, 16); // 60 FPS
     
     return () => clearInterval(moveInterval);
   }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, showEscMenu]);
