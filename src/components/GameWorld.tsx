@@ -16,10 +16,15 @@ const GameWorld: React.FC = () => {
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
-  // Handle keyboard input
+  // Handle keyboard input - WASD Movement Controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      // Prevent default browser behavior for WASD keys
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        e.preventDefault();
+      }
       
       // ESC key to toggle menu
       if (key === 'escape') {
@@ -38,7 +43,7 @@ const GameWorld: React.FC = () => {
       // Don't process other keys if ESC menu is open
       if (showEscMenu) return;
       
-      // Movement keys
+      // WASD Movement keys - Add to pressed keys set
       if (['w', 'a', 's', 'd'].includes(key)) {
         setKeysPressed(prev => new Set(prev).add(key));
       }
@@ -53,11 +58,13 @@ const GameWorld: React.FC = () => {
       }
       
       if (key === 'shift') { // Shift for block
+        e.preventDefault();
         performAttack('block');
       }
       
       // Interaction keys
       if (key === 'e') { // E to enter buildings
+        e.preventDefault();
         const nearestBuilding = findNearestBuilding();
         if (nearestBuilding && nearestBuilding.enterable) {
           enterBuilding(nearestBuilding.id);
@@ -65,8 +72,12 @@ const GameWorld: React.FC = () => {
       }
       
       // Special moves
-      if (key === '1') performAttack('basic-punch');
+      if (key === '1') {
+        e.preventDefault();
+        performAttack('basic-punch');
+      }
       if (key === '2') {
+        e.preventDefault();
         const nearestEnemy = findNearestEnemy();
         if (nearestEnemy) {
           // Create shuriken animation
@@ -86,8 +97,12 @@ const GameWorld: React.FC = () => {
           }, 300);
         }
       }
-      if (key === '3') performAttack('dodge-roll');
+      if (key === '3') {
+        e.preventDefault();
+        performAttack('dodge-roll');
+      }
       if (key === '4') {
+        e.preventDefault();
         const specialMove = state.player.character.moveSet.find(m => m.type === 'special' && m.id !== 'shuriken-throw');
         if (specialMove) performAttack(specialMove.id);
       }
@@ -95,7 +110,10 @@ const GameWorld: React.FC = () => {
     
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      // WASD Movement keys - Remove from pressed keys set
       if (['w', 'a', 's', 'd'].includes(key)) {
+        e.preventDefault();
         setKeysPressed(prev => {
           const newSet = new Set(prev);
           newSet.delete(key);
@@ -104,8 +122,9 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    // Add event listeners to window for global key handling
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
+    window.addEventListener('keyup', handleKeyUp, { passive: false });
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -127,10 +146,12 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // Movement loop
+  // WASD Movement loop - Smooth continuous movement
   useEffect(() => {
     const moveInterval = setInterval(() => {
       const now = Date.now();
+      
+      // Stop movement if no keys pressed or ESC menu is open
       if (keysPressed.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
@@ -138,22 +159,24 @@ const GameWorld: React.FC = () => {
         return;
       }
       
-      // Throttle movement updates
-      if (now - lastMoveTime < 50) return;
+      // Throttle movement updates for smooth performance
+      if (now - lastMoveTime < 16) return; // ~60 FPS
       
-      // Determine movement direction
+      // Determine movement direction based on WASD keys
       let direction: 'up' | 'down' | 'left' | 'right' | null = null;
       
+      // Priority system for diagonal movement (last key pressed wins)
       if (keysPressed.has('w')) direction = 'up';
-      else if (keysPressed.has('s')) direction = 'down';
-      else if (keysPressed.has('a')) direction = 'left';
-      else if (keysPressed.has('d')) direction = 'right';
+      if (keysPressed.has('s')) direction = 'down';
+      if (keysPressed.has('a')) direction = 'left';
+      if (keysPressed.has('d')) direction = 'right';
       
+      // Apply movement if direction is determined
       if (direction) {
         movePlayer(direction);
         setLastMoveTime(now);
       }
-    }, 16); // 60 FPS
+    }, 16); // 60 FPS movement loop
     
     return () => clearInterval(moveInterval);
   }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime, showEscMenu]);
@@ -356,7 +379,7 @@ const GameWorld: React.FC = () => {
         <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
           <div className="space-y-2">
             <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-            <div>🎮 <span className="text-yellow-300">WASD</span> - Move</div>
+            <div>🎮 <span className="text-yellow-300 font-bold">WASD</span> - Move Player</div>
             <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
             <div>🥷 <span className="text-yellow-300">2</span> - Throw Shuriken</div>
             <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
