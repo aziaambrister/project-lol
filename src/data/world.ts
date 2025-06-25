@@ -543,7 +543,7 @@ export const gameWorld: GameWorld = {
   },
   
   weather: {
-    type: 'clear',
+    type: 'clear', // CHANGED FROM 'rain' TO 'clear' - NO MORE RAIN!
     intensity: 0
   }
 };
