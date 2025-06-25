@@ -39,19 +39,19 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="absolute top-6 left-6 flex items-center px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors z-50"
+        className="absolute top-2 left-2 flex items-center px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors z-50"
       >
-        <ArrowLeft size={24} className="mr-2" />
-        Back
+        <ArrowLeft size={12} className="mr-1" />
+        <span className="responsive-text-xs">Back</span>
       </button>
 
       <div className="content-container">
-        <h1 className="responsive-text-4xl lg:responsive-text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 text-center">
+        <h1 className="responsive-text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 text-center">
           Choose Your Fighter
         </h1>
-        <p className="text-gray-300 mb-12 responsive-text-xl text-center">Select your character to begin your journey</p>
+        <p className="text-gray-300 mb-4 responsive-text-sm text-center">Select your character to begin your journey</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 responsive-gap-8 w-full max-w-7xl mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 responsive-gap-3 w-full max-w-5xl mb-4">
           {characters.map(character => {
             const isUnlocked = character.unlocked;
             const isSelected = selectedClass === character.class;
@@ -60,7 +60,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
             return (
               <div 
                 key={character.id}
-                className={`relative border-2 rounded-lg responsive-p-8 transition-all duration-300 transform cursor-pointer ${
+                className={`relative border-2 rounded-lg responsive-p-3 transition-all duration-300 transform cursor-pointer ${
                   isSelected 
                     ? 'border-yellow-400 scale-105 bg-slate-700 shadow-2xl shadow-yellow-400/30' 
                     : 'border-slate-600 bg-slate-800 hover:bg-slate-700 hover:scale-102'
@@ -68,7 +68,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                 onClick={() => handleCharacterClick(character.class, isUnlocked)}
               >
                 {/* Character Portrait */}
-                <div className="w-full h-48 mb-8 overflow-hidden rounded-lg bg-slate-900 flex items-center justify-center relative">
+                <div className="w-full h-24 mb-3 overflow-hidden rounded-lg bg-slate-900 flex items-center justify-center relative">
                   <img 
                     src={character.portrait} 
                     alt={character.name} 
@@ -77,19 +77,19 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                   {!isUnlocked && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-4xl mb-3">🔒</div>
+                        <div className="text-lg mb-1">🔒</div>
                         {isPremium ? (
-                          <div className="text-yellow-400 font-bold responsive-text-lg">Premium Purchase Required</div>
+                          <div className="text-yellow-400 font-bold responsive-text-xs">Premium Purchase Required</div>
                         ) : (
-                          <div className="text-yellow-400 font-bold responsive-text-lg">{character.price} coins</div>
+                          <div className="text-yellow-400 font-bold responsive-text-xs">{character.price} coins</div>
                         )}
                       </div>
                     </div>
                   )}
                 </div>
                 
-                <h3 className="responsive-text-2xl font-bold mb-4">{character.name}</h3>
-                <div className="mb-6 responsive-text-lg text-gray-300">
+                <h3 className="responsive-text-lg font-bold mb-2">{character.name}</h3>
+                <div className="mb-3 responsive-text-xs text-gray-300">
                   {character.class === 'balanced-fighter' && 'Well-rounded fighter with balanced stats'}
                   {character.class === 'speed-demon' && 'Lightning-fast attacks and superior mobility'}
                   {character.class === 'heavy-hitter' && 'Devastating power with strong defense'}
@@ -99,44 +99,44 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                 </div>
                 
                 {/* Stats Display */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="flex items-center bg-slate-700 p-4 rounded-lg">
-                    <Heart className="text-red-500 mr-3" size={24} />
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="flex items-center bg-slate-700 p-2 rounded-lg">
+                    <Heart className="text-red-500 mr-1" size={10} />
                     <div>
-                      <div className="text-sm text-gray-400">Health</div>
-                      <div className="font-bold responsive-text-xl">{character.health}</div>
+                      <div className="text-xs text-gray-400">Health</div>
+                      <div className="font-bold responsive-text-sm">{character.health}</div>
                     </div>
                   </div>
-                  <div className="flex items-center bg-slate-700 p-4 rounded-lg">
-                    <Sword className="text-orange-500 mr-3" size={24} />
+                  <div className="flex items-center bg-slate-700 p-2 rounded-lg">
+                    <Sword className="text-orange-500 mr-1" size={10} />
                     <div>
-                      <div className="text-sm text-gray-400">Attack</div>
-                      <div className="font-bold responsive-text-xl">{character.attack}</div>
+                      <div className="text-xs text-gray-400">Attack</div>
+                      <div className="font-bold responsive-text-sm">{character.attack}</div>
                     </div>
                   </div>
-                  <div className="flex items-center bg-slate-700 p-4 rounded-lg">
-                    <Shield className="text-blue-500 mr-3" size={24} />
+                  <div className="flex items-center bg-slate-700 p-2 rounded-lg">
+                    <Shield className="text-blue-500 mr-1" size={10} />
                     <div>
-                      <div className="text-sm text-gray-400">Defense</div>
-                      <div className="font-bold responsive-text-xl">{character.defense}</div>
+                      <div className="text-xs text-gray-400">Defense</div>
+                      <div className="font-bold responsive-text-sm">{character.defense}</div>
                     </div>
                   </div>
-                  <div className="flex items-center bg-slate-700 p-4 rounded-lg">
-                    <Zap className="text-yellow-500 mr-3" size={24} />
+                  <div className="flex items-center bg-slate-700 p-2 rounded-lg">
+                    <Zap className="text-yellow-500 mr-1" size={10} />
                     <div>
-                      <div className="text-sm text-gray-400">Speed</div>
-                      <div className="font-bold responsive-text-xl">{character.speed}</div>
+                      <div className="text-xs text-gray-400">Speed</div>
+                      <div className="font-bold responsive-text-sm">{character.speed}</div>
                     </div>
                   </div>
                 </div>
                 
                 {/* Move Set Preview */}
-                <div className="responsive-text-lg text-gray-400">
-                  <h4 className="font-semibold mb-3 text-white">Special Moves:</h4>
-                  <ul className="space-y-2">
+                <div className="responsive-text-xs text-gray-400">
+                  <h4 className="font-semibold mb-1 text-white">Special Moves:</h4>
+                  <ul className="space-y-1">
                     {character.moveSet.filter(move => move.type === 'special').slice(0, 2).map(move => (
                       <li key={move.id} className="flex items-center">
-                        <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                        <div className="w-1 h-1 bg-yellow-400 rounded-full mr-2"></div>
                         <span className="truncate">{move.name}</span>
                       </li>
                     ))}
@@ -145,8 +145,8 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
 
                 {/* Selection indicator */}
                 {isSelected && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <div className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full responsive-text-lg animate-pulse">
+                  <div className="absolute top-2 right-2 z-10">
+                    <div className="bg-yellow-400 text-black font-bold px-2 py-1 rounded-full responsive-text-xs animate-pulse">
                       ✓ SELECTED
                     </div>
                   </div>
@@ -157,13 +157,13 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
         </div>
         
         {/* Current selection display */}
-        <div className="mb-10 text-center">
-          <p className="responsive-text-2xl text-gray-300">
-            Selected: <span className="text-yellow-400 font-bold responsive-text-3xl">
+        <div className="mb-4 text-center">
+          <p className="responsive-text-lg text-gray-300">
+            Selected: <span className="text-yellow-400 font-bold responsive-text-xl">
               {characters.find(c => c.class === selectedClass)?.name || 'None'}
             </span>
           </p>
-          <p className="responsive-text-lg text-gray-400 mt-3">
+          <p className="responsive-text-sm text-gray-400 mt-1">
             Ready to enter the world of combat!
           </p>
         </div>
@@ -172,14 +172,14 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
         <div className="relative text-center">
           <button 
             type="button"
-            className={`px-24 py-6 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold responsive-text-2xl text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden ${
+            className={`px-12 py-3 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold responsive-text-lg text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden ${
               isStarting ? 'opacity-75 scale-95' : 'hover:shadow-yellow-500/50'
             }`}
             onClick={handleStartGame}
             disabled={isStarting}
             style={{ 
-              minWidth: '320px',
-              minHeight: '80px',
+              minWidth: '160px',
+              minHeight: '40px',
               zIndex: 1000,
               position: 'relative'
             }}
@@ -188,7 +188,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
             <div className="relative z-10 flex items-center justify-center">
               {isStarting ? (
                 <>
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-4"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                   Starting Game...
                 </>
               ) : (
@@ -202,7 +202,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
         </div>
         
         {/* Controls hint */}
-        <div className="mt-10 text-center responsive-text-lg text-gray-400">
+        <div className="mt-4 text-center responsive-text-xs text-gray-400">
           <div>🎮 WASD to move • 👊 Space to attack • 🥷 2 to throw shuriken</div>
           <div>🛡️ Shift to block • 🏠 Enter buildings • 💬 Talk to NPCs</div>
         </div>
