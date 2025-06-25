@@ -935,12 +935,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function useGame() {
+export function useGame() {
   const context = useContext(GameContext);
   if (context === undefined) {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
 }
-
-export { useGame };
