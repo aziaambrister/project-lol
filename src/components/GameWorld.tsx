@@ -11,7 +11,6 @@ import EnemyDebugOverlay from './EnemyDebugOverlay';
 const GameWorld: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
-  const [lastMoveTime, setLastMoveTime] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
@@ -123,8 +122,8 @@ const GameWorld: React.FC = () => {
     };
     
     // Add event listeners to document for global key handling
-    document.addEventListener('keydown', handleKeyDown, { passive: false });
-    document.addEventListener('keyup', handleKeyUp, { passive: false });
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
     
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -146,11 +145,9 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // WASD Movement loop - Smooth continuous movement
+  // WASD Movement loop - HIGH FREQUENCY for smooth movement
   useEffect(() => {
     const moveInterval = setInterval(() => {
-      const now = Date.now();
-      
       // Stop movement if no keys pressed or ESC menu is open
       if (keysPressed.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
@@ -159,27 +156,23 @@ const GameWorld: React.FC = () => {
         return;
       }
       
-      // Throttle movement updates for smooth performance
-      if (now - lastMoveTime < 16) return; // ~60 FPS
-      
-      // Determine movement direction based on WASD keys
+      // Determine movement direction based on WASD keys - IMMEDIATE RESPONSE
       let direction: 'up' | 'down' | 'left' | 'right' | null = null;
       
-      // Priority system for diagonal movement (last key pressed wins)
+      // Handle multiple keys pressed - prioritize last pressed or most recent
       if (keysPressed.has('w')) direction = 'up';
       if (keysPressed.has('s')) direction = 'down';
       if (keysPressed.has('a')) direction = 'left';
       if (keysPressed.has('d')) direction = 'right';
       
-      // Apply movement if direction is determined
+      // Apply movement immediately if direction is determined
       if (direction) {
         movePlayer(direction);
-        setLastMoveTime(now);
       }
-    }, 16); // 60 FPS movement loop
+    }, 16); // 60 FPS movement loop - VERY RESPONSIVE
     
     return () => clearInterval(moveInterval);
-  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, lastMoveTime, showEscMenu]);
+  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, showEscMenu]);
 
   // Clean up shurikens
   useEffect(() => {

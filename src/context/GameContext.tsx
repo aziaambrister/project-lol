@@ -128,7 +128,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'MOVE_PLAYER': {
       const { direction } = action.payload;
-      const speed = state.player.character.speed;
+      const speed = 8; // INCREASED SPEED for more responsive movement
       let newX = state.player.position.x;
       let newY = state.player.position.y;
       
@@ -175,7 +175,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newDamageNumbers.push(damageNumber);
       });
       
-      // Calculate camera position with boundaries
+      // Calculate camera position with boundaries - IMMEDIATE CAMERA FOLLOW
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
       const worldWidth = state.currentWorld.size.width;
