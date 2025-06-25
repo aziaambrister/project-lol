@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import Player from './Player';
 import Enemy from './Enemy';
@@ -9,6 +9,7 @@ import EscapeMenu from './EscapeMenu';
 import EnemyDebugOverlay from './EnemyDebugOverlay';
 
 const GameWorld: React.FC = () => {
+    const gameAreaRef = useRef<HTMLDivElement>(null); // <-- Add this line
   const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
