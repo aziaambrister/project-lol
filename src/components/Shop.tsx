@@ -354,6 +354,48 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           })}
         </div>
         
+        {/* Item Details Panel - Show descriptions for premium items */}
+        {selectedItem && (
+          <div className="mt-1 bg-gray-800/50 rounded p-2 border border-gray-600">
+            {(() => {
+              const item = currentItems.find(i => i.id === selectedItem);
+              if (!item) return null;
+              
+              return (
+                <div>
+                  <h3 className="text-sm font-bold text-yellow-400 mb-1">{item.name}</h3>
+                  <p className="text-xs text-gray-300 mb-2">{item.description}</p>
+                  
+                  {/* Show bundle contents for premium bundles */}
+                  {selectedCategory === 'premium' && item.bundle && item.includes && (
+                    <div className="mb-2">
+                      <h4 className="text-xs font-bold text-white mb-1">Bundle Includes:</h4>
+                      <div className="space-y-1">
+                        {item.includes.map((include, index) => (
+                          <div key={index} className="flex items-center text-xs">
+                            <span className="mr-2">{include.icon}</span>
+                            <div>
+                              <div className="font-bold text-yellow-400">{include.name}</div>
+                              <div className="text-gray-300">{include.description}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Show coin amount for coin packages */}
+                  {selectedCategory === 'premium' && item.coins && (
+                    <div className="text-xs">
+                      <span className="text-yellow-400 font-bold">Coins: {item.coins.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+        
         {/* Shop Info - TINY */}
         <div className="mt-1 bg-gray-800/50 rounded p-1 border border-gray-600">
           <div className="flex items-center mb-1">

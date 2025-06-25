@@ -122,13 +122,13 @@ const GameWorld: React.FC = () => {
       }
     };
     
-    // Add event listeners to window for global key handling
-    window.addEventListener('keydown', handleKeyDown, { passive: false });
-    window.addEventListener('keyup', handleKeyUp, { passive: false });
+    // Add event listeners to document for global key handling
+    document.addEventListener('keydown', handleKeyDown, { passive: false });
+    document.addEventListener('keyup', handleKeyUp, { passive: false });
     
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
     };
   }, [state.player.character.moveSet, performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
 
