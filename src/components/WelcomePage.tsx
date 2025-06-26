@@ -40,8 +40,10 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
       if (authMode === 'login') {
         const { error } = await signIn(authForm.email, authForm.password);
         if (error) {
+          // Handle specific error messages
           let errorMessage = error.message || 'An error occurred during sign in';
           
+          // Check for specific error codes or messages
           if (error.message?.includes('email_not_confirmed') || error.message?.includes('Email not confirmed')) {
             errorMessage = 'Please check your email and click the confirmation link before signing in.';
           } else if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
@@ -64,6 +66,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         }
         const { error } = await signUp(authForm.email, authForm.password, authForm.displayName);
         if (error) {
+          // Handle specific error messages for signup
           let errorMessage = error.message || 'An error occurred during sign up';
           
           if (error.message?.includes('already_registered') || error.message?.includes('already registered')) {
@@ -80,15 +83,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         } else {
           setShowAuthModal(false);
           setAuthForm({ email: '', password: '', displayName: '' });
+          // Show success message for signup
           setAuthError(null);
         }
       }
     } catch (error: any) {
+      // Fallback error handling for unexpected errors
       console.error('Authentication error:', error);
       
       let errorMessage = 'An unexpected error occurred. Please try again.';
       
       if (error?.message) {
+        // Handle specific error cases that might not be caught above
         if (error.message.includes('email_not_confirmed') || error.message.includes('Email not confirmed')) {
           errorMessage = 'Please check your email and click the confirmation link before signing in.';
         } else if (error.message.includes('invalid_credentials') || error.message.includes('Invalid login credentials')) {
@@ -114,7 +120,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 via-indigo-900 to-black text-white relative overflow-hidden">
-      {/* Auth Button - SMALLER SIGN OUT BUTTON */}
+      {/* Auth Button */}
       <div className="absolute top-4 right-4 z-50">
         {user ? (
           <div className="flex items-center space-x-4">
@@ -123,7 +129,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             </div>
             <button
               onClick={handleSignOut}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg font-bold text-xs transition-colors"
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-bold text-sm transition-colors"
             >
               Sign Out
             </button>
@@ -378,8 +384,10 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
               position: 'relative'
             }}
           >
+            {/* Animated background effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000"></div>
             
+            {/* Button content */}
             <div className="relative z-10 flex items-center justify-center">
               <Gamepad2 className="mr-2 animate-bounce" size={16} />
               <span>ENTER REALM</span>
@@ -387,6 +395,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
             </div>
           </button>
           
+          {/* Glowing effects */}
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-lg blur-xl opacity-50 animate-pulse pointer-events-none"></div>
         </div>
 
