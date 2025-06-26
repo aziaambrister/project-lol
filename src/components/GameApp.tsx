@@ -12,10 +12,10 @@ import ForestCabinInterior from './ForestCabinInterior';
 import BattleRoyaleWorld from './BattleRoyaleWorld';
 
 const GameApp: React.FC = () => {
-  const { gameState } = useGame();
+  const { state } = useGame();
 
   const renderCurrentScreen = () => {
-    switch (gameState.gameMode) {
+    switch (state.gameMode) {
       case 'welcome':
         return <WelcomePage />;
       case 'character-select':
