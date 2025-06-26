@@ -7,11 +7,25 @@ import GameWorld from './components/GameWorld';
 import ForestCabinInterior from './components/ForestCabinInterior';
 import SuccessPage from './components/SuccessPage';
 
+// ✅ Add these for global WASD handling
+const keysHeld: Record<string, boolean> = {};
+
+window.addEventListener("keydown", (e) => {
+  keysHeld[e.key.toLowerCase()] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+  keysHeld[e.key.toLowerCase()] = false;
+});
+
+// You can access keysHeld["w"], ["a"], etc. from anywhere (GameWorld, etc)
+
 function App() {
   const { state } = useGame();
-  const [gameState, setGameState] = useState<'welcome' | 'start' | 'character-select' | 'playing' | 'cabin-interior' | 'success'>('welcome');
+  const [gameState, setGameState] = useState<
+    'welcome' | 'start' | 'character-select' | 'playing' | 'cabin-interior' | 'success'
+  >('welcome');
 
-  // Check if we're on the success page
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('session_id')) {
@@ -19,9 +33,11 @@ function App() {
     }
   }, []);
 
-  // Listen for cabin entry
   React.useEffect(() => {
-    if (state.gameMode === 'building-interior' && state.player.currentBuilding === 'forest-cabin-1') {
+    if (
+      state.gameMode === 'building-interior' &&
+      state.player.currentBuilding === 'forest-cabin-1'
+    ) {
       setGameState('cabin-interior');
     } else if (state.gameMode === 'world-exploration' && gameState === 'cabin-interior') {
       setGameState('playing');
@@ -29,17 +45,14 @@ function App() {
   }, [state.gameMode, state.player.currentBuilding, gameState]);
 
   const handleEnterGame = () => {
-    console.log('handleEnterGame called - transitioning to start screen');
     setGameState('start');
   };
 
   const handleStartGame = () => {
-    console.log('handleStartGame called - transitioning to character-select');
     setGameState('character-select');
   };
 
   const handleCharacterSelected = () => {
-    console.log('handleCharacterSelected called - transitioning to playing');
     setGameState('playing');
   };
 
@@ -52,12 +65,9 @@ function App() {
   };
 
   const handleSuccessContinue = () => {
-    // Clear the URL parameters and continue to the game
     window.history.replaceState({}, document.title, window.location.pathname);
     setGameState('playing');
   };
-
-  console.log('Current game state:', gameState);
 
   return (
     <div className="min-h-screen bg-gray-100 relative">
@@ -81,13 +91,13 @@ function App() {
 
       {gameState === 'playing' && (
         <div className="absolute inset-0 z-10">
-          <GameWorld />
+          <GameWorld keysHeld={keysHeld} /> {/* 👈 pass WASD state */}
         </div>
       )}
 
       {gameState === 'cabin-interior' && (
         <div className="absolute inset-0 z-10">
-          <ForestCabinInterior />
+          <ForestCabinInterior keysHeld={keysHeld} /> {/* 👈 pass WASD state */}
         </div>
       )}
 
