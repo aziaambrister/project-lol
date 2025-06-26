@@ -99,11 +99,8 @@ const GameWorld: React.FC = () => {
 
       if (key === '4') {
         e.preventDefault();
-        const character = state.player.character;
-        if (character && character.moveSet) {
-          const specialMove = character.moveSet.find(m => m.type === 'special' && m.id !== 'shuriken-throw');
-          if (specialMove) performAttack(specialMove.id);
-        }
+        const specialMove = state.player.character.moveSet.find(m => m.type === 'special' && m.id !== 'shuriken-throw');
+        if (specialMove) performAttack(specialMove.id);
       }
     };
 
@@ -152,17 +149,27 @@ const GameWorld: React.FC = () => {
       } else {
         keysPressedRef.current.forEach(key => {
           switch (key) {
-            case 'w': movePlayer('up'); break;
-            case 'a': movePlayer('left'); break;
-            case 's': movePlayer('down'); break;
-            case 'd': movePlayer('right'); break;
+            case 'w':
+              movePlayer('up');
+              break;
+            case 'a':
+              movePlayer('left');
+              break;
+            case 's':
+              movePlayer('down');
+              break;
+            case 'd':
+              movePlayer('right');
+              break;
           }
         });
       }
+
       animationFrameId = requestAnimationFrame(moveLoop);
     };
 
     animationFrameId = requestAnimationFrame(moveLoop);
+
     return () => cancelAnimationFrame(animationFrameId);
   }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
 
@@ -177,44 +184,55 @@ const GameWorld: React.FC = () => {
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
-    let nearest = null;
-    let minDist = Infinity;
+    let nearestEnemy = null;
+    let minDistance = Infinity;
+
     state.currentWorld.enemies.forEach(enemy => {
       if (enemy.state === 'dead') return;
-      const dx = enemy.position.x - playerPos.x;
-      const dy = enemy.position.y - playerPos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 150 && dist < minDist) {
-        minDist = dist;
-        nearest = enemy;
+
+      const distance = Math.sqrt(
+        Math.pow(enemy.position.x - playerPos.x, 2) +
+        Math.pow(enemy.position.y - playerPos.y, 2)
+      );
+
+      if (distance < 150 && distance < minDistance) {
+        minDistance = distance;
+        nearestEnemy = enemy;
       }
     });
-    return nearest;
+
+    return nearestEnemy;
   };
 
   const findNearestBuilding = () => {
     const playerPos = state.player.position;
-    let nearest = null;
-    let minDist = Infinity;
+    let nearestBuilding = null;
+    let minDistance = Infinity;
+
     state.currentWorld.buildings.forEach(building => {
-      const dx = building.position.x - playerPos.x;
-      const dy = building.position.y - playerPos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 80 && dist < minDist) {
-        minDist = dist;
-        nearest = building;
+      const distance = Math.sqrt(
+        Math.pow(building.position.x - playerPos.x, 2) +
+        Math.pow(building.position.y - playerPos.y, 2)
+      );
+
+      if (distance < 80 && distance < minDistance) {
+        minDistance = distance;
+        nearestBuilding = building;
       }
     });
-    return nearest;
+
+    return nearestBuilding;
   };
 
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
+
   const lightLevel = state.currentWorld.dayNightCycle.lightLevel;
   const overlayOpacity = 1 - lightLevel;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Map */}
       <div
         className="absolute"
         style={{
@@ -231,14 +249,19 @@ const GameWorld: React.FC = () => {
           minHeight: '100vh'
         }}
       >
-        {!mapLoaded && <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg z-50">Loading map...</div>}
-        <div className="absolute inset-0 bg-green-600" style={{ zIndex: -1 }}></div>
+        {!mapLoaded && (
+          <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg z-50">
+            Loading map...
+          </div>
+        )}
       </div>
 
+      {/* Projectiles */}
       {shurikens.map(shuriken => {
         const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1);
         const currentX = shuriken.x + (shuriken.targetX - shuriken.x) * progress;
         const currentY = shuriken.y + (shuriken.targetY - shuriken.y) * progress;
+
         return (
           <div
             key={shuriken.id}
@@ -250,20 +273,28 @@ const GameWorld: React.FC = () => {
               transition: 'none'
             }}
           >
-            <img src="/shuriken.png" alt="Shuriken" className="w-4 h-4 object-contain" />
+            <img
+              src="/shuriken.png"
+              alt="Shuriken"
+              className="w-4 h-4 object-contain"
+            />
           </div>
         );
       })}
 
-      {state.currentWorld.buildings.map(b => (
-        <Building key={b.id} building={b} cameraX={cameraX} cameraY={cameraY} />
+      {/* World Entities */}
+      {state.currentWorld.buildings.map(building => (
+        <Building key={building.id} building={building} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
       {state.currentWorld.npcs.map(npc => (
         <div
           key={npc.id}
           className="absolute w-18 h-18 flex items-center justify-center"
-          style={{ left: npc.position.x - cameraX - 36, top: npc.position.y - cameraY - 36 }}
+          style={{
+            left: npc.position.x - cameraX - 36,
+            top: npc.position.y - cameraY - 36
+          }}
         >
           <div className="text-5xl drop-shadow-lg filter brightness-110">{npc.sprite}</div>
           <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap border-2 border-yellow-400/80 shadow-lg">
@@ -272,31 +303,36 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
-      {state.currentWorld.enemies.map(e => (
-        <Enemy key={e.id} enemy={e} cameraX={cameraX} cameraY={cameraY} />
+      {state.currentWorld.enemies.map(enemy => (
+        <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
       <Player cameraX={cameraX} cameraY={cameraY} />
 
-      {state.combat.damageNumbers.map(d => (
+      {state.combat.damageNumbers.map(damageNumber => (
         <div
-          key={d.id}
+          key={damageNumber.id}
           className={`absolute font-bold text-3xl pointer-events-none animate-bounce ${
-            d.type === 'damage' ? 'text-red-500' : d.type === 'heal' ? 'text-green-500' : 'text-yellow-500'
+            damageNumber.type === 'damage' ? 'text-red-500' :
+            damageNumber.type === 'heal' ? 'text-green-500' :
+            'text-yellow-500'
           }`}
           style={{
-            left: d.position.x - cameraX,
-            top: d.position.y - cameraY,
+            left: damageNumber.position.x - cameraX,
+            top: damageNumber.position.y - cameraY,
             textShadow: '3px 3px 6px rgba(0,0,0,0.9)',
             animation: 'float-up 2s ease-out forwards'
           }}
         >
-          {d.type === 'damage' ? '-' : '+'}{d.value}
+          {damageNumber.type === 'damage' ? '-' : '+'}{damageNumber.value}
         </div>
       ))}
 
       {overlayOpacity > 0 && (
-        <div className="absolute inset-0 bg-blue-900 pointer-events-none" style={{ opacity: overlayOpacity * 0.7 }} />
+        <div
+          className="absolute inset-0 bg-blue-900 pointer-events-none"
+          style={{ opacity: overlayOpacity * 0.7 }}
+        />
       )}
 
       <EnemyDebugOverlay
@@ -310,29 +346,18 @@ const GameWorld: React.FC = () => {
 
       {!showEscMenu && <GameHUD />}
       {state.ui.showMinimap && !showEscMenu && <Minimap />}
-
-      {!showEscMenu && (
-        <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
-          <div className="space-y-2">
-            <div className="text-yellow-400 font-bold text-center mb-2">⚔️ CONTROLS ⚔️</div>
-            <div>🎮 <span className="text-yellow-300 font-bold">WASD</span> - Move</div>
-            <div>👊 <span className="text-yellow-300">Space</span> - Attack</div>
-            <div>🥷 <span className="text-yellow-300">2</span> - Throw Shuriken</div>
-            <div>🛡️ <span className="text-yellow-300">Shift</span> - Block</div>
-            <div>🚪 <span className="text-yellow-300">E</span> - Interact</div>
-            <div>⚔️ <span className="text-yellow-300">1-4</span> - Special Moves</div>
-            <div>⚙️ <span className="text-yellow-300">ESC</span> - Menu</div>
-            <div>🐛 <span className="text-yellow-300">F3</span> - Debug Mode</div>
-          </div>
-        </div>
-      )}
-
       {showEscMenu && <EscapeMenu onClose={() => setShowEscMenu(false)} />}
 
       <style jsx>{`
         @keyframes float-up {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-60px); opacity: 0; }
+          0% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-60px);
+            opacity: 0;
+          }
         }
       `}</style>
     </div>
