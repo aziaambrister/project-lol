@@ -67,7 +67,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowy cabin.png', // Using the new snowy cabin background
+        background: '/forest cabin 2.png',
         npcs: [],
         items: [
           {
@@ -105,7 +105,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowy cabin.png', // Using the new snowy cabin background
+        background: '/snowycabin.png', // FIXED: Using the correct snowy cabin background
         npcs: [],
         items: [],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
@@ -324,7 +324,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/ice bear.png', // Using the new ice bear image
+      sprite: '/icebear.png', // FIXED: Using the correct ice bear image
       aiDifficulty: 'hard',
       moveSet: [
         {
@@ -338,97 +338,6 @@ export const gameWorld: GameWorld = {
           range: 38,
           description: 'A powerful icy claw attack',
           animation: 'swipe'
-        }
-      ]
-    },
-    // Plains/Grassland Enemies - positioned in open areas
-    {
-      id: 'plains-goblin-1',
-      name: 'Goblin Scout',
-      type: 'aggressive',
-      health: 45,
-      maxHealth: 45,
-      attack: 7,
-      defense: 3,
-      speed: 7,
-      detectionRadius: 100,
-      patrolRadius: 140,
-      experience: 18,
-      loot: [
-        {
-          id: 'goblin-dagger',
-          name: 'Rusty Dagger',
-          type: 'weapon',
-          rarity: 'common',
-          value: 30,
-          effect: { type: 'boost-attack', value: 3 },
-          icon: '🗡️',
-          description: 'A small, rusty blade'
-        }
-      ],
-      position: { x: 1800, y: 2000 },
-      patrolCenter: { x: 1800, y: 2000 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'easy',
-      moveSet: [
-        {
-          id: 'goblin-stab',
-          name: 'Quick Stab',
-          type: 'basic-attack',
-          damage: 10,
-          staminaCost: 8,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 25,
-          description: 'A quick dagger thrust',
-          animation: 'stab'
-        }
-      ]
-    },
-    {
-      id: 'plains-goblin-2',
-      name: 'Goblin Warrior',
-      type: 'aggressive',
-      health: 55,
-      maxHealth: 55,
-      attack: 9,
-      defense: 4,
-      speed: 6,
-      detectionRadius: 110,
-      patrolRadius: 120,
-      experience: 25,
-      loot: [
-        {
-          id: 'goblin-sword',
-          name: 'Goblin Sword',
-          type: 'weapon',
-          rarity: 'common',
-          value: 45,
-          effect: { type: 'boost-attack', value: 4 },
-          icon: '⚔️',
-          description: 'A crude goblin blade'
-        }
-      ],
-      position: { x: 2000, y: 1600 },
-      patrolCenter: { x: 2000, y: 1600 },
-      state: 'patrol',
-      lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7772716/pexels-photo-7772716.jpeg?auto=compress&cs=tinysrgb&w=64',
-      aiDifficulty: 'easy',
-      moveSet: [
-        {
-          id: 'goblin-slash',
-          name: 'Sword Slash',
-          type: 'basic-attack',
-          damage: 12,
-          staminaCost: 12,
-          cooldown: 0,
-          currentCooldown: 0,
-          range: 28,
-          description: 'A crude sword attack',
-          animation: 'slash'
         }
       ]
     },
@@ -460,7 +369,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/dragonsnake.png', // Updated to use the new dragon snake image
+      sprite: '/dragonsnake.png',
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -477,6 +386,7 @@ export const gameWorld: GameWorld = {
         }
       ]
     }
+    // REMOVED: goblin and goblin warrior enemies as requested
   ],
   
   npcs: [
@@ -503,7 +413,7 @@ export const gameWorld: GameWorld = {
   },
   
   weather: {
-    type: 'clear', // CHANGED FROM 'rain' TO 'clear' - NO MORE RAIN!
+    type: 'clear',
     intensity: 0
   }
 };

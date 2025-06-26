@@ -8,11 +8,51 @@ import Minimap from './Minimap';
 import EscapeMenu from './EscapeMenu';
 import EnemyDebugOverlay from './EnemyDebugOverlay';
 
+// Game Over Modal Component
+const GameOverModal: React.FC<{ onRestart: () => void; onHome: () => void; onShop: () => void }> = ({ onRestart, onHome, onShop }) => (
+  <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl border-2 border-red-500/50 shadow-2xl p-8 w-96 max-w-[90vw]">
+      <div className="text-center mb-6">
+        <div className="text-6xl mb-4">💀</div>
+        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500 mb-2">
+          Game Over
+        </h2>
+        <p className="text-gray-300">Your health reached zero!</p>
+      </div>
+
+      <div className="space-y-4">
+        <button
+          onClick={onRestart}
+          className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105"
+        >
+          🔄 Try Again
+        </button>
+        
+        <button
+          onClick={onShop}
+          className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105"
+        >
+          🛒 Visit Shop
+        </button>
+        
+        <button
+          onClick={onHome}
+          className="w-full py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105"
+        >
+          🏠 Home
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const GameWorld: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
   const keysPressedRef = useRef<Set<string>>(new Set());
@@ -21,13 +61,22 @@ const GameWorld: React.FC = () => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
+  // Check for game over
+  useEffect(() => {
+    if (state.player.character.health <= 0 && !showGameOver) {
+      setShowGameOver(true);
+    }
+  }, [state.player.character.health, showGameOver]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
 
       if (key === 'escape') {
         e.preventDefault();
-        setShowEscMenu(!showEscMenu);
+        if (!showGameOver) {
+          setShowEscMenu(!showEscMenu);
+        }
         return;
       }
 
@@ -37,7 +86,7 @@ const GameWorld: React.FC = () => {
         return;
       }
 
-      if (showEscMenu) return;
+      if (showEscMenu || showGameOver) return;
 
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
@@ -125,7 +174,7 @@ const GameWorld: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('keyup', handleKeyUp, true);
     };
-  }, [performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
+  }, [performAttack, enterBuilding, showEscMenu, showGameOver, state.player.position, toggleDebugMode]);
 
   useEffect(() => {
     const img = new Image();
@@ -135,14 +184,14 @@ const GameWorld: React.FC = () => {
     img.onerror = () => {
       setMapLoaded(false);
     };
-    img.src = '/map.png';
+    img.src = '/map copy copy copy.png'; // FIXED: Using the new map image
   }, []);
 
   useEffect(() => {
     let animationFrameId: number;
 
     const moveLoop = () => {
-      if (keysPressedRef.current.size === 0 || showEscMenu) {
+      if (keysPressedRef.current.size === 0 || showEscMenu || showGameOver) {
         if (state.player.isMoving) {
           stopMoving();
         }
@@ -171,7 +220,7 @@ const GameWorld: React.FC = () => {
     animationFrameId = requestAnimationFrame(moveLoop);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
+  }, [movePlayer, stopMoving, showEscMenu, showGameOver, state.player.isMoving]);
 
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
@@ -224,15 +273,39 @@ const GameWorld: React.FC = () => {
     return nearestBuilding;
   };
 
+  const handleGameOverRestart = () => {
+    // Reset player health and position
+    state.player.character.health = state.player.character.maxHealth;
+    state.player.position = { x: 200, y: 3800 };
+    setShowGameOver(false);
+  };
+
+  const handleGameOverHome = () => {
+    window.location.reload(); // Go back to homepage
+  };
+
+  const handleGameOverShop = () => {
+    setShowShop(true);
+    setShowGameOver(false);
+  };
+
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
   const lightLevel = state.currentWorld.dayNightCycle.lightLevel;
   const overlayOpacity = 1 - lightLevel;
 
+  if (showShop) {
+    return (
+      <div className="relative w-full h-screen">
+        <Shop onClose={() => setShowShop(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Map */}
+      {/* Map - FULL COVERAGE */}
       <div
         className="absolute"
         style={{
@@ -240,7 +313,7 @@ const GameWorld: React.FC = () => {
           top: -cameraY,
           width: state.currentWorld.size.width,
           height: state.currentWorld.size.height,
-          backgroundImage: `url(/map.png)`,
+          backgroundImage: `url(/map copy copy copy.png)`, // FIXED: Using the new map image
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -344,9 +417,18 @@ const GameWorld: React.FC = () => {
         debugEnabled={state.debug?.enabled || false}
       />
 
-      {!showEscMenu && <GameHUD />}
-      {state.ui.showMinimap && !showEscMenu && <Minimap />}
+      {!showEscMenu && !showGameOver && <GameHUD />}
+      {state.ui.showMinimap && !showEscMenu && !showGameOver && <Minimap />}
       {showEscMenu && <EscapeMenu onClose={() => setShowEscMenu(false)} />}
+      
+      {/* Game Over Modal */}
+      {showGameOver && (
+        <GameOverModal
+          onRestart={handleGameOverRestart}
+          onHome={handleGameOverHome}
+          onShop={handleGameOverShop}
+        />
+      )}
 
       <style jsx>{`
         @keyframes float-up {

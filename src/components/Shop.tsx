@@ -149,7 +149,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     setCheckoutError(null);
 
     try {
-      // Get the current user's session to obtain the access token
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.access_token) {
@@ -311,6 +310,13 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   <div className={`${isPremium ? 'text-xs' : 'text-xs'} px-1 rounded-full inline-block border ${getRarityColor(item.rarity)}`}>
                     {item.rarity.charAt(0).toUpperCase()}
                   </div>
+                  
+                  {/* PREMIUM ITEM DESCRIPTIONS IN BOXES */}
+                  {isPremium && (
+                    <div className="mt-2 text-xs text-gray-300 leading-tight">
+                      {item.description}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Price and Purchase */}
