@@ -58,7 +58,6 @@ export function useAuth() {
       email,
       password,
       options: {
-        emailRedirectTo: undefined, // Disable email confirmation
         data: {
           username: username
         }
