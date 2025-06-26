@@ -40,7 +40,17 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
       if (authMode === 'login') {
         const { error } = await signIn(authForm.email, authForm.password);
         if (error) {
-          setAuthError(error.message);
+          // Handle specific error messages
+          let errorMessage = error.message || 'An error occurred during sign in';
+          
+          // Check for specific error codes or messages
+          if (errorMessage.includes('email_not_confirmed') || errorMessage.includes('Email not confirmed')) {
+            errorMessage = 'Please check your email and click the confirmation link before signing in.';
+          } else if (errorMessage.includes('invalid_credentials') || errorMessage.includes('Invalid login credentials')) {
+            errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+          }
+          
+          setAuthError(errorMessage);
         } else {
           setShowAuthModal(false);
           setAuthForm({ email: '', password: '', displayName: '' });
@@ -52,14 +62,35 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         }
         const { error } = await signUp(authForm.email, authForm.password, authForm.displayName);
         if (error) {
-          setAuthError(error.message);
+          // Handle specific error messages for signup
+          let errorMessage = error.message || 'An error occurred during sign up';
+          
+          if (errorMessage.includes('already_registered') || errorMessage.includes('already registered')) {
+            errorMessage = 'An account with this email already exists. Please try signing in instead.';
+          } else if (errorMessage.includes('weak_password') || errorMessage.includes('Password should be')) {
+            errorMessage = 'Password is too weak. Please use at least 6 characters.';
+          }
+          
+          setAuthError(errorMessage);
         } else {
           setShowAuthModal(false);
           setAuthForm({ email: '', password: '', displayName: '' });
         }
       }
     } catch (error: any) {
-      setAuthError(error.message || 'An error occurred');
+      // Fallback error handling
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+        
+        // Handle specific error cases
+        if (errorMessage.includes('email_not_confirmed') || errorMessage.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and click the confirmation link before signing in.';
+        }
+      }
+      
+      setAuthError(errorMessage);
     } finally {
       setIsAuthLoading(false);
     }
