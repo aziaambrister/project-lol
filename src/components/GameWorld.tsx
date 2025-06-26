@@ -141,7 +141,8 @@ const GameWorld: React.FC = () => {
   useEffect(() => {
     let animationFrameId: number;
 
-    const moveLoop = () => {
+    const gameLoop = () => {
+      // Handle player movement
       if (keysPressedRef.current.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
@@ -165,15 +166,16 @@ const GameWorld: React.FC = () => {
         });
       }
 
-      updateEnemies();
+      // Update enemy positions for smooth following
+      updateEnemyPositions();
 
-      animationFrameId = requestAnimationFrame(moveLoop);
+      animationFrameId = requestAnimationFrame(gameLoop);
     };
 
-    animationFrameId = requestAnimationFrame(moveLoop);
+    animationFrameId = requestAnimationFrame(gameLoop);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
+  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving, state.player.position]);
 
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
@@ -184,7 +186,7 @@ const GameWorld: React.FC = () => {
     return () => clearInterval(cleanupInterval);
   }, []);
 
-  const updateEnemies = () => {
+  const updateEnemyPositions = () => {
     const playerPos = state.player.position;
     const mapWidth = state.currentWorld.size.width;
     const mapHeight = state.currentWorld.size.height;
@@ -196,18 +198,25 @@ const GameWorld: React.FC = () => {
       const dy = playerPos.y - enemy.position.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < 300) {
+      // Follow player when within 300 pixels
+      if (distance < 300 && distance > 5) { // Don't move if too close to prevent jittering
         const speed = 1.5;
         const angle = Math.atan2(dy, dx);
+        
         let newX = enemy.position.x + Math.cos(angle) * speed;
         let newY = enemy.position.y + Math.sin(angle) * speed;
 
-        // Clamp to map bounds
-        newX = Math.max(0, Math.min(newX, mapWidth));
-        newY = Math.max(0, Math.min(newY, mapHeight));
+        // Clamp to map boundaries
+        newX = Math.max(50, Math.min(newX, mapWidth - 50));
+        newY = Math.max(50, Math.min(newY, mapHeight - 50));
 
         enemy.position.x = newX;
         enemy.position.y = newY;
+        
+        // Update enemy state to chase
+        if (enemy.state !== 'chase') {
+          enemy.state = 'chase';
+        }
       }
     });
   };

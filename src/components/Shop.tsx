@@ -275,8 +275,12 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           </div>
         )}
         
-        {/* Items Grid - SUPER TINY */}
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1 max-h-64 overflow-y-auto">
+        {/* Items Grid - LARGER PREMIUM ITEMS */}
+        <div className={`grid gap-1 max-h-64 overflow-y-auto ${
+          selectedCategory === 'premium' 
+            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' // 50% larger grid for premium
+            : 'grid-cols-4 md:grid-cols-6 lg:grid-cols-8'
+        }`}>
           {currentItems.map((item) => {
             const canAfford = selectedCategory === 'premium' ? !!user : player.currency >= item.price;
             const isSelected = selectedItem === item.id;
@@ -285,7 +289,9 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800 rounded p-1 border transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
+                className={`bg-gray-800 rounded border transition-all duration-300 cursor-pointer transform hover:scale-105 relative ${
+                  isPremium ? 'p-3' : 'p-1' // Larger padding for premium items
+                } ${
                   isSelected ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 
                   canAfford ? 'border-gray-600 hover:border-gray-500' : 'border-red-600 opacity-60'
                 } ${isPremium ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30' : ''}`}
@@ -300,9 +306,9 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                 
                 {/* Item Icon */}
                 <div className="text-center mb-1">
-                  <div className="text-lg mb-0.5">{item.icon}</div>
-                  <h3 className="text-xs font-bold truncate">{item.name}</h3>
-                  <div className={`text-xs px-1 rounded-full inline-block border ${getRarityColor(item.rarity)}`}>
+                  <div className={`${isPremium ? 'text-3xl mb-1' : 'text-lg mb-0.5'}`}>{item.icon}</div>
+                  <h3 className={`${isPremium ? 'text-sm' : 'text-xs'} font-bold truncate`}>{item.name}</h3>
+                  <div className={`${isPremium ? 'text-xs' : 'text-xs'} px-1 rounded-full inline-block border ${getRarityColor(item.rarity)}`}>
                     {item.rarity.charAt(0).toUpperCase()}
                   </div>
                 </div>
