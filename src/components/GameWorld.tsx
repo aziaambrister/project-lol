@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import Player from './Player';
 import Enemy from './Enemy';
@@ -15,69 +15,68 @@ const GameWorld: React.FC = () => {
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
-  // COMPLETELY REBUILT WASD SYSTEM - NO MORE ISSUES
+  // Keep keysPressed in a ref to avoid stale closures in animation frame
+  const keysPressedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    keysPressedRef.current = keysPressed;
+  }, [keysPressed]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      
-      // ESC key to toggle menu
+
       if (key === 'escape') {
         e.preventDefault();
         setShowEscMenu(!showEscMenu);
         return;
       }
-      
-      // Debug mode toggle
+
       if (key === 'f3') {
         e.preventDefault();
         toggleDebugMode();
         return;
       }
-      
-      // Don't process other keys if ESC menu is open
+
       if (showEscMenu) return;
-      
-      // WASD Movement keys - FIXED HANDLING
+
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
         e.stopPropagation();
         setKeysPressed(prev => new Set(prev).add(key));
         return;
       }
-      
-      // Combat keys
-      if (key === ' ') { // Spacebar for basic attack
+
+      if (key === ' ') {
         e.preventDefault();
         const nearestEnemy = findNearestEnemy();
         if (nearestEnemy) {
           performAttack('basic-punch', nearestEnemy.id);
         }
       }
-      
-      if (key === 'shift') { // Shift for block
+
+      if (key === 'shift') {
         e.preventDefault();
         performAttack('block');
       }
-      
-      // Interaction keys
-      if (key === 'e') { // E to enter buildings
+
+      if (key === 'e') {
         e.preventDefault();
         const nearestBuilding = findNearestBuilding();
         if (nearestBuilding && nearestBuilding.enterable) {
           enterBuilding(nearestBuilding.id);
         }
       }
-      
-      // Special moves
+
       if (key === '1') {
         e.preventDefault();
         performAttack('basic-punch');
       }
+
       if (key === '2') {
         e.preventDefault();
         const nearestEnemy = findNearestEnemy();
         if (nearestEnemy) {
-          // Create shuriken animation
           const newShuriken = {
             id: Date.now(),
             x: state.player.position.x,
@@ -87,28 +86,28 @@ const GameWorld: React.FC = () => {
             timestamp: Date.now()
           };
           setShurikens(prev => [...prev, newShuriken]);
-          
-          // Perform the attack after a short delay for animation
+
           setTimeout(() => {
             performAttack('shuriken-throw', nearestEnemy.id);
           }, 300);
         }
       }
+
       if (key === '3') {
         e.preventDefault();
         performAttack('dodge-roll');
       }
+
       if (key === '4') {
         e.preventDefault();
         const specialMove = state.player.character.moveSet.find(m => m.type === 'special' && m.id !== 'shuriken-throw');
         if (specialMove) performAttack(specialMove.id);
       }
     };
-    
+
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      
-      // WASD Movement keys - Remove from pressed keys set
+
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -119,18 +118,16 @@ const GameWorld: React.FC = () => {
         });
       }
     };
-    
-    // Use document with capture for reliable event handling
+
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('keyup', handleKeyUp, true);
-    
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('keyup', handleKeyUp, true);
     };
   }, [performAttack, enterBuilding, showEscMenu, state.player.position, toggleDebugMode]);
 
-  // Check if map image loads
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
@@ -144,47 +141,48 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
-  // FIXED MOVEMENT LOOP - Process WASD keys continuously
+  // --- REPLACED MOVEMENT LOOP USING requestAnimationFrame ---
   useEffect(() => {
-    const moveInterval = setInterval(() => {
-      // Stop movement if no keys pressed or ESC menu is open
-      if (keysPressed.size === 0 || showEscMenu) {
+    let animationFrameId: number;
+
+    const moveLoop = () => {
+      if (keysPressedRef.current.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
         }
-        return;
+      } else {
+        keysPressedRef.current.forEach(key => {
+          switch (key) {
+            case 'w':
+              movePlayer('up');
+              break;
+            case 'a':
+              movePlayer('left');
+              break;
+            case 's':
+              movePlayer('down');
+              break;
+            case 'd':
+              movePlayer('right');
+              break;
+          }
+        });
       }
-      
-      // Process each pressed key and move accordingly
-      // W = UP, A = LEFT, S = DOWN, D = RIGHT
-      keysPressed.forEach(key => {
-        switch (key) {
-          case 'w':
-            movePlayer('up');
-            break;
-          case 'a':
-            movePlayer('left');
-            break;
-          case 's':
-            movePlayer('down');
-            break;
-          case 'd':
-            movePlayer('right');
-            break;
-        }
-      });
-    }, 16); // 60 FPS
-    
-    return () => clearInterval(moveInterval);
-  }, [keysPressed, movePlayer, stopMoving, state.player.isMoving, showEscMenu]);
 
-  // Clean up shurikens
+      animationFrameId = requestAnimationFrame(moveLoop);
+    };
+
+    animationFrameId = requestAnimationFrame(moveLoop);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
+
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
       const now = Date.now();
       setShurikens(prev => prev.filter(shuriken => now - shuriken.timestamp < 1000));
     }, 100);
-    
+
     return () => clearInterval(cleanupInterval);
   }, []);
 
@@ -192,21 +190,21 @@ const GameWorld: React.FC = () => {
     const playerPos = state.player.position;
     let nearestEnemy = null;
     let minDistance = Infinity;
-    
+
     state.currentWorld.enemies.forEach(enemy => {
       if (enemy.state === 'dead') return;
-      
+
       const distance = Math.sqrt(
         Math.pow(enemy.position.x - playerPos.x, 2) +
         Math.pow(enemy.position.y - playerPos.y, 2)
       );
-      
-      if (distance < 150 && distance < minDistance) { // Shuriken range
+
+      if (distance < 150 && distance < minDistance) {
         minDistance = distance;
         nearestEnemy = enemy;
       }
     });
-    
+
     return nearestEnemy;
   };
 
@@ -214,34 +212,32 @@ const GameWorld: React.FC = () => {
     const playerPos = state.player.position;
     let nearestBuilding = null;
     let minDistance = Infinity;
-    
+
     state.currentWorld.buildings.forEach(building => {
       const distance = Math.sqrt(
         Math.pow(building.position.x - playerPos.x, 2) +
         Math.pow(building.position.y - playerPos.y, 2)
       );
-      
-      if (distance < 80 && distance < minDistance) { // Interaction range
+
+      if (distance < 80 && distance < minDistance) {
         minDistance = distance;
         nearestBuilding = building;
       }
     });
-    
+
     return nearestBuilding;
   };
 
-  // Calculate camera offset - Fixed to prevent enemy shifting
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
-  // Day/night lighting
   const lightLevel = state.currentWorld.dayNightCycle.lightLevel;
   const overlayOpacity = 1 - lightLevel;
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
-      {/* Map Background - Full Coverage */}
-      <div 
+      {/* Map Background */}
+      <div
         className="absolute"
         style={{
           left: -cameraX,
@@ -257,15 +253,13 @@ const GameWorld: React.FC = () => {
           minHeight: '100vh'
         }}
       >
-        {/* Show loading indicator if map hasn't loaded */}
         {!mapLoaded && (
           <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg z-50">
             Loading map...
           </div>
         )}
 
-        {/* Fallback background color to prevent white space */}
-        <div 
+        <div
           className="absolute inset-0 bg-green-600"
           style={{ zIndex: -1 }}
         ></div>
@@ -273,10 +267,10 @@ const GameWorld: React.FC = () => {
 
       {/* Shuriken Animation */}
       {shurikens.map(shuriken => {
-        const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1); // 300ms animation
+        const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1);
         const currentX = shuriken.x + (shuriken.targetX - shuriken.x) * progress;
         const currentY = shuriken.y + (shuriken.targetY - shuriken.y) * progress;
-        
+
         return (
           <div
             key={shuriken.id}
@@ -284,25 +278,25 @@ const GameWorld: React.FC = () => {
             style={{
               left: currentX - cameraX - 8,
               top: currentY - cameraY - 8,
-              transform: `rotate(${progress * 720}deg)`, // Spinning effect
+              transform: `rotate(${progress * 720}deg)`,
               transition: 'none'
             }}
           >
-            <img 
-              src="/shuriken.png" 
-              alt="Shuriken" 
+            <img
+              src="/shuriken.png"
+              alt="Shuriken"
               className="w-4 h-4 object-contain"
             />
           </div>
         );
       })}
 
-      {/* Buildings with enhanced RPG styling */}
+      {/* Buildings */}
       {state.currentWorld.buildings.map(building => (
         <Building key={building.id} building={building} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
-      {/* NPCs with enhanced styling */}
+      {/* NPCs */}
       {state.currentWorld.npcs.map(npc => (
         <div
           key={npc.id}
@@ -327,7 +321,7 @@ const GameWorld: React.FC = () => {
       {/* Player */}
       <Player cameraX={cameraX} cameraY={cameraY} />
 
-      {/* Enhanced Damage Numbers */}
+      {/* Damage Numbers */}
       {state.combat.damageNumbers.map(damageNumber => (
         <div
           key={damageNumber.id}
@@ -349,10 +343,10 @@ const GameWorld: React.FC = () => {
 
       {/* Day/Night Overlay */}
       {overlayOpacity > 0 && (
-        <div 
+        <div
           className="absolute inset-0 bg-blue-900 pointer-events-none"
           style={{ opacity: overlayOpacity * 0.7 }}
-        ></div>
+        />
       )}
 
       {/* Enemy Debug Overlay */}
@@ -371,7 +365,7 @@ const GameWorld: React.FC = () => {
       {/* Minimap */}
       {state.ui.showMinimap && !showEscMenu && <Minimap />}
 
-      {/* Enhanced Controls Help */}
+      {/* Controls Help */}
       {!showEscMenu && (
         <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 text-white text-sm border-2 border-yellow-400/60 shadow-2xl">
           <div className="space-y-2">
@@ -396,7 +390,7 @@ const GameWorld: React.FC = () => {
         <EscapeMenu onClose={() => setShowEscMenu(false)} />
       )}
 
-      {/* CSS for enhanced animations */}
+      {/* CSS for animations */}
       <style jsx>{`
         @keyframes float-up {
           0% {
