@@ -9,7 +9,7 @@ import EscapeMenu from './EscapeMenu';
 import EnemyDebugOverlay from './EnemyDebugOverlay';
 
 const GameWorld: React.FC = () => {
-  const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode } = useGame();
+  const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
@@ -141,8 +141,7 @@ const GameWorld: React.FC = () => {
   useEffect(() => {
     let animationFrameId: number;
 
-    const gameLoop = () => {
-      // Handle player movement
+    const moveLoop = () => {
       if (keysPressedRef.current.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
@@ -166,16 +165,13 @@ const GameWorld: React.FC = () => {
         });
       }
 
-      // Update enemy positions for smooth following
-      updateEnemyPositions();
-
-      animationFrameId = requestAnimationFrame(gameLoop);
+      animationFrameId = requestAnimationFrame(moveLoop);
     };
 
-    animationFrameId = requestAnimationFrame(gameLoop);
+    animationFrameId = requestAnimationFrame(moveLoop);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving, state.player.position]);
+  }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
 
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
@@ -185,41 +181,6 @@ const GameWorld: React.FC = () => {
 
     return () => clearInterval(cleanupInterval);
   }, []);
-
-  const updateEnemyPositions = () => {
-    const playerPos = state.player.position;
-    const mapWidth = state.currentWorld.size.width;
-    const mapHeight = state.currentWorld.size.height;
-
-    state.currentWorld.enemies.forEach(enemy => {
-      if (enemy.state === 'dead') return;
-
-      const dx = playerPos.x - enemy.position.x;
-      const dy = playerPos.y - enemy.position.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      // Follow player when within 300 pixels
-      if (distance < 300 && distance > 5) { // Don't move if too close to prevent jittering
-        const speed = 1.5;
-        const angle = Math.atan2(dy, dx);
-        
-        let newX = enemy.position.x + Math.cos(angle) * speed;
-        let newY = enemy.position.y + Math.sin(angle) * speed;
-
-        // Clamp to map boundaries
-        newX = Math.max(50, Math.min(newX, mapWidth - 50));
-        newY = Math.max(50, Math.min(newY, mapHeight - 50));
-
-        enemy.position.x = newX;
-        enemy.position.y = newY;
-        
-        // Update enemy state to chase
-        if (enemy.state !== 'chase') {
-          enemy.state = 'chase';
-        }
-      }
-    });
-  };
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
@@ -321,12 +282,11 @@ const GameWorld: React.FC = () => {
         );
       })}
 
-      {/* Buildings */}
+      {/* World Entities */}
       {state.currentWorld.buildings.map(building => (
         <Building key={building.id} building={building} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
-      {/* NPCs */}
       {state.currentWorld.npcs.map(npc => (
         <div
           key={npc.id}
@@ -343,7 +303,6 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
-      {/* Enemies */}
       {state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
@@ -378,7 +337,7 @@ const GameWorld: React.FC = () => {
 
       <EnemyDebugOverlay
         enemies={state.currentWorld.enemies}
-        aiSystem={undefined}
+        aiSystem={aiSystem}
         playerPosition={state.player.position}
         cameraX={cameraX}
         cameraY={cameraY}
