@@ -165,7 +165,7 @@ const GameWorld: React.FC = () => {
         });
       }
 
-      updateEnemies(); // ← enemy movement added
+      updateEnemies();
 
       animationFrameId = requestAnimationFrame(moveLoop);
     };
@@ -186,6 +186,8 @@ const GameWorld: React.FC = () => {
 
   const updateEnemies = () => {
     const playerPos = state.player.position;
+    const mapWidth = state.currentWorld.size.width;
+    const mapHeight = state.currentWorld.size.height;
 
     state.currentWorld.enemies.forEach(enemy => {
       if (enemy.state === 'dead') return;
@@ -197,8 +199,15 @@ const GameWorld: React.FC = () => {
       if (distance < 300) {
         const speed = 1.5;
         const angle = Math.atan2(dy, dx);
-        enemy.position.x += Math.cos(angle) * speed;
-        enemy.position.y += Math.sin(angle) * speed;
+        let newX = enemy.position.x + Math.cos(angle) * speed;
+        let newY = enemy.position.y + Math.sin(angle) * speed;
+
+        // Clamp to map bounds
+        newX = Math.max(0, Math.min(newX, mapWidth));
+        newY = Math.max(0, Math.min(newY, mapHeight));
+
+        enemy.position.x = newX;
+        enemy.position.y = newY;
       }
     });
   };
@@ -253,6 +262,7 @@ const GameWorld: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* Map */}
       <div
         className="absolute"
         style={{
@@ -276,6 +286,7 @@ const GameWorld: React.FC = () => {
         )}
       </div>
 
+      {/* Projectiles */}
       {shurikens.map(shuriken => {
         const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1);
         const currentX = shuriken.x + (shuriken.targetX - shuriken.x) * progress;
@@ -301,10 +312,12 @@ const GameWorld: React.FC = () => {
         );
       })}
 
+      {/* Buildings */}
       {state.currentWorld.buildings.map(building => (
         <Building key={building.id} building={building} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
+      {/* NPCs */}
       {state.currentWorld.npcs.map(npc => (
         <div
           key={npc.id}
@@ -321,6 +334,7 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
+      {/* Enemies */}
       {state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
