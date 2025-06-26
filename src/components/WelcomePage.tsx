@@ -44,10 +44,14 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
           let errorMessage = error.message || 'An error occurred during sign in';
           
           // Check for specific error codes or messages
-          if (errorMessage.includes('email_not_confirmed') || errorMessage.includes('Email not confirmed')) {
+          if (error.message?.includes('email_not_confirmed') || error.message?.includes('Email not confirmed')) {
             errorMessage = 'Please check your email and click the confirmation link before signing in.';
-          } else if (errorMessage.includes('invalid_credentials') || errorMessage.includes('Invalid login credentials')) {
+          } else if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
             errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+          } else if (error.message?.includes('too_many_requests')) {
+            errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
+          } else if (error.message?.includes('signup_disabled')) {
+            errorMessage = 'New user registration is currently disabled.';
           }
           
           setAuthError(errorMessage);
@@ -65,28 +69,38 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
           // Handle specific error messages for signup
           let errorMessage = error.message || 'An error occurred during sign up';
           
-          if (errorMessage.includes('already_registered') || errorMessage.includes('already registered')) {
+          if (error.message?.includes('already_registered') || error.message?.includes('already registered')) {
             errorMessage = 'An account with this email already exists. Please try signing in instead.';
-          } else if (errorMessage.includes('weak_password') || errorMessage.includes('Password should be')) {
+          } else if (error.message?.includes('weak_password') || error.message?.includes('Password should be')) {
             errorMessage = 'Password is too weak. Please use at least 6 characters.';
+          } else if (error.message?.includes('invalid_email')) {
+            errorMessage = 'Please enter a valid email address.';
+          } else if (error.message?.includes('signup_disabled')) {
+            errorMessage = 'New user registration is currently disabled.';
           }
           
           setAuthError(errorMessage);
         } else {
           setShowAuthModal(false);
           setAuthForm({ email: '', password: '', displayName: '' });
+          // Show success message for signup
+          setAuthError(null);
         }
       }
     } catch (error: any) {
-      // Fallback error handling
-      let errorMessage = 'An unexpected error occurred';
+      // Fallback error handling for unexpected errors
+      console.error('Authentication error:', error);
+      
+      let errorMessage = 'An unexpected error occurred. Please try again.';
       
       if (error?.message) {
-        errorMessage = error.message;
-        
-        // Handle specific error cases
-        if (errorMessage.includes('email_not_confirmed') || errorMessage.includes('Email not confirmed')) {
+        // Handle specific error cases that might not be caught above
+        if (error.message.includes('email_not_confirmed') || error.message.includes('Email not confirmed')) {
           errorMessage = 'Please check your email and click the confirmation link before signing in.';
+        } else if (error.message.includes('invalid_credentials') || error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Network request failed') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
         }
       }
       
@@ -97,7 +111,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
@@ -136,7 +154,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                 {authMode === 'login' ? 'Welcome Back' : 'Join the Realm'}
               </h2>
               <button
-                onClick={() => setShowAuthModal(false)}
+                onClick={() => {
+                  setShowAuthModal(false);
+                  setAuthError(null);
+                  setAuthForm({ email: '', password: '', displayName: '' });
+                }}
                 className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X size={20} />
@@ -156,6 +178,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white"
                     placeholder="Enter your display name"
                     required={authMode === 'signup'}
+                    disabled={isAuthLoading}
                   />
                 </div>
               )}
@@ -171,6 +194,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white"
                   placeholder="Enter your email"
                   required
+                  disabled={isAuthLoading}
                 />
               </div>
 
@@ -186,6 +210,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   placeholder="Enter your password"
                   required
                   minLength={6}
+                  disabled={isAuthLoading}
                 />
               </div>
 
@@ -198,7 +223,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
               <button
                 type="submit"
                 disabled={isAuthLoading}
-                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold rounded-lg transition-all duration-300 disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAuthLoading ? (
                   <div className="flex items-center justify-center">
@@ -219,6 +244,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   setAuthForm({ email: '', password: '', displayName: '' });
                 }}
                 className="text-yellow-400 hover:text-yellow-300 text-sm transition-colors"
+                disabled={isAuthLoading}
               >
                 {authMode === 'login' 
                   ? "Don't have an account? Sign up" 
