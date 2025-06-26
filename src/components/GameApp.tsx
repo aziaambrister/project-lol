@@ -12,7 +12,7 @@ import ForestCabinInterior from './ForestCabinInterior';
 import BattleRoyaleWorld from './BattleRoyaleWorld';
 
 const GameApp: React.FC = () => {
-  const { state: gameState } = useGame();
+  const { gameState } = useGame();
 
   const renderCurrentScreen = () => {
     switch (gameState.gameMode) {
