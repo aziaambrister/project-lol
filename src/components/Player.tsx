@@ -14,8 +14,8 @@ const Player: React.FC<PlayerProps> = ({ cameraX, cameraY }) => {
     <div 
       className="absolute z-20 transition-all duration-100"
       style={{
-        left: `calc(50% - 32px)`,
-        top: `calc(50% - 32px)`,
+        left: `${player.position.x - cameraX - 32}px`,
+        top: `${player.position.y - cameraY - 32}px`,
         transform: `scaleX(${player.direction === 'left' ? -1 : 1})`
       }}
     >
