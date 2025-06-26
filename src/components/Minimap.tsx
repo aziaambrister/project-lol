@@ -16,11 +16,11 @@ const Minimap: React.FC = () => {
           className="relative bg-green-800 rounded border border-green-600 overflow-hidden"
           style={{ width: mapSize, height: mapSize }}
         >
-          {/* Map Background Image - USING THE NEW MAP */}
+          {/* Map Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: 'url(/map copy copy copy.png)', // FIXED: Using the new map image
+              backgroundImage: 'url(/map copy copy.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
