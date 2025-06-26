@@ -37,13 +37,16 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
   const isMindlessZombie = enemy.name === 'Mindless Zombie';
   const isWildWolf = enemy.name === 'Wild Wolf' || enemy.name === 'Snow Wolf';
   const isLakeSerpent = enemy.name === 'Lake Serpent';
+  const isIceBear = enemy.name === 'Ice Bear';
   
   // Zombie: 67.5px (45 * 1.5 = 67.5) - 50% bigger than before
   // Wolf: 30px (20 * 1.5 = 30) - 50% bigger than before  
   // Lake Serpent: 24px (12 * 2 = 24) - 100% bigger than before
+  // Ice Bear: 48px (24 * 2 = 48) - 100% bigger than initially would be
   const enemySize = isMindlessZombie ? 67.5 : 
                    isWildWolf ? 30 : 
-                   isLakeSerpent ? 24 : 12;
+                   isLakeSerpent ? 24 : 
+                   isIceBear ? 48 : 12;
 
   return (
     <div 

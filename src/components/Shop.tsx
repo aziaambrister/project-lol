@@ -19,7 +19,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   
   const { player } = state;
   
-  // Shop inventory with prices - Expanded items
+  // Shop inventory with prices - Expanded items (REMOVED vialborne-staff)
   const shopItems = {
     weapons: [
       { ...allItems.find(item => item.id === 'ninja-katana')!, price: 150 },
@@ -30,8 +30,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       { ...allItems.find(item => item.id === 'thunder-axe')!, price: 380 },
       { ...allItems.find(item => item.id === 'plasma-cannon')!, price: 400 },
       { ...allItems.find(item => item.id === 'ice-hammer')!, price: 450 },
-      { ...allItems.find(item => item.id === 'legendary-blade')!, price: 800 },
-      { ...allItems.find(item => item.id === 'vialborne-staff')!, price: 900 }
+      { ...allItems.find(item => item.id === 'legendary-blade')!, price: 800 }
+      // REMOVED vialborne-staff as it's exclusive to mystic alchemist
     ],
     armor: [
       { ...allItems.find(item => item.id === 'ninja-garb')!, price: 80 },
@@ -419,7 +419,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             <div>
               <h4 className="font-bold text-white mb-0.5 text-xs">🛡️ Equipment:</h4>
               <ul className="space-y-0 text-xs">
-                <li>• Weapons increase attack damage</li>
+                <li>• Higher price = more damage</li>
                 <li>• Armor provides defense bonuses</li>
               </ul>
             </div>

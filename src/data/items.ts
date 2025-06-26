@@ -170,21 +170,8 @@ export const weapons: Item[] = [
       value: 26
     },
     icon: '⚡'
-  },
-  {
-    id: 'vialborne-staff',
-    name: 'Vialborne Staff',
-    description: 'The legendary staff of the Mystic Alchemist, filled with powerful potions.',
-    type: 'weapon',
-    value: 900,
-    rarity: 'legendary',
-    usable: false,
-    effect: {
-      type: 'damage',
-      value: 40
-    },
-    icon: '🧪'
   }
+  // REMOVED vialborne-staff as it's exclusive to mystic alchemist
 ];
 
 export const armors: Item[] = [

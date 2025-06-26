@@ -67,7 +67,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/forest cabin 2.png', // Using the new forest cabin 2 background
+        background: '/snowy cabin.png', // Using the new snowy cabin background
         npcs: [],
         items: [
           {
@@ -105,75 +105,13 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+        background: '/snowy cabin.png', // Using the new snowy cabin background
         npcs: [],
         items: [],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
-    },
-    // Desert Area Buildings (scaled positions) - REMOVED DESERT OUTPOST
-    {
-      id: 'desert-temple',
-      name: 'Ancient Temple',
-      type: 'temple',
-      position: { x: 2100, y: 2400 },
-      size: { width: 150, height: 120 },
-      enterable: true,
-      sprite: '🏛️',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 75, y: 120, leadsTo: 'main-world' }]
-      }
-    },
-    // Mountain Area Buildings (scaled positions)
-    {
-      id: 'mountain-tower',
-      name: 'Watchtower',
-      type: 'dungeon',
-      position: { x: 2400, y: 2250 },
-      size: { width: 90, height: 120 },
-      enterable: true,
-      sprite: '🗼',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 45, y: 120, leadsTo: 'main-world' }]
-      }
-    },
-    {
-      id: 'mountain-fortress',
-      name: 'Mountain Fortress',
-      type: 'dungeon',
-      position: { x: 2700, y: 1800 },
-      size: { width: 180, height: 150 },
-      enterable: true,
-      sprite: '🏰',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 90, y: 150, leadsTo: 'main-world' }]
-      }
-    },
-    // Coastal Buildings
-    {
-      id: 'lighthouse',
-      name: 'Lighthouse',
-      type: 'dungeon',
-      position: { x: 150, y: 1200 },
-      size: { width: 75, height: 150 },
-      enterable: true,
-      sprite: '🗼',
-      interior: {
-        background: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-        npcs: [],
-        items: [],
-        exits: [{ x: 37, y: 150, leadsTo: 'main-world' }]
-      }
     }
+    // REMOVED: desert-temple, mountain-tower, mountain-fortress, lighthouse as requested
   ],
   
   waterBodies: [
@@ -386,7 +324,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: 'https://images.pexels.com/photos/7991139/pexels-photo-7991139.jpeg?auto=compress&cs=tinysrgb&w=64',
+      sprite: '/ice bear.png', // Using the new ice bear image
       aiDifficulty: 'hard',
       moveSet: [
         {

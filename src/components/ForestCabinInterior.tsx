@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { ArrowLeft, Package } from 'lucide-react';
+import Player from './Player';
 
-const ForestCabinInterior: React.FC = () => {
-  const { state, exitBuilding, pickupItem } = useGame();
+interface ForestCabinInteriorProps {
+  keysHeld?: Record<string, boolean>;
+}
+
+const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {} }) => {
+  const { state, exitBuilding, pickupItem, movePlayer, stopMoving } = useGame();
   const [foodItems, setFoodItems] = useState([
     {
       id: 'cabin-bread',
@@ -27,6 +32,44 @@ const ForestCabinInterior: React.FC = () => {
       healAmount: 25
     }
   ]);
+
+  // WASD movement inside cabin
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const moveLoop = () => {
+      const pressedKeys = Object.keys(keysHeld).filter(key => keysHeld[key]);
+      
+      if (pressedKeys.length === 0) {
+        if (state.player.isMoving) {
+          stopMoving();
+        }
+      } else {
+        pressedKeys.forEach(key => {
+          switch (key) {
+            case 'w':
+              movePlayer('up');
+              break;
+            case 'a':
+              movePlayer('left');
+              break;
+            case 's':
+              movePlayer('down');
+              break;
+            case 'd':
+              movePlayer('right');
+              break;
+          }
+        });
+      }
+
+      animationFrameId = requestAnimationFrame(moveLoop);
+    };
+
+    animationFrameId = requestAnimationFrame(moveLoop);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [keysHeld, movePlayer, stopMoving, state.player.isMoving]);
 
   const handleExitCabin = () => {
     exitBuilding();
@@ -83,6 +126,10 @@ const ForestCabinInterior: React.FC = () => {
     return currentBuilding?.name || 'Forest Cabin';
   };
 
+  // Calculate camera offset for interior
+  const cameraX = state.camera.x - window.innerWidth / 2;
+  const cameraY = state.camera.y - window.innerHeight / 2;
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Forest Cabin Background - Dynamic based on current building */}
@@ -97,6 +144,11 @@ const ForestCabinInterior: React.FC = () => {
 
       {/* Dark overlay for better contrast */}
       <div className="absolute inset-0 bg-black/20"></div>
+
+      {/* Player inside cabin */}
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <Player cameraX={0} cameraY={0} />
+      </div>
 
       {/* Exit Button */}
       <button
@@ -164,6 +216,7 @@ const ForestCabinInterior: React.FC = () => {
                   <div>🕯️ Candlelight illuminates the room</div>
                 </>
               )}
+              <div>🎮 Use WASD to move around inside</div>
             </div>
           </div>
         </div>

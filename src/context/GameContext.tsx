@@ -3,6 +3,7 @@ import { GameState, CharacterClass, Character, Enemy, Move, DamageNumber, Item, 
 import { characters } from '../data/characters';
 import { gameWorld } from '../data/world';
 import { EnemyAISystem } from '../systems/EnemyAI';
+import { useAuth } from '../hooks/useAuth';
 
 interface GameContextType {
   state: GameState;
@@ -48,7 +49,9 @@ type GameAction =
   | { type: 'SHURIKEN_THROW'; payload: { targetId: string } }
   | { type: 'CONTACT_DAMAGE'; payload: { enemyId: string } }
   | { type: 'TOGGLE_DEBUG_MODE' }
-  | { type: 'HEAL_PLAYER'; payload: { amount: number } };
+  | { type: 'HEAL_PLAYER'; payload: { amount: number } }
+  | { type: 'LOAD_PLAYER_PROGRESS'; payload: { progress: any } }
+  | { type: 'SAVE_PLAYER_PROGRESS' };
 
 const initialState: GameState = {
   gameMode: 'character-select',
@@ -329,8 +332,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
         if (enemyIndex !== -1) {
           const enemy = updatedEnemies[enemyIndex];
-          const damage = Math.max(1, move.damage + state.player.character.attack - enemy.defense);
           
+          // Calculate damage based on equipped weapon
+          let baseDamage = move.damage + state.player.character.attack;
+          if (state.player.equippedItems.weapon?.effect?.type === 'damage') {
+            baseDamage += state.player.equippedItems.weapon.effect.value;
+          }
+          
+          const damage = Math.max(1, baseDamage - enemy.defense);
           const newEnemyHealth = Math.max(0, enemy.health - damage);
           
           updatedEnemies[enemyIndex] = {
@@ -401,8 +410,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
       if (enemyIndex !== -1) {
         const enemy = updatedEnemies[enemyIndex];
-        const damage = Math.floor(Math.random() * 16) + 10; // 10-20 damage as requested
         
+        // Calculate damage based on equipped weapon
+        let baseDamage = Math.floor(Math.random() * 16) + 10; // 10-20 base damage
+        if (state.player.equippedItems.weapon?.effect?.type === 'damage') {
+          baseDamage += state.player.equippedItems.weapon.effect.value;
+        }
+        
+        const damage = Math.max(1, baseDamage - enemy.defense);
         const newEnemyHealth = Math.max(0, enemy.health - damage);
         
         updatedEnemies[enemyIndex] = {
@@ -752,6 +767,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       return state;
     }
+
+    case 'LOAD_PLAYER_PROGRESS': {
+      const { progress } = action.payload;
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          ...progress
+        }
+      };
+    }
+
+    case 'SAVE_PLAYER_PROGRESS': {
+      // This would save to localStorage or database
+      const progressData = {
+        character: state.player.character,
+        currency: state.player.currency,
+        inventory: state.player.inventory,
+        equippedItems: state.player.equippedItems,
+        unlockedCharacters: state.player.unlockedCharacters
+      };
+      
+      localStorage.setItem('fightersRealm_progress', JSON.stringify(progressData));
+      return state;
+    }
     
     default:
       return state;
@@ -760,6 +800,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const { user } = useAuth();
+  
+  // Load player progress when user logs in
+  useEffect(() => {
+    if (user) {
+      const savedProgress = localStorage.getItem('fightersRealm_progress');
+      if (savedProgress) {
+        try {
+          const progress = JSON.parse(savedProgress);
+          dispatch({ type: 'LOAD_PLAYER_PROGRESS', payload: { progress } });
+        } catch (error) {
+          console.error('Failed to load player progress:', error);
+        }
+      }
+    }
+  }, [user]);
+
+  // Save progress periodically
+  useEffect(() => {
+    if (user) {
+      const saveInterval = setInterval(() => {
+        dispatch({ type: 'SAVE_PLAYER_PROGRESS' });
+      }, 30000); // Save every 30 seconds
+
+      return () => clearInterval(saveInterval);
+    }
+  }, [user]);
   
   const startGame = (characterClass: CharacterClass) => {
     dispatch({ type: 'START_GAME', payload: { characterClass } });
