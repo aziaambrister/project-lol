@@ -195,14 +195,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
-      // Check for contact damage with enemies
+      // Check for contact damage with enemies - only if they're close and visible
       const touchingEnemies = state.currentWorld.enemies.filter(enemy => {
         if (enemy.state === 'dead') return false;
         const distance = Math.sqrt(
           Math.pow(enemy.position.x - newX, 2) +
           Math.pow(enemy.position.y - newY, 2)
         );
-        return distance <= 30; // Contact range
+        
+        // Only apply contact damage if enemy is very close (within 30 units)
+        // and within reasonable distance from player (not off-screen)
+        const playerDistance = Math.sqrt(
+          Math.pow(enemy.position.x - state.player.position.x, 2) +
+          Math.pow(enemy.position.y - state.player.position.y, 2)
+        );
+        
+        return distance <= 30 && playerDistance <= 200; // Contact range and visibility check
       });
       
       // Apply contact damage
@@ -289,7 +297,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         Math.pow(enemy.position.y - state.player.position.y, 2)
       );
       
-      if (distanceToPlayer > 50) return state;
+      // Only allow attack if enemy is close enough and within reasonable range
+      if (distanceToPlayer > 50 || distanceToPlayer > 200) return state;
       
       let baseDamage = enemy.attack;
       
@@ -383,6 +392,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (enemyIndex !== -1) {
           const enemy = updatedEnemies[enemyIndex];
           
+          // Only allow attack if enemy is within reasonable distance
+          const distance = Math.sqrt(
+            Math.pow(enemy.position.x - state.player.position.x, 2) +
+            Math.pow(enemy.position.y - state.player.position.y, 2)
+          );
+          
+          if (distance > 150) return state; // Too far to attack
+          
           // Calculate damage based on equipped weapon
           let baseDamage = move.damage + state.player.character.attack;
           if (state.player.equippedItems.weapon?.effect?.type === 'damage') {
@@ -460,6 +477,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
       if (enemyIndex !== -1) {
         const enemy = updatedEnemies[enemyIndex];
+        
+        // Check distance for shuriken throw
+        const distance = Math.sqrt(
+          Math.pow(enemy.position.x - state.player.position.x, 2) +
+          Math.pow(enemy.position.y - state.player.position.y, 2)
+        );
+        
+        if (distance > 200) return state; // Too far for shuriken
         
         // Calculate damage based on equipped weapon
         let baseDamage = Math.floor(Math.random() * 16) + 10; // 10-20 base damage
@@ -980,7 +1005,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
             Math.pow(enemy.position.y - state.player.position.y, 2)
           );
           
-          if (distanceToPlayer <= 50) {
+          // Only attack if enemy is close enough and within reasonable range
+          if (distanceToPlayer <= 50 && distanceToPlayer <= 200) {
             const attackCycle = aiSystem.getAttackCycle(enemy.id);
             if (attackCycle && now - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
               dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });

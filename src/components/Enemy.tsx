@@ -15,6 +15,23 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     return null;
   }
 
+  // Calculate screen position
+  const screenX = enemy.position.x - cameraX;
+  const screenY = enemy.position.y - cameraY;
+
+  // Check if enemy is within viewport bounds (with buffer for smooth transitions)
+  const viewportBuffer = 200;
+  const isInViewport = 
+    screenX >= -viewportBuffer && 
+    screenX <= window.innerWidth + viewportBuffer &&
+    screenY >= -viewportBuffer && 
+    screenY <= window.innerHeight + viewportBuffer;
+
+  // Only render if enemy is within viewport
+  if (!isInViewport) {
+    return null;
+  }
+
   const handleEnemyClick = () => {
     const distance = Math.sqrt(
       Math.pow(enemy.position.x - state.player.position.x, 2) +
@@ -52,8 +69,8 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     <div 
       className="absolute z-15 cursor-pointer transition-all duration-200"
       style={{
-        left: enemy.position.x - cameraX - (enemySize * 2),
-        top: enemy.position.y - cameraY - (enemySize * 2)
+        left: screenX - (enemySize * 2),
+        top: screenY - (enemySize * 2)
       }}
       onClick={handleEnemyClick}
     >

@@ -77,14 +77,32 @@ export class EnemyAISystem {
       const aiState = this.aiStates.get(enemyId)!;
       const attackCycle = this.attackCycles.get(enemyId)!;
 
+      // Check if enemy is within reasonable distance of player (prevent off-screen behavior)
+      const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
+      const maxActiveDistance = 1000; // Maximum distance for active AI
+
+      if (distanceToPlayer > maxActiveDistance) {
+        // Enemy is too far away, keep it idle and at its patrol center
+        enemy.position = { ...enemy.patrolCenter };
+        enemy.state = 'patrol';
+        aiState.current = 'idle';
+        updatedEnemies.push(enemy);
+        continue;
+      }
+
       // Update AI state machine
       this.updateAIStateMachine(enemy, aiState, playerPosition, playerCharacter, deltaTime);
 
       // Update movement based on current state
       this.updateEnemyMovement(enemy, aiState, playerPosition, deltaTime);
 
-      // Update attack behavior
-      this.updateAttackBehavior(enemy, attackCycle, playerPosition, deltaTime);
+      // Update attack behavior - only if enemy is close enough and visible
+      if (distanceToPlayer <= 200) { // Only attack if within reasonable range
+        this.updateAttackBehavior(enemy, attackCycle, playerPosition, deltaTime);
+      }
+
+      // Ensure enemy stays within world bounds
+      this.constrainToWorldBounds(enemy);
 
       // Update spatial grid
       this.updateSpatialGrid(enemy);
@@ -161,7 +179,7 @@ export class EnemyAISystem {
 
     switch (aiState.current) {
       case 'idle':
-        // Patrol behavior
+        // Patrol behavior - stay near patrol center
         targetPosition = this.calculatePatrolMovement(enemy, deltaTime);
         break;
 
@@ -277,6 +295,14 @@ export class EnemyAISystem {
     };
 
     return clampedPosition;
+  }
+
+  private constrainToWorldBounds(enemy: Enemy) {
+    const worldBounds = { width: 4000, height: 4000 };
+    
+    // Ensure enemy stays within world bounds
+    enemy.position.x = Math.max(50, Math.min(worldBounds.width - 50, enemy.position.x));
+    enemy.position.y = Math.max(50, Math.min(worldBounds.height - 50, enemy.position.y));
   }
 
   private updateSpatialGrid(enemy: Enemy) {
