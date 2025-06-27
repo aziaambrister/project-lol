@@ -102,6 +102,40 @@ const aiSystem = new EnemyAISystem();
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+// Helper function to clamp camera position within map boundaries
+function clampCamera(
+  playerX: number, 
+  playerY: number, 
+  worldWidth: number, 
+  worldHeight: number, 
+  viewportWidth: number, 
+  viewportHeight: number
+): { x: number; y: number } {
+  const halfViewportWidth = viewportWidth / 2;
+  const halfViewportHeight = viewportHeight / 2;
+  
+  // If map is smaller than viewport, center the map
+  if (worldWidth <= viewportWidth) {
+    // Center the map horizontally
+    const cameraX = worldWidth / 2;
+    const cameraY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
+    return { x: cameraX, y: cameraY };
+  }
+  
+  if (worldHeight <= viewportHeight) {
+    // Center the map vertically
+    const cameraX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
+    const cameraY = worldHeight / 2;
+    return { x: cameraX, y: cameraY };
+  }
+  
+  // Normal clamping when map is larger than viewport
+  const clampedX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
+  const clampedY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
+  
+  return { x: clampedX, y: clampedY };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME': {
@@ -113,6 +147,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         aiSystem.addEnemy(enemy);
       });
       
+      // Calculate initial camera position with proper clamping
+      const clampedCamera = clampCamera(
+        200, 
+        3800, 
+        state.currentWorld.size.width, 
+        state.currentWorld.size.height,
+        window.innerWidth,
+        window.innerHeight
+      );
+      
       return {
         ...state,
         gameMode: 'world-exploration',
@@ -123,8 +167,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
         camera: {
           ...state.camera,
-          x: 200,
-          y: 3800
+          x: clampedCamera.x,
+          y: clampedCamera.y
         }
       };
     }
@@ -179,9 +223,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newDamageNumbers.push(damageNumber);
       });
       
-      // Update camera to follow player immediately
-      const cameraX = newX;
-      const cameraY = newY;
+      // Calculate camera position with proper clamping
+      const clampedCamera = clampCamera(
+        newX, 
+        newY, 
+        state.currentWorld.size.width, 
+        state.currentWorld.size.height,
+        window.innerWidth,
+        window.innerHeight
+      );
       
       return {
         ...state,
@@ -198,8 +248,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
         camera: {
           ...state.camera,
-          x: cameraX,
-          y: cameraY
+          x: clampedCamera.x,
+          y: clampedCamera.y
         },
         combat: {
           ...state.combat,
