@@ -79,7 +79,7 @@ export class EnemyAISystem {
 
       // Check if enemy is within reasonable distance of player (prevent off-screen behavior)
       const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
-      const maxActiveDistance = 1000; // Maximum distance for active AI
+      const maxActiveDistance = 800; // Reduced from 1000 to prevent off-screen issues
 
       if (distanceToPlayer > maxActiveDistance) {
         // Enemy is too far away, keep it idle and at its patrol center
@@ -97,7 +97,7 @@ export class EnemyAISystem {
       this.updateEnemyMovement(enemy, aiState, playerPosition, deltaTime);
 
       // Update attack behavior - only if enemy is close enough and visible
-      if (distanceToPlayer <= 200) { // Only attack if within reasonable range
+      if (distanceToPlayer <= 150) { // Reduced attack range to prevent off-screen attacks
         this.updateAttackBehavior(enemy, attackCycle, playerPosition, deltaTime);
       }
 
@@ -280,7 +280,7 @@ export class EnemyAISystem {
   private hasLineOfSight(from: Vector2D, to: Vector2D): boolean {
     // Simplified line of sight - in a real game, this would check for obstacles
     const distance = this.calculateDistance(from, to);
-    return distance <= 800; // Max sight range
+    return distance <= 600; // Reduced max sight range
   }
 
   private applyCollisionDetection(enemy: Enemy, targetPosition: Vector2D): Vector2D {

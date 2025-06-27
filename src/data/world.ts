@@ -67,7 +67,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowy cabin.png', // Using the new snowy cabin background
+        background: '/snowycabin.png', // Using the new snowy cabin background
         npcs: [],
         items: [
           {
@@ -105,7 +105,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowy cabin.png', // Using the new snowy cabin background
+        background: '/snowycabin.png', // Using the new snowy cabin background
         npcs: [],
         items: [],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
@@ -324,7 +324,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/ice bear.png', // Using the new ice bear image
+      sprite: '/icebear.png', // Using the new ice bear image
       aiDifficulty: 'hard',
       moveSet: [
         {

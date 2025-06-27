@@ -19,15 +19,15 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
   const screenX = enemy.position.x - cameraX;
   const screenY = enemy.position.y - cameraY;
 
-  // Check if enemy is within viewport bounds (with buffer for smooth transitions)
-  const viewportBuffer = 200;
+  // Simple viewport check - only render if enemy is within camera view
+  // No buffer zone to prevent flickering
   const isInViewport = 
-    screenX >= -viewportBuffer && 
-    screenX <= window.innerWidth + viewportBuffer &&
-    screenY >= -viewportBuffer && 
-    screenY <= window.innerHeight + viewportBuffer;
+    screenX >= -100 && 
+    screenX <= window.innerWidth + 100 &&
+    screenY >= -100 && 
+    screenY <= window.innerHeight + 100;
 
-  // Only render if enemy is within viewport
+  // Don't render if outside viewport - this prevents flickering
   if (!isInViewport) {
     return null;
   }
@@ -56,14 +56,11 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
   const isLakeSerpent = enemy.name === 'Lake Serpent';
   const isIceBear = enemy.name === 'Ice Bear';
   
-  // Zombie: 67.5px (45 * 1.5 = 67.5) - 50% bigger than before
-  // Wolf: 30px (20 * 1.5 = 30) - 50% bigger than before  
-  // Lake Serpent: 24px (12 * 2 = 24) - 100% bigger than before
-  // Ice Bear: 48px (24 * 2 = 48) - 100% bigger than initially would be
+  // Enemy sizes - Ice Bear is 100% bigger as requested
   const enemySize = isMindlessZombie ? 67.5 : 
                    isWildWolf ? 30 : 
                    isLakeSerpent ? 24 : 
-                   isIceBear ? 48 : 12;
+                   isIceBear ? 48 : 12; // Ice Bear is 100% bigger (24 * 2 = 48)
 
   return (
     <div 
@@ -76,7 +73,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     >
       {/* Enemy Character */}
       <div className="relative" style={{ width: `${enemySize * 4}px`, height: `${enemySize * 4}px` }}>
-        {/* Enemy Sprite - No border or yellow circles */}
+        {/* Enemy Sprite */}
         <div className="w-full h-full rounded-full overflow-hidden shadow-lg hover:scale-110 transition-all duration-200">
           <img 
             src={enemy.sprite}
