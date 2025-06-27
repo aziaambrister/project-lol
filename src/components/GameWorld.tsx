@@ -184,11 +184,22 @@ const GameWorld: React.FC = () => {
 
   const findNearestEnemy = () => {
     const playerPos = state.player.position;
+    const cameraX = state.camera.x - window.innerWidth / 2;
+    const cameraY = state.camera.y - window.innerHeight / 2;
+    
     let nearestEnemy = null;
     let minDistance = Infinity;
 
     state.currentWorld.enemies.forEach(enemy => {
       if (enemy.state === 'dead') return;
+
+      // Check if enemy is visible on screen
+      const screenX = enemy.position.x - cameraX;
+      const screenY = enemy.position.y - cameraY;
+      const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                       screenY >= 0 && screenY <= window.innerHeight;
+
+      if (!isVisible) return; // Only consider visible enemies
 
       const distance = Math.sqrt(
         Math.pow(enemy.position.x - playerPos.x, 2) +
@@ -232,7 +243,7 @@ const GameWorld: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Map */}
+      {/* Map - Always visible, no purple void */}
       <div
         className="absolute"
         style={{
@@ -303,6 +314,7 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
+      {/* Only render enemies that are fully visible on screen */}
       {state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
@@ -345,7 +357,8 @@ const GameWorld: React.FC = () => {
       />
 
       {!showEscMenu && <GameHUD />}
-      {state.ui.showMinimap && !showEscMenu && <Minimap />}
+      {/* Minimap is now always shown in top left */}
+      {!showEscMenu && <Minimap />}
       {showEscMenu && <EscapeMenu onClose={() => setShowEscMenu(false)} />}
 
       <style jsx>{`

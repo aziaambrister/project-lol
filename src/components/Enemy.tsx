@@ -19,16 +19,24 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
   const screenX = enemy.position.x - cameraX;
   const screenY = enemy.position.y - cameraY;
 
-  // Simple viewport check - only render if enemy is within camera view
-  // No buffer zone to prevent flickering
-  const isInViewport = 
-    screenX >= -100 && 
-    screenX <= window.innerWidth + 100 &&
-    screenY >= -100 && 
-    screenY <= window.innerHeight + 100;
+  // Strict viewport check - only render if enemy is FULLY within camera view
+  const enemySize = enemy.name === 'Mindless Zombie' ? 67.5 : 
+                   enemy.name === 'Wild Wolf' || enemy.name === 'Snow Wolf' ? 30 : 
+                   enemy.name === 'Lake Serpent' ? 24 : 
+                   enemy.name === 'Ice Bear' ? 48 : 12;
 
-  // Don't render if outside viewport - this prevents flickering
-  if (!isInViewport) {
+  const enemyWidth = enemySize * 4;
+  const enemyHeight = enemySize * 4;
+
+  // Check if enemy is FULLY within viewport bounds
+  const isFullyInViewport = 
+    screenX >= 0 && 
+    screenX + enemyWidth <= window.innerWidth &&
+    screenY >= 0 && 
+    screenY + enemyHeight <= window.innerHeight;
+
+  // Don't render if not fully in viewport
+  if (!isFullyInViewport) {
     return null;
   }
 
@@ -49,18 +57,6 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, cameraX, cameraY }) => {
     if (healthPercent > 30) return 'from-yellow-600 to-yellow-400';
     return 'from-red-600 to-red-400';
   };
-
-  // Check enemy type for special sizing
-  const isMindlessZombie = enemy.name === 'Mindless Zombie';
-  const isWildWolf = enemy.name === 'Wild Wolf' || enemy.name === 'Snow Wolf';
-  const isLakeSerpent = enemy.name === 'Lake Serpent';
-  const isIceBear = enemy.name === 'Ice Bear';
-  
-  // Enemy sizes - Ice Bear is 100% bigger as requested
-  const enemySize = isMindlessZombie ? 67.5 : 
-                   isWildWolf ? 30 : 
-                   isLakeSerpent ? 24 : 
-                   isIceBear ? 48 : 12; // Ice Bear is 100% bigger (24 * 2 = 48)
 
   return (
     <div 

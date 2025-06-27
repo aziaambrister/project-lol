@@ -175,7 +175,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'MOVE_PLAYER': {
       const { direction } = action.payload;
-      const moveSpeed = 12; // FAST RESPONSIVE MOVEMENT
+      const moveSpeed = 8; // REDUCED from 12 to 8 for slower, more controlled movement
       let newX = state.player.position.x;
       let newY = state.player.position.y;
       
@@ -195,22 +195,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
-      // Check for contact damage with enemies - only if they're close and visible
+      // Check for contact damage with enemies - only if they're visible on screen
+      const cameraX = state.camera.x - window.innerWidth / 2;
+      const cameraY = state.camera.y - window.innerHeight / 2;
+      
       const touchingEnemies = state.currentWorld.enemies.filter(enemy => {
         if (enemy.state === 'dead') return false;
+        
+        // Check if enemy is visible on screen first
+        const screenX = enemy.position.x - cameraX;
+        const screenY = enemy.position.y - cameraY;
+        const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                         screenY >= 0 && screenY <= window.innerHeight;
+        
+        if (!isVisible) return false;
+        
         const distance = Math.sqrt(
           Math.pow(enemy.position.x - newX, 2) +
           Math.pow(enemy.position.y - newY, 2)
         );
         
-        // Only apply contact damage if enemy is very close (within 30 units)
-        // and within reasonable distance from player (not off-screen)
-        const playerDistance = Math.sqrt(
-          Math.pow(enemy.position.x - state.player.position.x, 2) +
-          Math.pow(enemy.position.y - state.player.position.y, 2)
-        );
-        
-        return distance <= 30 && playerDistance <= 200; // Contact range and visibility check
+        return distance <= 30; // Contact range
       });
       
       // Apply contact damage
@@ -292,13 +297,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       if (!enemy || enemy.state === 'dead') return state;
       
+      // Check if enemy is visible on screen before allowing attack
+      const cameraX = state.camera.x - window.innerWidth / 2;
+      const cameraY = state.camera.y - window.innerHeight / 2;
+      const screenX = enemy.position.x - cameraX;
+      const screenY = enemy.position.y - cameraY;
+      const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                       screenY >= 0 && screenY <= window.innerHeight;
+      
+      if (!isVisible) return state; // Don't allow attacks from off-screen enemies
+      
       const distanceToPlayer = Math.sqrt(
         Math.pow(enemy.position.x - state.player.position.x, 2) +
         Math.pow(enemy.position.y - state.player.position.y, 2)
       );
       
-      // Only allow attack if enemy is close enough and within reasonable range
-      if (distanceToPlayer > 50 || distanceToPlayer > 200) return state;
+      // Only allow attack if enemy is close enough
+      if (distanceToPlayer > 50) return state;
       
       let baseDamage = enemy.attack;
       
@@ -392,6 +407,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (enemyIndex !== -1) {
           const enemy = updatedEnemies[enemyIndex];
           
+          // Check if enemy is visible on screen before allowing attack
+          const cameraX = state.camera.x - window.innerWidth / 2;
+          const cameraY = state.camera.y - window.innerHeight / 2;
+          const screenX = enemy.position.x - cameraX;
+          const screenY = enemy.position.y - cameraY;
+          const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                           screenY >= 0 && screenY <= window.innerHeight;
+          
+          if (!isVisible) return state; // Don't allow attacks on off-screen enemies
+          
           // Only allow attack if enemy is within reasonable distance
           const distance = Math.sqrt(
             Math.pow(enemy.position.x - state.player.position.x, 2) +
@@ -477,6 +502,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const enemyIndex = updatedEnemies.findIndex(e => e.id === targetId);
       if (enemyIndex !== -1) {
         const enemy = updatedEnemies[enemyIndex];
+        
+        // Check if enemy is visible on screen before allowing attack
+        const cameraX = state.camera.x - window.innerWidth / 2;
+        const cameraY = state.camera.y - window.innerHeight / 2;
+        const screenX = enemy.position.x - cameraX;
+        const screenY = enemy.position.y - cameraY;
+        const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                         screenY >= 0 && screenY <= window.innerHeight;
+        
+        if (!isVisible) return state; // Don't allow attacks on off-screen enemies
         
         // Check distance for shuriken throw
         const distance = Math.sqrt(
@@ -998,15 +1033,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Enemy attack interval - exactly 2 seconds as requested
     const enemyAttackInterval = setInterval(() => {
       const now = Date.now();
+      const cameraX = state.camera.x - window.innerWidth / 2;
+      const cameraY = state.camera.y - window.innerHeight / 2;
+      
       state.currentWorld.enemies.forEach(enemy => {
         if (enemy.state === 'chase' && enemy.health > 0) {
+          // Check if enemy is visible on screen before allowing attack
+          const screenX = enemy.position.x - cameraX;
+          const screenY = enemy.position.y - cameraY;
+          const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                           screenY >= 0 && screenY <= window.innerHeight;
+          
+          if (!isVisible) return; // Don't allow attacks from off-screen enemies
+          
           const distanceToPlayer = Math.sqrt(
             Math.pow(enemy.position.x - state.player.position.x, 2) +
             Math.pow(enemy.position.y - state.player.position.y, 2)
           );
           
-          // Only attack if enemy is close enough and within reasonable range
-          if (distanceToPlayer <= 50 && distanceToPlayer <= 200) {
+          // Only attack if enemy is close enough
+          if (distanceToPlayer <= 50) {
             const attackCycle = aiSystem.getAttackCycle(enemy.id);
             if (attackCycle && now - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
               dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
@@ -1048,7 +1094,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       clearInterval(cooldownInterval);
       clearInterval(damageNumberCleanup);
     };
-  }, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet, state.gameMode]);
+  }, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet, state.gameMode, state.camera]);
   
   return (
     <GameContext.Provider

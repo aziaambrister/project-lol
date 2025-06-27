@@ -5,22 +5,22 @@ const Minimap: React.FC = () => {
   const { state } = useGame();
   const { player, currentWorld } = state;
 
-  const mapScale = 0.1; // Scale factor for the minimap
-  const mapSize = 200; // Size of the minimap in pixels
+  const mapScale = 0.05; // Smaller scale for better overview
+  const mapSize = 150; // Smaller minimap size
 
   return (
-    <div className="absolute top-20 right-4 z-30">
+    <div className="absolute top-4 left-4 z-30">
       <div className="bg-black/80 backdrop-blur-sm rounded-lg p-2 border border-white/20">
-        <h3 className="text-white text-sm font-bold mb-2 text-center">Map</h3>
+        <h3 className="text-white text-xs font-bold mb-2 text-center">Map</h3>
         <div 
           className="relative bg-green-800 rounded border border-green-600 overflow-hidden"
           style={{ width: mapSize, height: mapSize }}
         >
           {/* Map Background Image */}
           <div 
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-center opacity-60"
             style={{
-              backgroundImage: 'url(/map copy copy.png)',
+              backgroundImage: 'url(/map.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
@@ -43,13 +43,22 @@ const Minimap: React.FC = () => {
             ></div>
           ))}
           
-          {/* Enemies */}
-          {currentWorld.enemies.filter(e => e.state !== 'dead').map(enemy => (
+          {/* Enemies - Only show visible ones */}
+          {currentWorld.enemies.filter(e => {
+            if (e.state === 'dead') return false;
+            
+            // Calculate if enemy is in viewport
+            const cameraX = state.camera.x - window.innerWidth / 2;
+            const cameraY = state.camera.y - window.innerHeight / 2;
+            const screenX = e.position.x - cameraX;
+            const screenY = e.position.y - cameraY;
+            
+            return screenX >= 0 && screenX <= window.innerWidth && 
+                   screenY >= 0 && screenY <= window.innerHeight;
+          }).map(enemy => (
             <div
               key={enemy.id}
-              className={`absolute w-2 h-2 rounded-full ${
-                enemy.state === 'chase' ? 'bg-red-500 animate-pulse' : 'bg-red-400'
-              }`}
+              className="absolute w-2 h-2 rounded-full bg-red-500 animate-pulse"
               style={{
                 left: (enemy.position.x * mapScale) - 1,
                 top: (enemy.position.y * mapScale) - 1
@@ -101,7 +110,7 @@ const Minimap: React.FC = () => {
             <span>You</span>
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
             <span>Enemies</span>
           </div>
           <div className="flex items-center">
