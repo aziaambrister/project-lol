@@ -67,7 +67,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/cozy forest cabin.png', // Fixed to match the actual filename
+        background: '/cozy forest cabin.png',
         npcs: [],
         items: [
           {
