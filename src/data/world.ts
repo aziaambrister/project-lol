@@ -297,6 +297,50 @@ export const gameWorld: GameWorld = {
         }
       ]
     },
+    {
+      id: 'ice-bear',
+      name: 'Ice Bear',
+      type: 'aggressive',
+      health: 120,
+      maxHealth: 120,
+      attack: 18,
+      defense: 10,
+      speed: 4,
+      detectionRadius: 140,
+      patrolRadius: 140,
+      experience: 60,
+      loot: [
+        {
+          id: 'ice-claw',
+          name: 'Ice Bear Claw',
+          type: 'material',
+          rarity: 'rare',
+          value: 60,
+          icon: '🐻',
+          description: 'Sharp claw from an ice bear'
+        }
+      ],
+      position: { x: 3000, y: 1000 },
+      patrolCenter: { x: 3000, y: 1000 },
+      state: 'patrol',
+      lastAction: 0,
+      sprite: '/icebear.png', // Using the updated ice bear image
+      aiDifficulty: 'hard',
+      moveSet: [
+        {
+          id: 'ice-swipe',
+          name: 'Ice Claw Swipe',
+          type: 'basic-attack',
+          damage: 22,
+          staminaCost: 28,
+          cooldown: 0,
+          currentCooldown: 0,
+          range: 38,
+          description: 'A powerful icy claw attack',
+          animation: 'swipe'
+        }
+      ]
+    },
     // Plains/Grassland Enemies - positioned in open areas
     {
       id: 'plains-goblin-1',
