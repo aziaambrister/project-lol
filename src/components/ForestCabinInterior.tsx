@@ -126,13 +126,57 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     return currentBuilding?.name || 'Forest Cabin';
   };
 
+  // Get cabin description based on current building
+  const getCabinDescription = () => {
+    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
+    if (currentBuilding?.id === 'forest-cabin-2') {
+      return 'A scholarly retreat filled with books and knowledge';
+    }
+    return 'A cozy refuge in the woods';
+  };
+
+  // Get cabin-specific items based on current building
+  const getCabinItems = () => {
+    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
+    if (currentBuilding?.id === 'forest-cabin-2') {
+      // Cozy cabin has different items
+      return [
+        {
+          id: 'cozy-cabin-potion',
+          name: 'Health Potion',
+          position: { x: 400, y: 350 },
+          picked: false,
+          healAmount: 50
+        },
+        {
+          id: 'cozy-cabin-scroll',
+          name: 'Ancient Scroll',
+          position: { x: 450, y: 320 },
+          picked: false,
+          healAmount: 0
+        },
+        {
+          id: 'cozy-cabin-book',
+          name: 'Leather Tome',
+          position: { x: 380, y: 340 },
+          picked: false,
+          healAmount: 0
+        }
+      ];
+    }
+    // Default cabin items
+    return foodItems;
+  };
+
   // Calculate camera offset for interior
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
+  const currentCabinItems = getCabinItems();
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Forest Cabin Background - Dynamic based on current building */}
+      {/* Cabin Background - Dynamic based on current building */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
@@ -163,23 +207,23 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30">
         <div className="bg-amber-800/90 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-amber-500">
           <h1 className="text-2xl font-bold text-amber-100 text-center">🏠 {getCabinName()}</h1>
-          <p className="text-amber-200 text-sm text-center mt-1">A cozy refuge in the woods</p>
+          <p className="text-amber-200 text-sm text-center mt-1">{getCabinDescription()}</p>
         </div>
       </div>
 
-      {/* Food Items on Table - Only show for original cabin */}
-      {state.player.currentBuilding === 'forest-cabin-1' && foodItems.map((food) => (
-        !food.picked && (
+      {/* Interactive Items - Dynamic based on cabin */}
+      {currentCabinItems.map((item) => (
+        !item.picked && (
           <div
-            key={food.id}
+            key={item.id}
             className="absolute z-20 cursor-pointer transform hover:scale-110 transition-all duration-200"
             style={{
-              left: food.position.x,
-              top: food.position.y
+              left: item.position.x,
+              top: item.position.y
             }}
-            onClick={() => handlePickupFood(food.id)}
+            onClick={() => handlePickupFood(item.id)}
           >
-            {/* Food Item */}
+            {/* Item */}
             <div className="relative">
               <div className="w-12 h-12 bg-amber-600/80 rounded-full flex items-center justify-center border-2 border-amber-400 shadow-lg animate-pulse">
                 <Package className="text-amber-100" size={24} />
@@ -190,7 +234,7 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
               
               {/* Tooltip */}
               <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity duration-200">
-                {food.name} (+{food.healAmount} HP)
+                {item.name} {item.healAmount > 0 ? `(+${item.healAmount} HP)` : ''}
               </div>
             </div>
           </div>
@@ -201,19 +245,19 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30">
         <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-amber-500/50">
           <div className="text-center">
-            <h3 className="text-amber-400 font-bold mb-2">🍽️ {getCabinName()}</h3>
+            <h3 className="text-amber-400 font-bold mb-2">🏠 {getCabinName()}</h3>
             <div className="text-white text-sm space-y-1">
-              {state.player.currentBuilding === 'forest-cabin-1' ? (
+              {state.player.currentBuilding === 'forest-cabin-2' ? (
+                <>
+                  <div>📚 Click on items to collect knowledge and potions</div>
+                  <div>🧙‍♂️ A place of learning and wisdom</div>
+                  <div>🕯️ Candlelight illuminates ancient texts</div>
+                </>
+              ) : (
                 <>
                   <div>🍞 Click on food items to restore health</div>
                   <div>🏠 A safe haven for weary travelers</div>
                   <div>🔥 Warm fireplace provides comfort</div>
-                </>
-              ) : (
-                <>
-                  <div>🏠 A cozy forest retreat</div>
-                  <div>📚 Books and scrolls line the shelves</div>
-                  <div>🕯️ Candlelight illuminates the room</div>
                 </>
               )}
               <div>🎮 Use WASD to move around inside</div>
@@ -226,9 +270,19 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       <div className="absolute bottom-4 right-4 z-30">
         <div className="bg-amber-800/70 backdrop-blur-sm rounded-lg p-3 border border-amber-500/50">
           <div className="text-amber-100 text-xs space-y-1">
-            <div>🔥 Fireplace crackling</div>
-            <div>🌲 Forest sounds outside</div>
-            <div>💤 Peaceful atmosphere</div>
+            {state.player.currentBuilding === 'forest-cabin-2' ? (
+              <>
+                <div>📖 Pages rustling softly</div>
+                <div>🕯️ Candles flickering gently</div>
+                <div>📚 Knowledge fills the air</div>
+              </>
+            ) : (
+              <>
+                <div>🔥 Fireplace crackling</div>
+                <div>🌲 Forest sounds outside</div>
+                <div>💤 Peaceful atmosphere</div>
+              </>
+            )}
           </div>
         </div>
       </div>
