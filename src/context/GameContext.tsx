@@ -23,6 +23,7 @@ interface GameContextType {
   equipItem: (item: Item) => void;
   unequipItem: (itemType: 'weapon' | 'armor') => void;
   toggleDebugMode: () => void;
+  restartGame: () => void;
   aiSystem: EnemyAISystem;
 }
 
@@ -51,7 +52,9 @@ type GameAction =
   | { type: 'TOGGLE_DEBUG_MODE' }
   | { type: 'HEAL_PLAYER'; payload: { amount: number } }
   | { type: 'LOAD_PLAYER_PROGRESS'; payload: { progress: any } }
-  | { type: 'SAVE_PLAYER_PROGRESS' };
+  | { type: 'SAVE_PLAYER_PROGRESS' }
+  | { type: 'GAME_OVER' }
+  | { type: 'RESTART_GAME' };
 
 const initialState: GameState = {
   gameMode: 'character-select',
@@ -246,7 +249,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         window.innerHeight
       );
       
-      return {
+      const newState = {
         ...state,
         player: {
           ...state.player,
@@ -269,6 +272,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           damageNumbers: newDamageNumbers
         }
       };
+
+      // Check for game over
+      if (updatedPlayerHealth <= 0) {
+        return {
+          ...newState,
+          gameMode: 'game-over'
+        };
+      }
+
+      return newState;
     }
     
     case 'STOP_MOVING': {
@@ -354,7 +367,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         timestamp: Date.now()
       };
       
-      return {
+      const newState = {
         ...state,
         player: {
           ...state.player,
@@ -368,6 +381,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           damageNumbers: [...state.combat.damageNumbers, damageNumber]
         }
       };
+
+      // Check for game over
+      if (newPlayerHealth <= 0) {
+        return {
+          ...newState,
+          gameMode: 'game-over'
+        };
+      }
+
+      return newState;
     }
     
     case 'TOGGLE_DEBUG_MODE': {
@@ -906,6 +929,41 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       localStorage.setItem('fightersRealm_progress', JSON.stringify(progressData));
       return state;
     }
+
+    case 'GAME_OVER': {
+      return {
+        ...state,
+        gameMode: 'game-over'
+      };
+    }
+
+    case 'RESTART_GAME': {
+      // Reset player health and position, but keep progress
+      const selectedCharacter = characters.find(char => char.class === state.player.character.class);
+      if (!selectedCharacter) return state;
+
+      return {
+        ...state,
+        gameMode: 'world-exploration',
+        player: {
+          ...state.player,
+          character: {
+            ...selectedCharacter,
+            // Keep the player's upgrades and equipment effects
+            maxHealth: state.player.character.maxHealth,
+            attack: state.player.character.attack,
+            defense: state.player.character.defense,
+            speed: state.player.character.speed,
+            health: state.player.character.maxHealth // Restore to full health
+          },
+          position: { x: 200, y: 3800 }, // Reset to spawn point
+        },
+        combat: {
+          ...state.combat,
+          damageNumbers: []
+        }
+      };
+    }
     
     default:
       return state;
@@ -1004,6 +1062,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   
   const toggleDebugMode = () => {
     dispatch({ type: 'TOGGLE_DEBUG_MODE' });
+  };
+  
+  const restartGame = () => {
+    dispatch({ type: 'RESTART_GAME' });
   };
   
   const healPlayer = (amount: number) => {
@@ -1120,6 +1182,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         equipItem,
         unequipItem,
         toggleDebugMode,
+        restartGame,
         aiSystem
       }}
     >

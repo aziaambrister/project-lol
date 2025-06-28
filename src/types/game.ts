@@ -176,7 +176,7 @@ export interface DebugState {
 }
 
 export interface GameState {
-  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu';
+  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu' | 'game-over';
   player: {
     character: Character;
     position: { x: number; y: number };

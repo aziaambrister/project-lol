@@ -6,6 +6,7 @@ import CharacterSelect from './components/CharacterSelect';
 import GameWorld from './components/GameWorld';
 import ForestCabinInterior from './components/ForestCabinInterior';
 import SuccessPage from './components/SuccessPage';
+import GameOverScreen from './components/GameOverScreen';
 
 // ✅ Add these for global WASD handling
 const keysHeld: Record<string, boolean> = {};
@@ -104,6 +105,13 @@ function App() {
       {gameState === 'success' && (
         <div className="absolute inset-0 z-10">
           <SuccessPage onContinue={handleSuccessContinue} />
+        </div>
+      )}
+
+      {/* Game Over Screen */}
+      {state.gameMode === 'game-over' && (
+        <div className="absolute inset-0 z-50">
+          <GameOverScreen />
         </div>
       )}
     </div>
