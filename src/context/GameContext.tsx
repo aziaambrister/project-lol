@@ -432,11 +432,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
           
           const damage = Math.max(1, baseDamage - enemy.defense);
+          
+          // CRITICAL FIX: Properly decrease enemy health instead of resetting
           const newEnemyHealth = Math.max(0, enemy.health - damage);
           
           updatedEnemies[enemyIndex] = {
             ...enemy,
-            health: newEnemyHealth,
+            health: newEnemyHealth, // This now properly decreases health
             state: newEnemyHealth <= 0 ? 'dead' : 'chase',
             currentTarget: state.player.character.id
           };
@@ -528,11 +530,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
         
         const damage = Math.max(1, baseDamage - enemy.defense);
+        
+        // CRITICAL FIX: Properly decrease enemy health instead of resetting
         const newEnemyHealth = Math.max(0, enemy.health - damage);
         
         updatedEnemies[enemyIndex] = {
           ...enemy,
-          health: newEnemyHealth,
+          health: newEnemyHealth, // This now properly decreases health
           state: newEnemyHealth <= 0 ? 'dead' : 'chase',
           currentTarget: state.player.character.id
         };

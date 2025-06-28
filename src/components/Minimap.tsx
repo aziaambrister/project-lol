@@ -9,7 +9,7 @@ const Minimap: React.FC = () => {
   const mapSize = 150; // Smaller minimap size
 
   return (
-    <div className="absolute top-4 left-4 z-30">
+    <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-30">
       <div className="bg-black/80 backdrop-blur-sm rounded-lg p-2 border border-white/20">
         <h3 className="text-white text-xs font-bold mb-2 text-center">Map</h3>
         <div 
@@ -43,25 +43,17 @@ const Minimap: React.FC = () => {
             ></div>
           ))}
           
-          {/* Enemies - Only show visible ones */}
-          {currentWorld.enemies.filter(e => {
-            if (e.state === 'dead') return false;
-            
-            // Calculate if enemy is in viewport
-            const cameraX = state.camera.x - window.innerWidth / 2;
-            const cameraY = state.camera.y - window.innerHeight / 2;
-            const screenX = e.position.x - cameraX;
-            const screenY = e.position.y - cameraY;
-            
-            return screenX >= 0 && screenX <= window.innerWidth && 
-                   screenY >= 0 && screenY <= window.innerHeight;
-          }).map(enemy => (
+          {/* Enemies - Show all enemies with current health status */}
+          {currentWorld.enemies.filter(e => e.state !== 'dead').map(enemy => (
             <div
               key={enemy.id}
-              className="absolute w-2 h-2 rounded-full bg-red-500 animate-pulse"
+              className={`absolute w-2 h-2 rounded-full ${
+                enemy.state === 'chase' ? 'bg-red-500 animate-pulse' : 'bg-red-400'
+              }`}
               style={{
                 left: (enemy.position.x * mapScale) - 1,
-                top: (enemy.position.y * mapScale) - 1
+                top: (enemy.position.y * mapScale) - 1,
+                opacity: enemy.health / enemy.maxHealth // Show health status on minimap
               }}
             ></div>
           ))}
