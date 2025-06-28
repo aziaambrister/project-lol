@@ -63,7 +63,10 @@ const GameWorld: React.FC = () => {
         e.preventDefault();
         const nearestBuilding = findNearestBuilding();
         if (nearestBuilding && nearestBuilding.enterable) {
+          console.log('Attempting to enter building:', nearestBuilding.id, nearestBuilding.name);
           enterBuilding(nearestBuilding.id);
+        } else {
+          console.log('No enterable building nearby. Nearest building:', nearestBuilding);
         }
       }
 
@@ -226,11 +229,19 @@ const GameWorld: React.FC = () => {
         Math.pow(building.position.y - playerPos.y, 2)
       );
 
+      console.log(`Building ${building.id} (${building.name}): distance=${distance.toFixed(2)}, enterable=${building.enterable}`);
+
       if (distance < 80 && distance < minDistance) {
         minDistance = distance;
         nearestBuilding = building;
       }
     });
+
+    if (nearestBuilding) {
+      console.log(`Nearest building: ${nearestBuilding.id} (${nearestBuilding.name}) at distance ${minDistance.toFixed(2)}`);
+    } else {
+      console.log('No buildings within range');
+    }
 
     return nearestBuilding;
   };
