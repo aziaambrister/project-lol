@@ -67,11 +67,11 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowycabin.png', // Using the new snowy cabin background
+        background: '/cozy forest cabin.png', // Using the new cozy cabin background
         npcs: [],
         items: [
           {
-            id: 'cabin2-potion',
+            id: 'cozy-cabin-potion',
             name: 'Health Potion',
             type: 'consumable',
             rarity: 'uncommon',
@@ -82,13 +82,23 @@ export const gameWorld: GameWorld = {
             usable: true
           },
           {
-            id: 'cabin2-scroll',
+            id: 'cozy-cabin-scroll',
             name: 'Ancient Scroll',
             type: 'key',
             rarity: 'rare',
             value: 0,
             icon: '📜',
             description: 'An ancient scroll with mysterious writings',
+            usable: false
+          },
+          {
+            id: 'cozy-cabin-book',
+            name: 'Leather Tome',
+            type: 'key',
+            rarity: 'uncommon',
+            value: 0,
+            icon: '📚',
+            description: 'A well-worn book filled with knowledge',
             usable: false
           }
         ],
