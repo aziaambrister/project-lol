@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { ArrowLeft, DollarSign } from 'lucide-react';
+import { ArrowLeft, Coins, ShoppingCart, Star, CreditCard, Crown, Zap } from 'lucide-react';
 import { allItems } from '../data/items';
 import { stripeProducts } from '../stripe-config';
 import { useAuth } from '../hooks/useAuth';
@@ -149,69 +149,129 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     setCheckoutError(null);
 
     try {
-      // FIXED: Get fresh session with proper error handling
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔐 Starting premium purchase for user:', user.email);
       
-      if (sessionError) {
-        console.error('❌ Session error:', sessionError);
-        throw new Error(`Authentication failed: ${sessionError.message}`);
+      // FIXED: Better session handling with retry logic
+      let sessionData;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error(`❌ Session error (attempt ${retryCount + 1}):`, error);
+            if (retryCount === maxRetries - 1) {
+              throw new Error(`Session error: ${error.message}`);
+            }
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+            continue;
+          }
+          
+          if (!data?.session?.access_token) {
+            console.error(`❌ No access token (attempt ${retryCount + 1})`);
+            if (retryCount === maxRetries - 1) {
+              throw new Error('No valid session found. Please log out and log back in.');
+            }
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+          
+          sessionData = data;
+          break;
+          
+        } catch (sessionError: any) {
+          console.error(`❌ Session retrieval failed (attempt ${retryCount + 1}):`, sessionError);
+          if (retryCount === maxRetries - 1) {
+            throw sessionError;
+          }
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
-
+      
       if (!sessionData?.session?.access_token) {
-        console.error('❌ No access token found');
-        throw new Error('No valid session found. Please log in again.');
+        throw new Error('Failed to obtain valid session after multiple attempts');
       }
+      
+      console.log('✅ Session obtained successfully');
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+      // FIXED: Better error handling for the API call
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`;
+      const requestBody = {
+        price_id: item.priceId,
+        mode: item.mode,
+        success_url: `${window.location.origin}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${window.location.origin}`,
+      };
+      
+      console.log('🚀 Making checkout request to:', apiUrl);
+      console.log('📦 Request body:', requestBody);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionData.session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          price_id: item.priceId,
-          mode: item.mode,
-          success_url: `${window.location.origin}?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}`,
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('📡 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Checkout response error:', errorText);
+        console.error('❌ API Error Response:', errorText);
         
-        let errorData;
+        let errorMessage = 'Failed to create checkout session';
+        
         try {
-          errorData = JSON.parse(errorText);
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
         } catch {
-          errorData = { error: errorText };
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
         
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        // Handle specific error cases
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log out and log back in.';
+        } else if (response.status === 403) {
+          errorMessage = 'Access denied. Please check your account permissions.';
+        } else if (response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      const { url } = await response.json();
+      const responseData = await response.json();
+      console.log('✅ Checkout response:', responseData);
       
-      if (url) {
-        window.location.href = url;
+      if (responseData.url) {
+        console.log('🔗 Redirecting to checkout:', responseData.url);
+        window.location.href = responseData.url;
       } else {
         throw new Error('No checkout URL received from server');
       }
+      
     } catch (error: any) {
       console.error('💥 Premium purchase error:', error);
       
       // Provide user-friendly error messages
       let userMessage = 'Failed to start checkout process. Please try again.';
       
-      if (error.message?.includes('Authentication failed')) {
+      if (error.message?.includes('Session error') || error.message?.includes('No valid session')) {
+        userMessage = 'Session expired. Please log out and log back in.';
+      } else if (error.message?.includes('Authentication failed')) {
         userMessage = 'Authentication failed. Please log out and log back in.';
-      } else if (error.message?.includes('No valid session')) {
-        userMessage = 'Your session has expired. Please log in again.';
-      } else if (error.message?.includes('Network')) {
+      } else if (error.message?.includes('Network') || error.message?.includes('fetch')) {
         userMessage = 'Network error. Please check your connection and try again.';
-      } else if (error.message?.includes('HTTP 401')) {
-        userMessage = 'Authentication error. Please log in again.';
-      } else if (error.message?.includes('HTTP 403')) {
+      } else if (error.message?.includes('Server error')) {
+        userMessage = 'Server error. Please try again in a few moments.';
+      } else if (error.message?.includes('Access denied')) {
         userMessage = 'Access denied. Please check your account permissions.';
       }
       
@@ -254,7 +314,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           
           {/* Currency Display - TINY */}
           <div className="flex items-center bg-yellow-500/20 rounded px-2 py-1 border border-yellow-400/50">
-            <DollarSign className="text-yellow-400 mr-1" size={8} />
+            <Coins className="text-yellow-400 mr-1" size={8} />
             <div>
               <div className="text-yellow-400 font-bold text-xs">{player.currency}</div>
               <div className="text-yellow-300 text-xs">Coins</div>
@@ -274,6 +334,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
             >
+              {category === 'premium' && <CreditCard className="mr-1" size={6} />}
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>
           ))}
@@ -283,6 +344,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {selectedCategory === 'premium' && (
           <div className="mb-1 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded p-1 border border-purple-500/50">
             <div className="flex items-center mb-1">
+              <Crown className="text-yellow-400 mr-1" size={8} />
               <div>
                 <h2 className="text-sm font-bold text-yellow-400">Premium Store</h2>
                 <p className="text-gray-300 text-xs">Purchase with real money</p>
@@ -353,12 +415,12 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   <div className="flex items-center">
                     {isPremium ? (
                       <>
-                        <DollarSign className="text-green-400 mr-0.5" size={4} />
+                        <CreditCard className="text-green-400 mr-0.5" size={4} />
                         <span className="text-green-400 font-bold text-xs">{item.realPrice}</span>
                       </>
                     ) : (
                       <>
-                        <DollarSign className="text-yellow-400 mr-0.5" size={4} />
+                        <Coins className="text-yellow-400 mr-0.5" size={4} />
                         <span className="text-yellow-400 font-bold text-xs">{item.price}</span>
                       </>
                     )}
@@ -384,6 +446,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
+                    <ShoppingCart size={4} className="mr-0.5" />
                     {isLoading && isPremium ? '...' : 
                      isPremium ? (canAfford ? 'Buy' : 'Login') : 
                      canAfford ? 'Buy' : 'X'}
@@ -439,6 +502,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {/* Shop Info - TINY */}
         <div className="mt-1 bg-gray-800/50 rounded p-1 border border-gray-600">
           <div className="flex items-center mb-1">
+            <Star className="text-yellow-400 mr-1" size={8} />
             <h3 className="text-xs font-bold">Shop Information</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs text-gray-300">
