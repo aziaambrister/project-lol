@@ -132,16 +132,29 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   
   const currentItems = shopItems[selectedCategory];
   
+  // FIXED: Regular item purchase - no authentication needed for in-game purchases
   const handlePurchase = (item: any, price: number) => {
     if (player.currency >= price) {
-      purchaseItem(item.id, price, item);
-      setSelectedItem(null);
+      try {
+        purchaseItem(item.id, price, item);
+        setSelectedItem(null);
+        console.log(`✅ Successfully purchased ${item.name} for ${price} coins`);
+      } catch (error) {
+        console.error('❌ Purchase failed:', error);
+        setCheckoutError('Failed to purchase item. Please try again.');
+      }
+    } else {
+      setCheckoutError(`Not enough coins! You need ${price} coins but only have ${player.currency}.`);
     }
   };
 
+  // FIXED: Premium purchase with proper authentication
   const handlePremiumPurchase = async (item: any) => {
+    console.log('🛒 Starting premium purchase for:', item.name);
+    console.log('👤 Current user:', user);
+
     if (!user) {
-      setCheckoutError('Please log in to make purchases');
+      setCheckoutError('Please log in to make premium purchases');
       return;
     }
 
@@ -149,17 +162,27 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     setCheckoutError(null);
 
     try {
-      // Get the current user's session to obtain the access token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // FIXED: Get fresh session with proper error handling
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session?.access_token) {
-        throw new Error('Failed to authenticate user');
+      console.log('🔐 Session data:', sessionData);
+      
+      if (sessionError) {
+        console.error('❌ Session error:', sessionError);
+        throw new Error(`Authentication failed: ${sessionError.message}`);
       }
+
+      if (!sessionData?.session?.access_token) {
+        console.error('❌ No access token found');
+        throw new Error('No valid session found. Please log in again.');
+      }
+
+      console.log('✅ Valid session found, making checkout request...');
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -170,21 +193,50 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         }),
       });
 
+      console.log('📡 Checkout response status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
+        const errorText = await response.text();
+        console.error('❌ Checkout response error:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const { url } = await response.json();
+      console.log('✅ Checkout URL received:', url);
       
       if (url) {
+        console.log('🚀 Redirecting to Stripe checkout...');
         window.location.href = url;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No checkout URL received from server');
       }
     } catch (error: any) {
-      console.error('Checkout error:', error);
-      setCheckoutError(error.message || 'Failed to start checkout process');
+      console.error('💥 Premium purchase error:', error);
+      
+      // Provide user-friendly error messages
+      let userMessage = 'Failed to start checkout process. Please try again.';
+      
+      if (error.message?.includes('Authentication failed')) {
+        userMessage = 'Authentication failed. Please log out and log back in.';
+      } else if (error.message?.includes('No valid session')) {
+        userMessage = 'Your session has expired. Please log in again.';
+      } else if (error.message?.includes('Network')) {
+        userMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message?.includes('HTTP 401')) {
+        userMessage = 'Authentication error. Please log in again.';
+      } else if (error.message?.includes('HTTP 403')) {
+        userMessage = 'Access denied. Please check your account permissions.';
+      }
+      
+      setCheckoutError(userMessage);
     } finally {
       setIsLoading(false);
     }
@@ -261,7 +313,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             </div>
             {!user && (
               <div className="bg-yellow-500/20 border border-yellow-400/50 rounded p-1">
-                <div className="text-yellow-400 font-bold text-xs">⚠️ Login Required</div>
+                <div className="text-yellow-400 font-bold text-xs">⚠️ Login Required for Premium Purchases</div>
+                <div className="text-gray-300 text-xs">Regular items can be purchased with coins without login</div>
               </div>
             )}
           </div>
@@ -270,8 +323,14 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {/* Error Message - TINY */}
         {checkoutError && (
           <div className="mb-1 bg-red-500/20 border border-red-500/50 rounded p-1">
-            <div className="text-red-400 font-bold text-xs">Payment Error</div>
+            <div className="text-red-400 font-bold text-xs">Purchase Error</div>
             <div className="text-white text-xs">{checkoutError}</div>
+            <button 
+              onClick={() => setCheckoutError(null)}
+              className="text-red-300 hover:text-red-200 text-xs underline mt-1"
+            >
+              Dismiss
+            </button>
           </div>
         )}
         
@@ -414,6 +473,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               <ul className="space-y-0 text-xs">
                 <li>• Defeat enemies to earn coins</li>
                 <li>• Each enemy drops 10 coins</li>
+                <li>• No login required for coin purchases</li>
               </ul>
             </div>
             <div>
@@ -421,11 +481,13 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               <ul className="space-y-0 text-xs">
                 <li>• Higher price = more damage</li>
                 <li>• Armor provides defense bonuses</li>
+                <li>• Instant purchase with coins</li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-0.5 text-xs">💳 Premium Store:</h4>
               <ul className="space-y-0 text-xs">
+                <li>• Requires login for real money purchases</li>
                 <li>• Instant coin packages available</li>
                 <li>• Exclusive character bundles</li>
               </ul>
