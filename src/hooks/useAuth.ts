@@ -250,6 +250,27 @@ export function useAuth() {
     try {
       const { error } = await supabase.auth.signOut();
       
+      // If the logout fails due to user not found (403 error), clear local storage manually
+      if (error && (
+        error.message?.includes('user_not_found') || 
+        error.message?.includes('User from sub claim in JWT does not exist') ||
+        (error as any)?.status === 403
+      )) {
+        console.log('User not found on server, clearing local session data');
+        
+        // Clear the session from local storage manually
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] + '-auth-token');
+        
+        // Force update the auth state
+        setAuthState({
+          user: null,
+          loading: false
+        });
+        
+        return { error: null }; // Treat as successful logout since session is cleared
+      }
+      
       if (!error) {
         console.log('User signed out successfully');
       }
@@ -257,6 +278,24 @@ export function useAuth() {
       return { error };
     } catch (error: any) {
       console.error('Signout error:', error);
+      
+      // If it's a network error or user not found, try to clear local storage
+      if (error?.message?.includes('user_not_found') || 
+          error?.message?.includes('User from sub claim in JWT does not exist') ||
+          error?.status === 403) {
+        console.log('Clearing local session data due to user not found error');
+        
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] + '-auth-token');
+        
+        setAuthState({
+          user: null,
+          loading: false
+        });
+        
+        return { error: null };
+      }
+      
       return { 
         error: { 
           message: error.message || 'An unexpected error occurred during signout',
