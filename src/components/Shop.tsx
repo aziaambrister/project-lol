@@ -151,55 +151,78 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
     try {
       console.log('🔐 Starting premium purchase for user:', user.email);
       
-      // FIXED: Better session handling with retry logic
-      let sessionData;
-      let retryCount = 0;
-      const maxRetries = 3;
-      
-      while (retryCount < maxRetries) {
-        try {
-          const { data, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error(`❌ Session error (attempt ${retryCount + 1}):`, error);
-            if (retryCount === maxRetries - 1) {
-              throw new Error(`Session error: ${error.message}`);
+      // FIXED: Improved session handling with better error recovery
+      const getValidSession = async (maxRetries = 3) => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            console.log(`🔄 Session attempt ${attempt}/${maxRetries}`);
+            
+            // First try to get the current session
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError) {
+              console.error(`❌ Session error (attempt ${attempt}):`, sessionError);
+              
+              if (attempt === maxRetries) {
+                throw new Error(`Session retrieval failed: ${sessionError.message}`);
+              }
+              
+              // Wait before retry
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
             }
-            retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
-            continue;
-          }
-          
-          if (!data?.session?.access_token) {
-            console.error(`❌ No access token (attempt ${retryCount + 1})`);
-            if (retryCount === maxRetries - 1) {
-              throw new Error('No valid session found. Please log out and log back in.');
+            
+            if (!sessionData?.session) {
+              console.error(`❌ No session found (attempt ${attempt})`);
+              
+              if (attempt === maxRetries) {
+                throw new Error('No active session found. Please log out and log back in.');
+              }
+              
+              // Try to refresh the session
+              console.log('🔄 Attempting to refresh session...');
+              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+              
+              if (refreshError || !refreshData?.session) {
+                console.error('❌ Session refresh failed:', refreshError);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                continue;
+              }
+              
+              return refreshData.session;
             }
-            retryCount++;
+            
+            if (!sessionData.session.access_token) {
+              console.error(`❌ No access token (attempt ${attempt})`);
+              
+              if (attempt === maxRetries) {
+                throw new Error('No valid access token found. Please log out and log back in.');
+              }
+              
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
+            }
+            
+            console.log('✅ Valid session obtained');
+            return sessionData.session;
+            
+          } catch (error: any) {
+            console.error(`❌ Session attempt ${attempt} failed:`, error);
+            
+            if (attempt === maxRetries) {
+              throw error;
+            }
+            
             await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
           }
-          
-          sessionData = data;
-          break;
-          
-        } catch (sessionError: any) {
-          console.error(`❌ Session retrieval failed (attempt ${retryCount + 1}):`, sessionError);
-          if (retryCount === maxRetries - 1) {
-            throw sessionError;
-          }
-          retryCount++;
-          await new Promise(resolve => setTimeout(resolve, 1000));
         }
-      }
-      
-      if (!sessionData?.session?.access_token) {
-        throw new Error('Failed to obtain valid session after multiple attempts');
-      }
-      
-      console.log('✅ Session obtained successfully');
+        
+        throw new Error('Failed to obtain valid session after all attempts');
+      };
 
-      // FIXED: Better error handling for the API call
+      const session = await getValidSession();
+      
+      // FIXED: Better API call with comprehensive error handling
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`;
       const requestBody = {
         price_id: item.priceId,
@@ -210,11 +233,12 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       
       console.log('🚀 Making checkout request to:', apiUrl);
       console.log('📦 Request body:', requestBody);
+      console.log('🔑 Using access token:', session.access_token.substring(0, 20) + '...');
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionData.session.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
@@ -263,8 +287,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       // Provide user-friendly error messages
       let userMessage = 'Failed to start checkout process. Please try again.';
       
-      if (error.message?.includes('Session error') || error.message?.includes('No valid session')) {
-        userMessage = 'Session expired. Please log out and log back in.';
+      if (error.message?.includes('Session') || error.message?.includes('session') || error.message?.includes('log out and log back in')) {
+        userMessage = 'Session expired. Please log out and log back in to continue.';
       } else if (error.message?.includes('Authentication failed')) {
         userMessage = 'Authentication failed. Please log out and log back in.';
       } else if (error.message?.includes('Network') || error.message?.includes('fetch')) {
@@ -273,6 +297,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         userMessage = 'Server error. Please try again in a few moments.';
       } else if (error.message?.includes('Access denied')) {
         userMessage = 'Access denied. Please check your account permissions.';
+      } else if (error.message?.includes('No active session')) {
+        userMessage = 'Your session has expired. Please log out and log back in.';
       }
       
       setCheckoutError(userMessage);
