@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { GameState, CharacterClass, Character, Enemy, Move, DamageNumber, Item, EquippedItems } from '../types/game';
+import { GameState, CharacterClass, Character, Enemy, Move, DamageNumber, Item, EquippedItems, XPOrb } from '../types/game';
 import { characters } from '../data/characters';
 import { gameWorld } from '../data/world';
 import { EnemyAISystem } from '../systems/EnemyAI';
@@ -24,6 +24,7 @@ interface GameContextType {
   unequipItem: (itemType: 'weapon' | 'armor') => void;
   toggleDebugMode: () => void;
   restartGame: () => void;
+  collectXPOrb: (orbId: string) => void; // New function for collecting XP orbs
   aiSystem: EnemyAISystem;
 }
 
@@ -54,7 +55,8 @@ type GameAction =
   | { type: 'LOAD_PLAYER_PROGRESS'; payload: { progress: any } }
   | { type: 'SAVE_PLAYER_PROGRESS' }
   | { type: 'GAME_OVER' }
-  | { type: 'RESTART_GAME' };
+  | { type: 'RESTART_GAME' }
+  | { type: 'COLLECT_XP_ORB'; payload: { orbId: string } }; // New action for XP collection
 
 const initialState: GameState = {
   gameMode: 'character-select',
@@ -139,6 +141,35 @@ function clampCamera(
   return { x: clampedX, y: clampedY };
 }
 
+// Helper function to calculate XP needed for next level
+function calculateXPForLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.5, level - 1));
+}
+
+// Helper function to level up character
+function levelUpCharacter(character: Character): Character {
+  const newLevel = character.level + 1;
+  const newXPRequired = calculateXPForLevel(newLevel);
+  
+  // Stat increases per level
+  const healthIncrease = 15;
+  const attackIncrease = 2;
+  const defenseIncrease = 1;
+  const speedIncrease = 1;
+  
+  return {
+    ...character,
+    level: newLevel,
+    maxHealth: character.maxHealth + healthIncrease,
+    health: character.health + healthIncrease, // Also heal when leveling up
+    attack: character.attack + attackIncrease,
+    defense: character.defense + defenseIncrease,
+    speed: character.speed + speedIncrease,
+    experience: character.experience - character.experienceToNextLevel,
+    experienceToNextLevel: newXPRequired
+  };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME': {
@@ -198,6 +229,66 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
       
+      // Check for XP orb collection
+      const collectedOrbs: string[] = [];
+      let newDamageNumbers = [...state.combat.damageNumbers];
+      let updatedCharacter = { ...state.player.character };
+      
+      state.currentWorld.xpOrbs.forEach(orb => {
+        if (!orb.collected) {
+          const distance = Math.sqrt(
+            Math.pow(orb.position.x - newX, 2) +
+            Math.pow(orb.position.y - newY, 2)
+          );
+          
+          if (distance <= 30) { // Collection range
+            collectedOrbs.push(orb.id);
+            
+            // Add XP to character
+            updatedCharacter.experience += orb.xpValue;
+            
+            // Create XP damage number
+            const xpNumber: DamageNumber = {
+              id: `xp-${Date.now()}-${orb.id}`,
+              value: orb.xpValue,
+              position: { x: newX, y: newY - 30 },
+              type: 'xp',
+              timestamp: Date.now()
+            };
+            newDamageNumbers.push(xpNumber);
+          }
+        }
+      });
+      
+      // Check for level up
+      let leveledUp = false;
+      while (updatedCharacter.experience >= updatedCharacter.experienceToNextLevel) {
+        updatedCharacter = levelUpCharacter(updatedCharacter);
+        leveledUp = true;
+        
+        // Add level up notification
+        const levelUpNumber: DamageNumber = {
+          id: `levelup-${Date.now()}`,
+          value: updatedCharacter.level,
+          position: { x: newX, y: newY - 50 },
+          type: 'critical',
+          timestamp: Date.now()
+        };
+        newDamageNumbers.push(levelUpNumber);
+      }
+      
+      // Update XP orbs
+      const updatedXPOrbs = state.currentWorld.xpOrbs.map(orb => {
+        if (collectedOrbs.includes(orb.id)) {
+          return {
+            ...orb,
+            collected: true,
+            lastCollected: Date.now()
+          };
+        }
+        return orb;
+      });
+      
       // Check for contact damage with enemies - only if they're visible on screen
       const cameraX = state.camera.x - window.innerWidth / 2;
       const cameraY = state.camera.y - window.innerHeight / 2;
@@ -222,8 +313,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       });
       
       // Apply contact damage
-      let updatedPlayerHealth = state.player.character.health;
-      let newDamageNumbers = [...state.combat.damageNumbers];
+      let updatedPlayerHealth = updatedCharacter.health;
       
       touchingEnemies.forEach(enemy => {
         const contactDamage = Math.floor(Math.random() * 11) + 5; // 5-15 damage
@@ -238,6 +328,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
         newDamageNumbers.push(damageNumber);
       });
+      
+      updatedCharacter.health = updatedPlayerHealth;
       
       // Calculate camera position with proper clamping
       const clampedCamera = clampCamera(
@@ -257,10 +349,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           direction,
           isMoving: true,
           isSwimming: false,
-          character: {
-            ...state.player.character,
-            health: updatedPlayerHealth
-          }
+          character: updatedCharacter
+        },
+        currentWorld: {
+          ...state.currentWorld,
+          xpOrbs: updatedXPOrbs
         },
         camera: {
           ...state.camera,
@@ -282,6 +375,65 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       return newState;
+    }
+    
+    case 'COLLECT_XP_ORB': {
+      const { orbId } = action.payload;
+      const orb = state.currentWorld.xpOrbs.find(o => o.id === orbId);
+      
+      if (!orb || orb.collected) return state;
+      
+      let updatedCharacter = { ...state.player.character };
+      updatedCharacter.experience += orb.xpValue;
+      
+      // Check for level up
+      let newDamageNumbers = [...state.combat.damageNumbers];
+      
+      // Add XP damage number
+      const xpNumber: DamageNumber = {
+        id: `xp-${Date.now()}-${orbId}`,
+        value: orb.xpValue,
+        position: { x: state.player.position.x, y: state.player.position.y - 30 },
+        type: 'xp',
+        timestamp: Date.now()
+      };
+      newDamageNumbers.push(xpNumber);
+      
+      // Check for level up
+      while (updatedCharacter.experience >= updatedCharacter.experienceToNextLevel) {
+        updatedCharacter = levelUpCharacter(updatedCharacter);
+        
+        // Add level up notification
+        const levelUpNumber: DamageNumber = {
+          id: `levelup-${Date.now()}`,
+          value: updatedCharacter.level,
+          position: { x: state.player.position.x, y: state.player.position.y - 50 },
+          type: 'critical',
+          timestamp: Date.now()
+        };
+        newDamageNumbers.push(levelUpNumber);
+      }
+      
+      // Update XP orbs
+      const updatedXPOrbs = state.currentWorld.xpOrbs.map(o => 
+        o.id === orbId ? { ...o, collected: true, lastCollected: Date.now() } : o
+      );
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          character: updatedCharacter
+        },
+        currentWorld: {
+          ...state.currentWorld,
+          xpOrbs: updatedXPOrbs
+        },
+        combat: {
+          ...state.combat,
+          damageNumbers: newDamageNumbers
+        }
+      };
     }
     
     case 'STOP_MOVING': {
@@ -681,6 +833,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lightLevel = 0.7;
       }
       
+      // Respawn XP orbs that have been collected for long enough
+      const currentTimeMs = Date.now();
+      const updatedXPOrbs = state.currentWorld.xpOrbs.map(orb => {
+        if (orb.collected && orb.lastCollected && orb.respawnTime) {
+          if (currentTimeMs - orb.lastCollected >= orb.respawnTime) {
+            return {
+              ...orb,
+              collected: false,
+              lastCollected: undefined
+            };
+          }
+        }
+        return orb;
+      });
+      
       return {
         ...state,
         currentWorld: {
@@ -689,7 +856,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             ...state.currentWorld.dayNightCycle,
             currentTime,
             lightLevel
-          }
+          },
+          xpOrbs: updatedXPOrbs
         }
       };
     }
@@ -954,6 +1122,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             attack: state.player.character.attack,
             defense: state.player.character.defense,
             speed: state.player.character.speed,
+            level: state.player.character.level,
+            experience: state.player.character.experience,
+            experienceToNextLevel: state.player.character.experienceToNextLevel,
             health: state.player.character.maxHealth // Restore to full health
           },
           position: { x: 200, y: 3800 }, // Reset to spawn point
@@ -999,6 +1170,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return () => clearInterval(saveInterval);
     }
   }, [user]);
+
+  // XP orb respawn timer
+  useEffect(() => {
+    const respawnInterval = setInterval(() => {
+      dispatch({ type: 'UPDATE_DAY_NIGHT' });
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(respawnInterval);
+  }, []);
   
   const startGame = (characterClass: CharacterClass) => {
     dispatch({ type: 'START_GAME', payload: { characterClass } });
@@ -1075,6 +1255,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'RESTART_GAME' });
   };
 
+  const collectXPOrb = (orbId: string) => {
+    dispatch({ type: 'COLLECT_XP_ORB', payload: { orbId } });
+  };
+
   const value: GameContextType = {
     state,
     startGame,
@@ -1094,6 +1278,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     unequipItem,
     toggleDebugMode,
     restartGame,
+    collectXPOrb,
     aiSystem
   };
 

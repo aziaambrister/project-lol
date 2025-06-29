@@ -96,6 +96,17 @@ export interface TerrainTile {
   sprite: string;
 }
 
+// New XP Orb interface
+export interface XPOrb {
+  id: string;
+  position: { x: number; y: number };
+  xpValue: number;
+  type: 'small' | 'medium' | 'large';
+  collected: boolean;
+  respawnTime?: number;
+  lastCollected?: number;
+}
+
 export interface GameWorld {
   id: string;
   name: string;
@@ -106,6 +117,7 @@ export interface GameWorld {
   enemies: Enemy[];
   npcs: NPC[];
   items: Item[];
+  xpOrbs: XPOrb[]; // New XP orbs array
   spawnPoint: { x: number; y: number };
   dayNightCycle: {
     currentTime: number; // 0-24 hours
@@ -165,7 +177,7 @@ export interface DamageNumber {
   id: string;
   value: number;
   position: { x: number; y: number };
-  type: 'damage' | 'heal' | 'critical';
+  type: 'damage' | 'heal' | 'critical' | 'xp'; // Added 'xp' type
   timestamp: number;
 }
 

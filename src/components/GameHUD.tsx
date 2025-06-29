@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { Heart, Zap, Coins, Clock, Target } from 'lucide-react';
+import { Heart, Zap, Coins, Clock, Target, Star } from 'lucide-react';
 
 const GameHUD: React.FC = () => {
   const { state } = useGame();
@@ -20,6 +20,9 @@ const GameHUD: React.FC = () => {
     return 'Night';
   };
 
+  // Calculate XP percentage for progress bar
+  const xpPercentage = (player.character.experience / player.character.experienceToNextLevel) * 100;
+
   return (
     <>
       {/* Top Left - Character Stats */}
@@ -36,7 +39,10 @@ const GameHUD: React.FC = () => {
             </div>
             <div>
               <h3 className="text-white font-bold">{player.character.name}</h3>
-              <div className="text-yellow-400 text-sm">Level {player.character.level}</div>
+              <div className="text-yellow-400 text-sm flex items-center">
+                <Star size={12} className="mr-1" />
+                Level {player.character.level}
+              </div>
             </div>
           </div>
           
@@ -52,6 +58,23 @@ const GameHUD: React.FC = () => {
                 <div 
                   className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
                   style={{ width: `${(player.character.health / player.character.maxHealth) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* XP Bar */}
+          <div className="flex items-center mb-2">
+            <Zap className="text-blue-500 mr-2" size={16} />
+            <div className="flex-1">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-white">{player.character.experience}</span>
+                <span className="text-gray-300">/{player.character.experienceToNextLevel}</span>
+              </div>
+              <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
+                  style={{ width: `${xpPercentage}%` }}
                 ></div>
               </div>
             </div>
@@ -110,17 +133,15 @@ const GameHUD: React.FC = () => {
         </div>
       )}
 
-      {/* Bottom Right - XP Progress */}
-      <div className="absolute bottom-4 right-4 z-30">
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-          <div className="text-white text-sm mb-2">
-            XP: {player.character.experience}/{player.character.experienceToNextLevel}
+      {/* XP Collection Hint */}
+      <div className="absolute bottom-4 left-4 z-30">
+        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-blue-500/50">
+          <div className="text-blue-400 text-sm flex items-center">
+            <Zap className="mr-2" size={16} />
+            <span>Collect XP orbs to level up!</span>
           </div>
-          <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-300"
-              style={{ width: `${(player.character.experience / player.character.experienceToNextLevel) * 100}%` }}
-            ></div>
+          <div className="text-gray-300 text-xs mt-1">
+            Blue: 5-10 XP • Purple: 15-25 XP • Gold: 30-50 XP
           </div>
         </div>
       </div>

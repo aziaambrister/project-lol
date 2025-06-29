@@ -9,7 +9,7 @@ import EscapeMenu from './EscapeMenu';
 import EnemyDebugOverlay from './EnemyDebugOverlay';
 
 const GameWorld: React.FC = () => {
-  const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem } = useGame();
+  const { state, movePlayer, stopMoving, performAttack, enterBuilding, toggleDebugMode, aiSystem, collectXPOrb } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
@@ -278,6 +278,64 @@ const GameWorld: React.FC = () => {
         )}
       </div>
 
+      {/* XP Orbs */}
+      {state.currentWorld.xpOrbs.map(orb => {
+        if (orb.collected) return null;
+        
+        const screenX = orb.position.x - cameraX;
+        const screenY = orb.position.y - cameraY;
+        
+        // Only render orbs that are visible on screen
+        if (screenX < -50 || screenX > window.innerWidth + 50 || 
+            screenY < -50 || screenY > window.innerHeight + 50) {
+          return null;
+        }
+        
+        const getOrbColor = () => {
+          switch (orb.type) {
+            case 'small': return 'from-blue-400 to-blue-600';
+            case 'medium': return 'from-purple-400 to-purple-600';
+            case 'large': return 'from-yellow-400 to-yellow-600';
+            default: return 'from-blue-400 to-blue-600';
+          }
+        };
+        
+        const getOrbSize = () => {
+          switch (orb.type) {
+            case 'small': return 'w-4 h-4';
+            case 'medium': return 'w-6 h-6';
+            case 'large': return 'w-8 h-8';
+            default: return 'w-4 h-4';
+          }
+        };
+        
+        return (
+          <div
+            key={orb.id}
+            className="absolute z-25 cursor-pointer"
+            style={{
+              left: screenX - (orb.type === 'large' ? 16 : orb.type === 'medium' ? 12 : 8),
+              top: screenY - (orb.type === 'large' ? 16 : orb.type === 'medium' ? 12 : 8)
+            }}
+            onClick={() => collectXPOrb(orb.id)}
+          >
+            {/* XP Orb */}
+            <div className={`${getOrbSize()} rounded-full bg-gradient-to-br ${getOrbColor()} animate-pulse shadow-lg border-2 border-white/50 relative overflow-hidden`}>
+              {/* Glow effect */}
+              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${getOrbColor()} animate-ping opacity-75`}></div>
+              
+              {/* Inner sparkle */}
+              <div className="absolute inset-1 rounded-full bg-white/30 animate-pulse"></div>
+              
+              {/* XP value indicator */}
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-xs font-bold bg-black/70 px-1 rounded opacity-0 hover:opacity-100 transition-opacity">
+                +{orb.xpValue} XP
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
       {/* Projectiles */}
       {shurikens.map(shuriken => {
         const progress = Math.min((Date.now() - shuriken.timestamp) / 300, 1);
@@ -338,6 +396,7 @@ const GameWorld: React.FC = () => {
           className={`absolute font-bold text-3xl pointer-events-none animate-bounce ${
             damageNumber.type === 'damage' ? 'text-red-500' :
             damageNumber.type === 'heal' ? 'text-green-500' :
+            damageNumber.type === 'xp' ? 'text-blue-400' :
             'text-yellow-500'
           }`}
           style={{
@@ -347,7 +406,11 @@ const GameWorld: React.FC = () => {
             animation: 'float-up 2s ease-out forwards'
           }}
         >
-          {damageNumber.type === 'damage' ? '-' : '+'}{damageNumber.value}
+          {damageNumber.type === 'damage' ? '-' : 
+           damageNumber.type === 'xp' ? '+' : 
+           damageNumber.type === 'critical' && damageNumber.value > 50 ? 'LEVEL ' : 
+           '+'}{damageNumber.value}{damageNumber.type === 'xp' ? ' XP' : 
+                                   damageNumber.type === 'critical' && damageNumber.value > 50 ? '!' : ''}
         </div>
       ))}
 

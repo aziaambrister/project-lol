@@ -1,4 +1,56 @@
-import { GameWorld, Enemy, Building, WaterBody, NPC, Item } from '../types/game';
+import { GameWorld, Enemy, Building, WaterBody, NPC, Item, XPOrb } from '../types/game';
+
+// Generate XP orbs scattered throughout the map
+const generateXPOrbs = (): XPOrb[] => {
+  const orbs: XPOrb[] = [];
+  
+  // Small XP orbs (5-10 XP) - most common
+  for (let i = 0; i < 50; i++) {
+    orbs.push({
+      id: `small-xp-${i}`,
+      position: {
+        x: Math.random() * 3800 + 100, // Avoid edges
+        y: Math.random() * 3800 + 100
+      },
+      xpValue: Math.floor(Math.random() * 6) + 5, // 5-10 XP
+      type: 'small',
+      collected: false,
+      respawnTime: 30000, // 30 seconds
+    });
+  }
+  
+  // Medium XP orbs (15-25 XP) - less common
+  for (let i = 0; i < 25; i++) {
+    orbs.push({
+      id: `medium-xp-${i}`,
+      position: {
+        x: Math.random() * 3800 + 100,
+        y: Math.random() * 3800 + 100
+      },
+      xpValue: Math.floor(Math.random() * 11) + 15, // 15-25 XP
+      type: 'medium',
+      collected: false,
+      respawnTime: 60000, // 1 minute
+    });
+  }
+  
+  // Large XP orbs (30-50 XP) - rare
+  for (let i = 0; i < 10; i++) {
+    orbs.push({
+      id: `large-xp-${i}`,
+      position: {
+        x: Math.random() * 3800 + 100,
+        y: Math.random() * 3800 + 100
+      },
+      xpValue: Math.floor(Math.random() * 21) + 30, // 30-50 XP
+      type: 'large',
+      collected: false,
+      respawnTime: 120000, // 2 minutes
+    });
+  }
+  
+  return orbs;
+};
 
 export const gameWorld: GameWorld = {
   id: 'main-world',
@@ -505,6 +557,9 @@ export const gameWorld: GameWorld = {
       description: 'A natural healing plant'
     }
   ],
+  
+  // Add XP orbs to the world
+  xpOrbs: generateXPOrbs(),
   
   dayNightCycle: {
     currentTime: 12,
