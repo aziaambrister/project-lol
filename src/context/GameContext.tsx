@@ -1067,104 +1067,132 @@ const unequipItem = (itemType: 'weapon' | 'armor') => {
   dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
 };
 
-const toggleDebugMode = () => {
-  dispatch({ type: 'TOGGLE_DEBUG_MODE' });
+  stopMoving: () => void;
+  performAttack: (moveId: string, targetId?: string) => void;
+  enterBuilding: (buildingId: string) => void;
+  exitBuilding: () => void;
+  interactWithNPC: (npcId: string) => void;
+  pickupItem: (itemId: string) => void;
+  unlockCharacter: (characterClass: CharacterClass) => void;
+  updateEnemyAI: () => void;
+  takeDamage: (damage: number, targetId: string) => void;
+  purchaseItem: (itemId: string, price: number, item: Item) => void;
+  addCoins: (amount: number) => void;
+  equipItem: (item: Item) => void;
+  unequipItem: (itemType: 'weapon' | 'armor') => void;
+  toggleDebugMode: () => void;
+  restartGame: () => void;
+  aiSystem: EnemyAISystem;
+}
+
+type GameAction =
+  | { type: 'START_GAME'; payload: { characterClass: CharacterClass } }
+  | { type: 'MOVE_PLAYER'; payload: { direction: 'up' | 'down' | 'left' | 'right' } }
+  | { type: 'STOP_MOVING' }
+  | { type: 'PERFORM_ATTACK'; payload: { moveId: string; targetId?: string } }
+  | { type: 'ENTER_BUILDING'; payload: { buildingId: string } }
+  | { type: 'EXIT_BUILDING' }
+  | { type: 'INTERACT_NPC'; payload: { npcId: string } }
+  | { type: 'PICKUP_ITEM'; payload: { itemId: string } }
+  | { type: 'UNLOCK_CHARACTER'; payload: { characterClass: CharacterClass } }
+  | { type: 'UPDATE_ENEMY_AI'; payload: { updatedEnemies: Enemy[] } }
+  | { type: 'TAKE_DAMAGE'; payload: { damage: number; targetId: string } }
+  | { type: 'UPDATE_DAY_NIGHT' }
+  | { type: 'ADD_DAMAGE_NUMBER'; payload: { damageNumber: DamageNumber } }
+  | { type: 'REMOVE_DAMAGE_NUMBER'; payload: { id: string } }
+  | { type: 'PURCHASE_ITEM'; payload: { itemId: string; price: number; item: Item } }
+  | { type: 'ADD_COINS'; payload: { amount: number } }
+  | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } }
+  | { type: 'EQUIP_ITEM'; payload: { item: Item } }
+  | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } }
+  | { type: 'SHURIKEN_THROW'; payload: { targetId: string } }
+  | { type: 'CONTACT_DAMAGE'; payload: { enemyId: string } }
+  | { type: 'TOGGLE_DEBUG_MODE' }
+  | { type: 'HEAL_PLAYER'; payload: { amount: number } }
+  | { type: 'LOAD_PLAYER_PROGRESS'; payload: { progress: any } }
+  | { type: 'SAVE_PLAYER_PROGRESS' }
+  | { type: 'GAME_OVER' }
+  | { type: 'RESTART_GAME' };
+
+const initialState: GameState = {
+  gameMode: 'character-select',
+  player: {
+    character: characters[0],
+    position: { x: 200, y: 3800 },
+    direction: 'down',
+    isMoving: false,
+    isSwimming: false,
+    inventory: [],
+    currency: 100,
+    equippedItems: {},
+    unlockedCharacters: ['balanced-fighter'],
+  },
+  currentWorld: gameWorld,
+  combat: {
+    inCombat: false,
+    playerTurn: true,
+    comboCount: 0,
+    lastHitTime: 0,
+    damageNumbers: []
+  },
+  camera: {
+    x: 200,
+    y: 3800,
+    zoom: 1
+  },
+  ui: {
+    showMinimap: true,
+    showInventory: false,
+    showCharacterStats: false
+  },
+  settings: {
+    soundEnabled: true,
+    musicVolume: 0.7,
+    sfxVolume: 0.8,
+    difficulty: 'medium'
+  },
+  debug: {
+    enabled: false,
+    showEnemyStates: false,
+    showPerformanceMetrics: false
+  }
 };
 
-const restartGame = () => {
-  dispatch({ type: 'RESTART_GAME' });
-};
+// Create AI system instance
+const aiSystem = new EnemyAISystem();
 
-const healPlayer = (amount: number) => {
-  dispatch({ type: 'HEAL_PLAYER', payload: { amount } });
-};
+const GameContext = createContext<GameContextType | undefined>(undefined);
 
-useEffect(() => {
-  let animationFrameId: number;
-  let lastFrameTime = 0;
-
-  const gameLoop = (currentTime: number) => {
-    const deltaTime = currentTime - lastFrameTime;
-    lastFrameTime = currentTime;
-
-    // Update AI system with delta time
-    if (state.gameMode === 'world-exploration') {
-      const updatedEnemies = aiSystem.updateEnemies(
-        state.player.position,
-        state.player.character,
-        deltaTime
-      );
-
-      dispatch({ type: 'UPDATE_ENEMY_AI', payload: { updatedEnemies } });
-    }
-
-    animationFrameId = requestAnimationFrame(gameLoop);
-  };
-
-  animationFrameId = requestAnimationFrame(gameLoop);
-
-  // Enemy attack interval - exactly 2 seconds as requested
-  const enemyAttackInterval = setInterval(() => {
-    const now = Date.now();
-    const cameraX = state.camera.x - window.innerWidth / 2;
-    const cameraY = state.camera.y - window.innerHeight / 2;
-
-    state.currentWorld.enemies.forEach(enemy => {
-      if (enemy.state === 'chase' && enemy.health > 0) {
-        // Check if enemy is visible on screen before allowing attack
-        const screenX = enemy.position.x - cameraX;
-        const screenY = enemy.position.y - cameraY;
-        const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
-                         screenY >= 0 && screenY <= window.innerHeight;
-
-        if (!isVisible) return; // Don't allow attacks from off-screen enemies
-
-        const distanceToPlayer = Math.sqrt(
-          Math.pow(enemy.position.x - state.player.position.x, 2) +
-          Math.pow(enemy.position.y - state.player.position.y, 2)
-        );
-
-        // Only attack if enemy is close enough
-        if (distanceToPlayer <= 50) {
-          const attackCycle = aiSystem.getAttackCycle(enemy.id);
-          if (attackCycle && now - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
-            dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
-          }
-        }
-      }
-    });
-  }, 2000); // Check every 2 seconds for attacks
-
-  const dayNightInterval = setInterval(() => {
-    dispatch({ type: 'UPDATE_DAY_NIGHT' });
-  }, 1000);
-
-  const cooldownInterval = setInterval(() => {
-    // Update move cooldowns
-    const updatedMoveSet = state.player.character.moveSet.map(move => ({
-      ...move,
-      currentCooldown: Math.max(0, move.currentCooldown - 1)
-    }));
-
-    if (updatedMoveSet.some((move, index) => move.currentCooldown !== state.player.character.moveSet[index].currentCooldown)) {
-      // Only update if there are actual changes
-    }
-  }, 1000);
-
-  const damageNumberCleanup = setInterval(() => {
-    const now = Date.now();
-    state.combat.damageNumbers.forEach(dn => {
-      if (now - dn.timestamp > 2000) {
-        dispatch({ type: 'REMOVE_DAMAGE_NUMBER', payload: { id: dn.id } });
-      }
-    });
-  }, 100);
-
-  return () => {
-    cancelAnimationFrame(animationFrameId);
-    clearInterval(enemyAttackInterval);
-    clearInterval(dayNightInterval);
-    clearInterval(cooldownInterval);
-    clearInterval(damageNumberCleanup);
-  };
-}, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet, state.gameMode, state.camera]);
+// Helper function to clamp camera position within map boundaries
+function clampCamera(
+  playerX: number, 
+  playerY: number, 
+  worldWidth: number, 
+  worldHeight: number, 
+  viewportWidth: number, 
+  viewportHeight: number
+): { x: number; y: number } {
+  const halfViewportWidth = viewportWidth / 2;
+  const halfViewportHeight = viewportHeight / 2;
+  
+  // If map is smaller than viewport, center the map
+  if (worldWidth <= viewportWidth) {
+    // Center the map horizontally
+    const cameraX = worldWidth / 2;
+    const cameraY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
+    return { x: cameraX, y: cameraY };
+  }
+  
+  if (worldHeight <= viewportHeight) {
+    // Center the map vertically
+    const cameraX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
+    const cameraY = worldHeight / 2;
+    return { x: cameraX, y: cameraY };
+  }
+  
+  // Normal clamping when map is larger than viewport
+  const clampedX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
+  const clampedY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
+  
+  return { x: clampedX, y: clampedY };
+}
