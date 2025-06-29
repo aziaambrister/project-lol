@@ -143,13 +143,27 @@ const SurvivalMode: React.FC = () => {
   const cameraY = state.camera.y - window.innerHeight / 2;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-black">
-      {/* Survival Arena Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-purple-900/20"></div>
-      
-      {/* Arena Boundary */}
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* The Forgotten Courtyard Background */}
       <div 
-        className="absolute border-4 border-red-500 rounded-full pointer-events-none"
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(/The forgotten courtyard.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          imageRendering: 'pixelated',
+          transform: `translate(${-cameraX}px, ${-cameraY}px) scale(2)`, // Scale up the courtyard
+          transformOrigin: 'center center'
+        }}
+      ></div>
+      
+      {/* Dark atmospheric overlay */}
+      <div className="absolute inset-0 bg-black/30"></div>
+
+      {/* Arena Boundary - Circular arena within the courtyard */}
+      <div 
+        className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
         style={{
           width: `${state.survival.arena.radius * 2}px`,
           height: `${state.survival.arena.radius * 2}px`,
@@ -159,7 +173,7 @@ const SurvivalMode: React.FC = () => {
         }}
       ></div>
 
-      {/* Enemies */}
+      {/* Enemies from Adventure Mode */}
       {state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
@@ -251,6 +265,14 @@ const SurvivalMode: React.FC = () => {
               <span>{state.survival.stats.enemiesDefeated * 100 + state.survival.stats.survivalTime * 10}</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Location Title */}
+      <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30">
+        <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-orange-500/50">
+          <h2 className="text-orange-400 font-bold text-lg text-center">🏛️ The Forgotten Courtyard</h2>
+          <p className="text-gray-300 text-sm text-center">Ancient arena of eternal combat</p>
         </div>
       </div>
 
@@ -352,16 +374,25 @@ const SurvivalMode: React.FC = () => {
       {/* Start Game Overlay */}
       {!gameStarted && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Survival Mode</h1>
-            <p className="text-gray-300 mb-6 max-w-md">
-              Survive endless waves of enemies! Collect drops, use power-ups, and see how long you can last.
+          <div className="text-center max-w-md">
+            <h1 className="text-4xl font-bold text-white mb-4">🏛️ The Forgotten Courtyard</h1>
+            <p className="text-gray-300 mb-6">
+              Enter the ancient arena where warriors once fought for glory. Survive endless waves of enemies in this mystical courtyard lit by eternal flames.
             </p>
+            <div className="mb-6 p-4 bg-orange-900/30 rounded-lg border border-orange-500/50">
+              <h3 className="text-orange-400 font-bold mb-2">Arena Features:</h3>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Ancient stone battleground</li>
+                <li>• Mystical torches provide light</li>
+                <li>• Enemies from across the realm</li>
+                <li>• Power-ups scattered throughout</li>
+              </ul>
+            </div>
             <button
               onClick={() => setGameStarted(true)}
-              className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105"
+              className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-700 hover:from-orange-500 hover:to-red-600 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Start Survival
+              ⚔️ Enter the Arena ⚔️
             </button>
           </div>
         </div>

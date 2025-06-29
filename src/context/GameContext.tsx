@@ -66,6 +66,125 @@ type GameAction =
   | { type: 'LEVEL_UP' }
   | { type: 'GAME_OVER' };
 
+// Create survival enemies from adventure mode enemies
+const createSurvivalEnemies = (): Enemy[] => {
+  const survivalEnemies: Enemy[] = [];
+  const arenaCenter = { x: 2000, y: 2000 };
+  const arenaRadius = 400;
+  
+  // Create multiple instances of each enemy type from the adventure mode
+  const enemyTemplates = [
+    {
+      name: 'Mindless Zombie',
+      sprite: '/zombie.png',
+      health: 60,
+      attack: 8,
+      defense: 4,
+      speed: 4,
+      experience: 25
+    },
+    {
+      name: 'Wild Wolf',
+      sprite: '/wolf.png',
+      health: 40,
+      attack: 10,
+      defense: 2,
+      speed: 6,
+      experience: 20
+    },
+    {
+      name: 'Snow Wolf',
+      sprite: '/wolf.png',
+      health: 50,
+      attack: 12,
+      defense: 4,
+      speed: 7,
+      experience: 30
+    },
+    {
+      name: 'Ice Bear',
+      sprite: '/icebear.png',
+      health: 120,
+      attack: 18,
+      defense: 10,
+      speed: 4,
+      experience: 60
+    },
+    {
+      name: 'Lake Serpent',
+      sprite: '/dragonsnake.png',
+      health: 80,
+      attack: 14,
+      defense: 6,
+      speed: 6,
+      experience: 45
+    }
+  ];
+
+  // Generate enemies around the arena
+  enemyTemplates.forEach((template, templateIndex) => {
+    for (let i = 0; i < 3; i++) { // 3 of each enemy type
+      const angle = (templateIndex * 3 + i) * (Math.PI * 2) / (enemyTemplates.length * 3);
+      const distance = Math.random() * (arenaRadius - 100) + 50;
+      
+      const enemy: Enemy = {
+        id: `survival-${template.name.toLowerCase().replace(/\s+/g, '-')}-${i}`,
+        name: template.name,
+        type: 'aggressive',
+        health: template.health,
+        maxHealth: template.health,
+        attack: template.attack,
+        defense: template.defense,
+        speed: template.speed,
+        detectionRadius: 150,
+        patrolRadius: 100,
+        experience: template.experience,
+        loot: [
+          {
+            id: `${template.name.toLowerCase()}-coin-${i}`,
+            name: 'Battle Coin',
+            type: 'material',
+            rarity: 'common',
+            value: 10,
+            icon: '🪙',
+            description: 'A coin earned in battle'
+          }
+        ],
+        position: {
+          x: arenaCenter.x + Math.cos(angle) * distance,
+          y: arenaCenter.y + Math.sin(angle) * distance
+        },
+        patrolCenter: {
+          x: arenaCenter.x + Math.cos(angle) * distance,
+          y: arenaCenter.y + Math.sin(angle) * distance
+        },
+        state: 'patrol',
+        lastAction: 0,
+        sprite: template.sprite,
+        aiDifficulty: 'medium',
+        moveSet: [
+          {
+            id: `${template.name.toLowerCase()}-attack`,
+            name: `${template.name} Attack`,
+            type: 'basic-attack',
+            damage: template.attack + 2,
+            staminaCost: 10,
+            cooldown: 0,
+            currentCooldown: 0,
+            range: 30,
+            description: `A fierce attack from ${template.name}`,
+            animation: 'attack'
+          }
+        ]
+      };
+      
+      survivalEnemies.push(enemy);
+    }
+  });
+
+  return survivalEnemies;
+};
+
 const initialState: GameState = {
   gameMode: 'character-select',
   player: {
@@ -161,6 +280,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'START_SURVIVAL': {
       const selectedCharacter = characters.find(c => c.class === action.characterClass) || characters[0];
+      const survivalEnemies = createSurvivalEnemies();
+      
       return {
         ...state,
         gameMode: 'survival-mode',
@@ -169,11 +290,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           character: { ...selectedCharacter },
           position: { x: 2000, y: 2000 } // Center of survival arena
         },
+        currentWorld: {
+          ...state.currentWorld,
+          enemies: survivalEnemies // Use survival enemies instead of adventure enemies
+        },
         survival: {
           ...state.survival,
           active: true,
           waveInProgress: true,
-          enemiesRemaining: 5,
+          enemiesRemaining: survivalEnemies.length,
           stats: {
             survivalTime: 0,
             enemiesDefeated: 0,
@@ -205,6 +330,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         case 'right':
           newX = Math.min(state.currentWorld.size.width, newX + speed);
           break;
+      }
+
+      // In survival mode, constrain player to arena
+      if (state.gameMode === 'survival-mode') {
+        const arenaCenter = state.survival.arena.center;
+        const arenaRadius = state.survival.arena.radius;
+        const distanceFromCenter = Math.sqrt(
+          Math.pow(newX - arenaCenter.x, 2) + Math.pow(newY - arenaCenter.y, 2)
+        );
+        
+        if (distanceFromCenter > arenaRadius) {
+          // Keep player within arena bounds
+          const angle = Math.atan2(newY - arenaCenter.y, newX - arenaCenter.x);
+          newX = arenaCenter.x + Math.cos(angle) * arenaRadius;
+          newY = arenaCenter.y + Math.sin(angle) * arenaRadius;
+        }
       }
 
       return {
@@ -275,10 +416,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             let newPlayerCurrency = state.player.currency;
             let newPlayerExperience = state.player.character.experience;
             let leveledUp = false;
+            let newSurvivalStats = state.survival.stats;
 
             if (isDead) {
               newPlayerCurrency += 10; // Coins for killing enemy
               newPlayerExperience += targetEnemy.experience;
+              
+              // Update survival stats
+              if (state.gameMode === 'survival-mode') {
+                newSurvivalStats = {
+                  ...newSurvivalStats,
+                  enemiesDefeated: newSurvivalStats.enemiesDefeated + 1,
+                  coinsEarned: newSurvivalStats.coinsEarned + 10,
+                  damageDealt: newSurvivalStats.damageDealt + damage
+                };
+              }
               
               // Check for level up
               if (newPlayerExperience >= state.player.character.experienceToNextLevel) {
@@ -303,6 +455,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   maxHealth: leveledUp ? state.player.character.maxHealth + 10 : state.player.character.maxHealth,
                   health: leveledUp ? state.player.character.maxHealth + 10 : state.player.character.health
                 }
+              },
+              survival: {
+                ...state.survival,
+                stats: newSurvivalStats,
+                enemiesRemaining: state.gameMode === 'survival-mode' ? 
+                  Math.max(0, state.survival.enemiesRemaining - (isDead ? 1 : 0)) : 
+                  state.survival.enemiesRemaining
               },
               combat: {
                 ...state.combat,
@@ -346,6 +505,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const newHealth = Math.max(0, state.player.character.health - action.damage);
         const isDead = newHealth <= 0;
 
+        let newSurvivalStats = state.survival.stats;
+        if (state.gameMode === 'survival-mode') {
+          newSurvivalStats = {
+            ...newSurvivalStats,
+            damageTaken: newSurvivalStats.damageTaken + action.damage
+          };
+        }
+
         return {
           ...state,
           player: {
@@ -355,7 +522,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               health: newHealth
             }
           },
-          gameMode: isDead ? 'game-over' : state.gameMode
+          survival: {
+            ...state.survival,
+            stats: newSurvivalStats
+          },
+          gameMode: isDead ? (state.gameMode === 'survival-mode' ? 'survival-results' : 'game-over') : state.gameMode
         };
       }
       return state;
