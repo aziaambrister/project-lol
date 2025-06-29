@@ -16,7 +16,7 @@ const SurvivalMode: React.FC = () => {
 
   // Handle keyboard input - ONLY when game has started
   useEffect(() => {
-    if (!gameStarted) return; // Don't handle input until game starts
+    if (!gameStarted) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -42,7 +42,6 @@ const SurvivalMode: React.FC = () => {
         }
       }
       
-      // Power-up activation keys
       if (['1', '3', '4', '5'].includes(key)) {
         e.preventDefault();
         const powerUpIndex = parseInt(key) - 1;
@@ -69,11 +68,11 @@ const SurvivalMode: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [performAttack, usePowerUp, gameStarted]); // Added gameStarted dependency
+  }, [performAttack, usePowerUp, gameStarted]);
 
   // Movement loop - ONLY when game has started
   useEffect(() => {
-    if (!gameStarted) return; // Don't move until game starts
+    if (!gameStarted) return;
 
     let animationFrameId: number;
 
@@ -111,10 +110,10 @@ const SurvivalMode: React.FC = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [movePlayer, stopMoving, gameStarted, state.player.isMoving]); // Added gameStarted dependency
+  }, [movePlayer, stopMoving, gameStarted, state.player.isMoving]);
 
   const findNearestEnemy = () => {
-    if (!gameStarted) return null; // Don't find enemies until game starts
+    if (!gameStarted) return null;
 
     const playerPos = state.player.position;
     let nearestEnemy = null;
@@ -151,11 +150,11 @@ const SurvivalMode: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* The Forgotten Courtyard Background - FIXED PATH */}
+      {/* FIXED: The Forgotten Courtyard Background - Using correct image path */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url(/The forgotten courtyard.png)`, // FIXED: Correct file path
+          backgroundImage: `url(/The forgotten courtyard.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -163,10 +162,10 @@ const SurvivalMode: React.FC = () => {
         }}
       ></div>
       
-      {/* Fallback background in case image doesn't load */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-30"></div>
+      {/* Fallback background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-20"></div>
 
-      {/* Arena Boundary - Circular arena within the courtyard */}
+      {/* Arena Boundary */}
       <div 
         className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
         style={{
@@ -178,17 +177,22 @@ const SurvivalMode: React.FC = () => {
         }}
       ></div>
 
-      {/* Enemies from Adventure Mode - ONLY render when game started */}
+      {/* Enemies - ONLY render when game started */}
       {gameStarted && state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
-      {/* Survival Drops - ONLY when game started */}
+      {/* Survival Drops */}
       {gameStarted && state.survival.drops.map(drop => {
         if (drop.collected) return null;
         
         const screenX = drop.position.x - cameraX;
         const screenY = drop.position.y - cameraY;
+        
+        if (screenX < -50 || screenX > window.innerWidth + 50 || 
+            screenY < -50 || screenY > window.innerHeight + 50) {
+          return null;
+        }
         
         const getDropColor = () => {
           switch (drop.type) {
@@ -222,7 +226,7 @@ const SurvivalMode: React.FC = () => {
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* Damage Numbers - ONLY when game started */}
+      {/* Damage Numbers */}
       {gameStarted && state.combat.damageNumbers.map(damageNumber => (
         <div
           key={damageNumber.id}
@@ -260,7 +264,7 @@ const SurvivalMode: React.FC = () => {
                   <span className="font-mono">{formatTime(state.survival.stats.survivalTime)}</span>
                 </div>
                 
-                {/* Enemies Remaining - FIXED TO SHOW ACTUAL ALIVE ENEMIES */}
+                {/* Enemies Remaining - FIXED */}
                 <div className="flex items-center space-x-2">
                   <Users className="text-orange-400" size={20} />
                   <span>{aliveEnemies} left</span>
@@ -286,7 +290,6 @@ const SurvivalMode: React.FC = () => {
           {/* Player Stats */}
           <div className="absolute top-4 left-4 z-30">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              {/* Health */}
               <div className="flex items-center mb-3">
                 <Heart className="text-red-500 mr-2" size={20} />
                 <div className="flex-1">
@@ -303,7 +306,6 @@ const SurvivalMode: React.FC = () => {
                 </div>
               </div>
               
-              {/* Character Info */}
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400 mr-3">
                   <img 
@@ -386,15 +388,15 @@ const SurvivalMode: React.FC = () => {
           <div className="text-center max-w-md">
             <h1 className="text-4xl font-bold text-white mb-4">🏛️ The Forgotten Courtyard</h1>
             <p className="text-gray-300 mb-6">
-              Enter the ancient arena where warriors once fought for glory. Survive endless waves of enemies in this mystical courtyard lit by eternal flames.
+              Enter the ancient arena where warriors once fought for glory. Survive waves of enemies in this mystical courtyard lit by eternal flames.
             </p>
             <div className="mb-6 p-4 bg-orange-900/30 rounded-lg border border-orange-500/50">
-              <h3 className="text-orange-400 font-bold mb-2">Arena Features:</h3>
+              <h3 className="text-orange-400 font-bold mb-2">Wave Structure:</h3>
               <ul className="text-gray-300 text-sm space-y-1">
-                <li>• Ancient stone battleground</li>
-                <li>• Mystical torches provide light</li>
-                <li>• {state.currentWorld.enemies.length} enemies await you</li>
-                <li>• Power-ups scattered throughout</li>
+                <li>• <strong>Wave 1:</strong> 3 enemies (Easy)</li>
+                <li>• <strong>Wave 2:</strong> 5 enemies (Medium)</li>
+                <li>• <strong>Wave 3:</strong> 7 enemies (Hard)</li>
+                <li>• Defeat all waves to complete survival!</li>
               </ul>
             </div>
             <button
