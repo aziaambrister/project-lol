@@ -146,6 +146,9 @@ const SurvivalMode: React.FC = () => {
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
+  // FIXED: Count alive enemies properly
+  const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* The Forgotten Courtyard Background - FIXED PATH */}
@@ -161,7 +164,7 @@ const SurvivalMode: React.FC = () => {
       ></div>
       
       {/* Fallback background in case image doesn't load */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-30"></div>
 
       {/* Arena Boundary - Circular arena within the courtyard */}
       <div 
@@ -194,15 +197,6 @@ const SurvivalMode: React.FC = () => {
             case 'power-up': return 'from-purple-400 to-purple-600';
             case 'special-attack': return 'from-blue-400 to-blue-600';
             default: return 'from-gray-400 to-gray-600';
-          }
-        };
-        
-        const getDropSize = () => {
-          switch (drop.type) {
-            case 'small': return 'w-4 h-4';
-            case 'medium': return 'w-6 h-6';
-            case 'large': return 'w-8 h-8';
-            default: return 'w-4 h-4';
           }
         };
         
@@ -266,10 +260,10 @@ const SurvivalMode: React.FC = () => {
                   <span className="font-mono">{formatTime(state.survival.stats.survivalTime)}</span>
                 </div>
                 
-                {/* Enemies Remaining */}
+                {/* Enemies Remaining - FIXED TO SHOW ACTUAL ALIVE ENEMIES */}
                 <div className="flex items-center space-x-2">
                   <Users className="text-orange-400" size={20} />
-                  <span>{state.survival.enemiesRemaining} left</span>
+                  <span>{aliveEnemies} left</span>
                 </div>
                 
                 {/* Score */}
@@ -360,7 +354,7 @@ const SurvivalMode: React.FC = () => {
                 {state.survival.waveInProgress ? (
                   <div className="text-white">
                     <div className="text-sm">Enemies Remaining</div>
-                    <div className="text-2xl font-bold text-red-400">{state.survival.enemiesRemaining}</div>
+                    <div className="text-2xl font-bold text-red-400">{aliveEnemies}</div>
                   </div>
                 ) : (
                   <div className="text-white">
@@ -399,7 +393,7 @@ const SurvivalMode: React.FC = () => {
               <ul className="text-gray-300 text-sm space-y-1">
                 <li>• Ancient stone battleground</li>
                 <li>• Mystical torches provide light</li>
-                <li>• Enemies from across the realm</li>
+                <li>• {state.currentWorld.enemies.length} enemies await you</li>
                 <li>• Power-ups scattered throughout</li>
               </ul>
             </div>

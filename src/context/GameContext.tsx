@@ -64,9 +64,10 @@ type GameAction =
   | { type: 'ADD_DAMAGE_NUMBER'; damageNumber: DamageNumber }
   | { type: 'REMOVE_DAMAGE_NUMBER'; id: string }
   | { type: 'LEVEL_UP' }
-  | { type: 'GAME_OVER' };
+  | { type: 'GAME_OVER' }
+  | { type: 'UPDATE_SURVIVAL_TIMER' };
 
-// Create survival enemies from adventure mode enemies - FIXED VERSION
+// Create survival enemies from adventure mode enemies - COMPLETELY FIXED VERSION
 const createSurvivalEnemies = (): Enemy[] => {
   console.log('🎯 Creating survival enemies...');
   const survivalEnemies: Enemy[] = [];
@@ -174,7 +175,7 @@ const createSurvivalEnemies = (): Enemy[] => {
           x: arenaCenter.x + Math.cos(angle) * distance,
           y: arenaCenter.y + Math.sin(angle) * distance
         },
-        state: 'patrol', // IMPORTANT: Start in patrol state, not dead!
+        state: 'patrol', // CRITICAL: Start in patrol state, NOT dead!
         lastAction: 0,
         sprite: template.sprite,
         aiDifficulty: 'medium',
@@ -199,6 +200,7 @@ const createSurvivalEnemies = (): Enemy[] => {
   });
 
   console.log(`✅ Created ${survivalEnemies.length} survival enemies`);
+  console.log('🎯 Enemy states:', survivalEnemies.map(e => ({ id: e.id, state: e.state, health: e.health })));
   return survivalEnemies;
 };
 
@@ -301,6 +303,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       console.log('🎮 Starting survival mode with', survivalEnemies.length, 'enemies');
       console.log('🎯 First enemy:', survivalEnemies[0]);
+      console.log('🎯 All enemy states:', survivalEnemies.map(e => e.state));
       
       return {
         ...state,
@@ -423,6 +426,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const newHealth = Math.max(0, targetEnemy.health - damage);
             const isDead = newHealth <= 0;
 
+            console.log(`🗡️ Attack: ${damage} damage to ${targetEnemy.name}, health: ${targetEnemy.health} -> ${newHealth}, isDead: ${isDead}`);
+
             // Create damage number
             const damageNumber: DamageNumber = {
               id: `damage-${Date.now()}`,
@@ -460,6 +465,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   coinsEarned: newSurvivalStats.coinsEarned + 10,
                   damageDealt: newSurvivalStats.damageDealt + damage
                 };
+                console.log(`💀 Enemy killed! Total defeated: ${newSurvivalStats.enemiesDefeated}`);
               }
               
               // Check for level up
@@ -473,7 +479,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const aliveEnemies = updatedEnemies.filter(e => e.state !== 'dead').length;
             const newEnemiesRemaining = state.gameMode === 'survival-mode' ? aliveEnemies : state.survival.enemiesRemaining;
 
-            // Check if survival wave is complete - ONLY if there are actually 0 enemies left
+            console.log(`🎯 Enemies remaining: ${newEnemiesRemaining} (alive: ${aliveEnemies})`);
+
+            // Check if survival wave is complete - ONLY if there are actually 0 enemies left AND wave is in progress
             let newGameMode = state.gameMode;
             if (state.gameMode === 'survival-mode' && newEnemiesRemaining === 0 && state.survival.waveInProgress) {
               console.log('🏆 Survival wave completed! All enemies defeated. Transitioning to results...');
@@ -775,6 +783,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'UPDATE_SURVIVAL_TIMER': {
+      if (state.gameMode === 'survival-mode' && state.survival.active) {
+        return {
+          ...state,
+          survival: {
+            ...state.survival,
+            stats: {
+              ...state.survival.stats,
+              survivalTime: state.survival.stats.survivalTime + 1
+            }
+          }
+        };
+      }
+      return state;
+    }
+
     default:
       return state;
   }
@@ -872,18 +896,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(respawnInterval);
   }, [state.currentWorld.xpOrbs]);
 
-  // Survival mode timer - only when survival is active
+  // Survival mode timer - FIXED VERSION
   useEffect(() => {
     if (state.gameMode === 'survival-mode' && state.survival.active) {
       const timer = setInterval(() => {
-        // Update survival time
-        dispatch({ 
-          type: 'UPDATE_ENEMY_AI', 
-          enemies: state.currentWorld.enemies.map(enemy => ({
-            ...enemy,
-            // Keep enemies alive and active
-          }))
-        });
+        dispatch({ type: 'UPDATE_SURVIVAL_TIMER' });
       }, 1000);
 
       return () => clearInterval(timer);
