@@ -67,7 +67,7 @@ type GameAction =
   | { type: 'GAME_OVER' }
   | { type: 'UPDATE_SURVIVAL_TIMER' };
 
-// Create survival enemies from adventure mode enemies - COMPLETELY FIXED VERSION
+// Create survival enemies - COMPLETELY FIXED VERSION
 const createSurvivalEnemies = (): Enemy[] => {
   console.log('🎯 Creating survival enemies...');
   const survivalEnemies: Enemy[] = [];
@@ -79,70 +79,70 @@ const createSurvivalEnemies = (): Enemy[] => {
     {
       name: 'Mindless Zombie',
       sprite: '/zombie.png',
-      health: 60,
-      maxHealth: 60,
-      attack: 8,
-      defense: 4,
-      speed: 4,
-      experience: 25,
+      health: 80, // Increased health for survival mode
+      maxHealth: 80,
+      attack: 12,
+      defense: 6,
+      speed: 5,
+      experience: 35,
       detectionRadius: 120,
       patrolRadius: 100
     },
     {
       name: 'Wild Wolf',
       sprite: '/wolf.png',
-      health: 40,
-      maxHealth: 40,
-      attack: 10,
-      defense: 2,
-      speed: 6,
-      experience: 20,
+      health: 60, // Increased health
+      maxHealth: 60,
+      attack: 15,
+      defense: 4,
+      speed: 7,
+      experience: 30,
       detectionRadius: 150,
       patrolRadius: 150
     },
     {
       name: 'Snow Wolf',
       sprite: '/wolf.png',
-      health: 50,
-      maxHealth: 50,
-      attack: 12,
-      defense: 4,
-      speed: 7,
-      experience: 30,
+      health: 70, // Increased health
+      maxHealth: 70,
+      attack: 18,
+      defense: 6,
+      speed: 8,
+      experience: 40,
       detectionRadius: 160,
       patrolRadius: 160
     },
     {
       name: 'Ice Bear',
       sprite: '/icebear.png',
-      health: 120,
-      maxHealth: 120,
-      attack: 18,
-      defense: 10,
-      speed: 4,
-      experience: 60,
+      health: 150, // Increased health
+      maxHealth: 150,
+      attack: 25,
+      defense: 12,
+      speed: 5,
+      experience: 80,
       detectionRadius: 140,
       patrolRadius: 140
     },
     {
       name: 'Lake Serpent',
       sprite: '/dragonsnake.png',
-      health: 80,
-      maxHealth: 80,
-      attack: 14,
-      defense: 6,
-      speed: 6,
-      experience: 45,
+      health: 100, // Increased health
+      maxHealth: 100,
+      attack: 20,
+      defense: 8,
+      speed: 7,
+      experience: 60,
       detectionRadius: 150,
       patrolRadius: 100
     }
   ];
 
-  // Generate enemies around the arena - CREATE MORE ENEMIES
+  // Generate 4 of each enemy type = 20 total enemies
   enemyTemplates.forEach((template, templateIndex) => {
-    for (let i = 0; i < 4; i++) { // 4 of each enemy type = 20 total enemies
+    for (let i = 0; i < 4; i++) {
       const angle = (templateIndex * 4 + i) * (Math.PI * 2) / (enemyTemplates.length * 4);
-      const distance = Math.random() * (arenaRadius - 100) + 50;
+      const distance = Math.random() * (arenaRadius - 100) + 100; // Keep enemies away from center
       
       const enemy: Enemy = {
         id: `survival-${template.name.toLowerCase().replace(/\s+/g, '-')}-${templateIndex}-${i}`,
@@ -162,9 +162,9 @@ const createSurvivalEnemies = (): Enemy[] => {
             name: 'Battle Coin',
             type: 'material',
             rarity: 'common',
-            value: 10,
+            value: 15, // Increased coin value for survival
             icon: '🪙',
-            description: 'A coin earned in battle'
+            description: 'A coin earned in survival combat'
           }
         ],
         position: {
@@ -175,7 +175,7 @@ const createSurvivalEnemies = (): Enemy[] => {
           x: arenaCenter.x + Math.cos(angle) * distance,
           y: arenaCenter.y + Math.sin(angle) * distance
         },
-        state: 'patrol', // CRITICAL: Start in patrol state, NOT dead!
+        state: 'patrol', // CRITICAL: Start in patrol state
         lastAction: 0,
         sprite: template.sprite,
         aiDifficulty: 'medium',
@@ -184,11 +184,11 @@ const createSurvivalEnemies = (): Enemy[] => {
             id: `${template.name.toLowerCase()}-attack-${templateIndex}-${i}`,
             name: `${template.name} Attack`,
             type: 'basic-attack',
-            damage: template.attack + 2,
+            damage: template.attack + 5, // Increased damage for survival
             staminaCost: 10,
             cooldown: 0,
             currentCooldown: 0,
-            range: 30,
+            range: 35,
             description: `A fierce attack from ${template.name}`,
             animation: 'attack'
           }
@@ -200,7 +200,7 @@ const createSurvivalEnemies = (): Enemy[] => {
   });
 
   console.log(`✅ Created ${survivalEnemies.length} survival enemies`);
-  console.log('🎯 Enemy states:', survivalEnemies.map(e => ({ id: e.id, state: e.state, health: e.health })));
+  console.log('🎯 Enemy health check:', survivalEnemies.map(e => ({ id: e.id, health: e.health, state: e.state })));
   return survivalEnemies;
 };
 
@@ -301,16 +301,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const selectedCharacter = characters.find(c => c.class === action.characterClass) || characters[0];
       const survivalEnemies = createSurvivalEnemies();
       
-      console.log('🎮 Starting survival mode with', survivalEnemies.length, 'enemies');
-      console.log('🎯 First enemy:', survivalEnemies[0]);
-      console.log('🎯 All enemy states:', survivalEnemies.map(e => e.state));
+      console.log('🎮 Starting survival mode with character:', selectedCharacter.name);
+      console.log('🎯 Created enemies:', survivalEnemies.length);
+      console.log('🎯 First enemy health:', survivalEnemies[0]?.health);
       
       return {
         ...state,
         gameMode: 'survival-mode',
         player: {
           ...state.player,
-          character: { ...selectedCharacter },
+          character: { 
+            ...selectedCharacter,
+            health: selectedCharacter.maxHealth // Ensure full health at start
+          },
           position: { x: 2000, y: 2000 } // Center of survival arena
         },
         currentWorld: {
@@ -412,7 +415,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const targetEnemy = state.currentWorld.enemies.find(e => e.id === action.targetId);
         if (targetEnemy && targetEnemy.state !== 'dead') {
           const move = state.player.character.moveSet.find(m => m.id === action.moveId);
-          const damage = move ? move.damage + state.player.character.attack : state.player.character.attack;
+          const baseDamage = move ? move.damage : state.player.character.attack;
+          const weaponBonus = state.player.equippedItems.weapon?.effect?.value || 0;
+          const totalDamage = baseDamage + weaponBonus;
           
           // Calculate distance to target
           const distance = Math.sqrt(
@@ -423,15 +428,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           // Check if target is in range
           const attackRange = move?.range || 50;
           if (distance <= attackRange) {
-            const newHealth = Math.max(0, targetEnemy.health - damage);
+            const actualDamage = Math.max(1, totalDamage - targetEnemy.defense);
+            const newHealth = Math.max(0, targetEnemy.health - actualDamage);
             const isDead = newHealth <= 0;
 
-            console.log(`🗡️ Attack: ${damage} damage to ${targetEnemy.name}, health: ${targetEnemy.health} -> ${newHealth}, isDead: ${isDead}`);
+            console.log(`🗡️ Attack: ${actualDamage} damage to ${targetEnemy.name}, health: ${targetEnemy.health} -> ${newHealth}, isDead: ${isDead}`);
 
             // Create damage number
             const damageNumber: DamageNumber = {
               id: `damage-${Date.now()}`,
-              value: damage,
+              value: actualDamage,
               position: { ...targetEnemy.position },
               type: 'damage',
               timestamp: Date.now()
@@ -454,7 +460,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             let newSurvivalStats = state.survival.stats;
 
             if (isDead) {
-              newPlayerCurrency += 10; // Coins for killing enemy
+              const coinReward = state.gameMode === 'survival-mode' ? 15 : 10; // More coins in survival
+              newPlayerCurrency += coinReward;
               newPlayerExperience += targetEnemy.experience;
               
               // Update survival stats
@@ -462,8 +469,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 newSurvivalStats = {
                   ...newSurvivalStats,
                   enemiesDefeated: newSurvivalStats.enemiesDefeated + 1,
-                  coinsEarned: newSurvivalStats.coinsEarned + 10,
-                  damageDealt: newSurvivalStats.damageDealt + damage
+                  coinsEarned: newSurvivalStats.coinsEarned + coinReward,
+                  damageDealt: newSurvivalStats.damageDealt + actualDamage
                 };
                 console.log(`💀 Enemy killed! Total defeated: ${newSurvivalStats.enemiesDefeated}`);
               }
@@ -473,6 +480,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 leveledUp = true;
                 newPlayerExperience -= state.player.character.experienceToNextLevel;
               }
+            } else if (state.gameMode === 'survival-mode') {
+              // Track damage dealt even if enemy doesn't die
+              newSurvivalStats = {
+                ...newSurvivalStats,
+                damageDealt: newSurvivalStats.damageDealt + actualDamage
+              };
             }
 
             // Calculate remaining alive enemies for survival mode
@@ -550,14 +563,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'TAKE_DAMAGE': {
       if (action.targetId === 'player') {
-        const newHealth = Math.max(0, state.player.character.health - action.damage);
+        const actualDamage = Math.max(1, action.damage - (state.player.equippedItems.armor?.effect?.value || 0));
+        const newHealth = Math.max(0, state.player.character.health - actualDamage);
         const isDead = newHealth <= 0;
 
         let newSurvivalStats = state.survival.stats;
         if (state.gameMode === 'survival-mode') {
           newSurvivalStats = {
             ...newSurvivalStats,
-            damageTaken: newSurvivalStats.damageTaken + action.damage
+            damageTaken: newSurvivalStats.damageTaken + actualDamage
           };
         }
 
@@ -769,20 +783,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'RESTART_SURVIVAL': {
-      return {
-        ...state,
-        gameMode: 'character-select'
-      };
-    }
-
-    case 'EXIT_SURVIVAL': {
-      return {
-        ...state,
-        gameMode: 'character-select'
-      };
-    }
-
     case 'UPDATE_SURVIVAL_TIMER': {
       if (state.gameMode === 'survival-mode' && state.survival.active) {
         return {
@@ -797,6 +797,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
       return state;
+    }
+
+    case 'RESTART_SURVIVAL': {
+      return {
+        ...state,
+        gameMode: 'character-select'
+      };
+    }
+
+    case 'EXIT_SURVIVAL': {
+      return {
+        ...state,
+        gameMode: 'character-select'
+      };
     }
 
     default:
