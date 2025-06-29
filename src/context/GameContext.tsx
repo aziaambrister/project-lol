@@ -213,8 +213,8 @@ const initialState: GameState = {
     active: false,
     currentWave: {
       waveNumber: 1,
-      enemyCount: 5,
-      enemyTypes: ['zombie', 'wolf'],
+      enemyCount: 15, // Total enemies in first wave
+      enemyTypes: ['zombie', 'wolf', 'bear', 'serpent'],
       spawnDelay: 2000,
       bossWave: false,
       completed: false
@@ -282,6 +282,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const selectedCharacter = characters.find(c => c.class === action.characterClass) || characters[0];
       const survivalEnemies = createSurvivalEnemies();
       
+      console.log('🎮 Starting survival mode with', survivalEnemies.length, 'enemies');
+      
       return {
         ...state,
         gameMode: 'survival-mode',
@@ -299,6 +301,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           active: true,
           waveInProgress: true,
           enemiesRemaining: survivalEnemies.length,
+          currentWave: {
+            ...state.survival.currentWave,
+            enemyCount: survivalEnemies.length,
+            completed: false
+          },
           stats: {
             survivalTime: 0,
             enemiesDefeated: 0,
@@ -308,6 +315,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             damageDealt: 0,
             damageTaken: 0
           }
+        },
+        camera: {
+          ...state.camera,
+          x: 2000,
+          y: 2000
         }
       };
     }
@@ -439,8 +451,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
             }
 
+            // Calculate remaining alive enemies for survival mode
+            const aliveEnemies = updatedEnemies.filter(e => e.state !== 'dead').length;
+            const newEnemiesRemaining = state.gameMode === 'survival-mode' ? aliveEnemies : state.survival.enemiesRemaining;
+
+            // Check if survival wave is complete
+            let newGameMode = state.gameMode;
+            if (state.gameMode === 'survival-mode' && newEnemiesRemaining === 0) {
+              console.log('🏆 Survival wave completed! Transitioning to results...');
+              newGameMode = 'survival-results';
+            }
+
             return {
               ...state,
+              gameMode: newGameMode,
               currentWorld: {
                 ...state.currentWorld,
                 enemies: updatedEnemies
@@ -459,9 +483,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               survival: {
                 ...state.survival,
                 stats: newSurvivalStats,
-                enemiesRemaining: state.gameMode === 'survival-mode' ? 
-                  Math.max(0, state.survival.enemiesRemaining - (isDead ? 1 : 0)) : 
-                  state.survival.enemiesRemaining
+                enemiesRemaining: newEnemiesRemaining
               },
               combat: {
                 ...state.combat,
@@ -832,11 +854,30 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(respawnInterval);
   }, [state.currentWorld.xpOrbs]);
 
+  // Survival mode timer - only when survival is active
+  useEffect(() => {
+    if (state.gameMode === 'survival-mode' && state.survival.active) {
+      const timer = setInterval(() => {
+        // Update survival time
+        dispatch({ 
+          type: 'UPDATE_ENEMY_AI', 
+          enemies: state.currentWorld.enemies.map(enemy => ({
+            ...enemy,
+            // Keep enemies alive and active
+          }))
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [state.gameMode, state.survival.active]);
+
   const startGame = (characterClass: CharacterClass) => {
     dispatch({ type: 'START_GAME', characterClass });
   };
 
   const startSurvival = (characterClass: CharacterClass) => {
+    console.log('🎮 Starting survival mode with character:', characterClass);
     dispatch({ type: 'START_SURVIVAL', characterClass });
   };
 
