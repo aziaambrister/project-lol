@@ -14,11 +14,15 @@ import SurvivalResults from './components/SurvivalResults';
 const keysHeld: Record<string, boolean> = {};
 
 window.addEventListener("keydown", (e) => {
-  keysHeld[e.key.toLowerCase()] = true;
+  if (e.key) {
+    keysHeld[e.key.toLowerCase()] = true;
+  }
 });
 
 window.addEventListener("keyup", (e) => {
-  keysHeld[e.key.toLowerCase()] = false;
+  if (e.key) {
+    keysHeld[e.key.toLowerCase()] = false;
+  }
 });
 
 function App() {
