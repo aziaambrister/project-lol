@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Sword, Shield, Zap, Crown, Star, Gamepad2, LogIn, UserPlus, X } from 'lucide-react';
+import { Play, Sword, Shield, Zap, Crown, Star, Gamepad2, LogIn, UserPlus, X, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface WelcomePageProps {
@@ -14,99 +14,183 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   const [authForm, setAuthForm] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     displayName: ''
   });
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
 
-  const { user, signIn, signUp, signOut } = useAuth();
+  const { user, signIn, signUp, signOut, resendConfirmation } = useAuth();
 
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
   }, []);
 
-  const handleEnterClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onEnter();
+  const validateField = (name: string, value: string) => {
+    const errors: {[key: string]: string} = {};
+
+    switch (name) {
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) errors.email = 'Email is required';
+        else if (!emailRegex.test(value)) errors.email = 'Please enter a valid email address';
+        break;
+      
+      case 'password':
+        if (!value) errors.password = 'Password is required';
+        else if (value.length < 6) errors.password = 'Password must be at least 6 characters long';
+        else if (!/(?=.*[a-z])/.test(value)) errors.password = 'Password must contain at least one lowercase letter';
+        else if (!/(?=.*[A-Z])/.test(value)) errors.password = 'Password must contain at least one uppercase letter';
+        else if (!/(?=.*\d)/.test(value)) errors.password = 'Password must contain at least one number';
+        break;
+      
+      case 'confirmPassword':
+        if (authMode === 'signup') {
+          if (!value) errors.confirmPassword = 'Please confirm your password';
+          else if (value !== authForm.password) errors.confirmPassword = 'Passwords do not match';
+        }
+        break;
+      
+      case 'displayName':
+        if (authMode === 'signup') {
+          if (!value) errors.displayName = 'Display name is required';
+          else if (value.length < 2) errors.displayName = 'Display name must be at least 2 characters long';
+          else if (value.length > 30) errors.displayName = 'Display name must be less than 30 characters';
+          else if (!/^[a-zA-Z0-9_\s]+$/.test(value)) errors.displayName = 'Display name can only contain letters, numbers, underscores, and spaces';
+        }
+        break;
+    }
+
+    setFieldErrors(prev => ({ ...prev, ...errors }));
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAuthForm(prev => ({ ...prev, [name]: value }));
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    
+    // Clear general error when user makes changes
+    if (authError) {
+      setAuthError(null);
+    }
+    
+    // Validate field on blur or when user stops typing
+    setTimeout(() => validateField(name, value), 500);
+  };
+
+  const validateAllFields = () => {
+    const fields = ['email', 'password'];
+    if (authMode === 'signup') {
+      fields.push('confirmPassword', 'displayName');
+    }
+
+    let isValid = true;
+    fields.forEach(field => {
+      const fieldValue = authForm[field as keyof typeof authForm];
+      if (!validateField(field, fieldValue)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  };
+
+  const isFormValid = () => {
+    const hasRequiredFields = authForm.email && authForm.password && 
+      (authMode === 'login' || (authForm.displayName && authForm.confirmPassword));
+    const hasNoFieldErrors = Object.values(fieldErrors).every(error => !error);
+    return hasRequiredFields && hasNoFieldErrors;
   };
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateAllFields()) {
+      setAuthError('Please fix the errors above before continuing.');
+      return;
+    }
+
     setIsAuthLoading(true);
     setAuthError(null);
+    setAuthSuccess(null);
 
     try {
       if (authMode === 'login') {
         const { error } = await signIn(authForm.email, authForm.password);
         if (error) {
-          // Handle specific error messages
-          let errorMessage = error.message || 'An error occurred during sign in';
-          
-          // Check for specific error codes or messages
-          if (error.message?.includes('email_not_confirmed') || error.message?.includes('Email not confirmed')) {
-            errorMessage = 'Please check your email and click the confirmation link before signing in.';
-          } else if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
-            errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-          } else if (error.message?.includes('too_many_requests')) {
-            errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
-          } else if (error.message?.includes('signup_disabled')) {
-            errorMessage = 'New user registration is currently disabled.';
-          }
-          
-          setAuthError(errorMessage);
+          setAuthError(error.message);
         } else {
-          setShowAuthModal(false);
-          setAuthForm({ email: '', password: '', displayName: '' });
+          setAuthSuccess('Successfully signed in! Welcome back.');
+          setTimeout(() => {
+            setShowAuthModal(false);
+            resetForm();
+          }, 1500);
         }
       } else {
-        if (!authForm.displayName.trim()) {
-          setAuthError('Display name is required');
-          return;
-        }
-        const { error } = await signUp(authForm.email, authForm.password, authForm.displayName);
-        if (error) {
-          // Handle specific error messages for signup
-          let errorMessage = error.message || 'An error occurred during sign up';
-          
-          if (error.message?.includes('already_registered') || error.message?.includes('already registered')) {
-            errorMessage = 'An account with this email already exists. Please try signing in instead.';
-          } else if (error.message?.includes('weak_password') || error.message?.includes('Password should be')) {
-            errorMessage = 'Password is too weak. Please use at least 6 characters.';
-          } else if (error.message?.includes('invalid_email')) {
-            errorMessage = 'Please enter a valid email address.';
-          } else if (error.message?.includes('signup_disabled')) {
-            errorMessage = 'New user registration is currently disabled.';
-          }
-          
-          setAuthError(errorMessage);
+        const result = await signUp(authForm.email, authForm.password, authForm.displayName);
+        if (result.error) {
+          setAuthError(result.error.message);
+        } else if (result.requiresConfirmation) {
+          setConfirmationEmail(authForm.email);
+          setShowConfirmationMessage(true);
+          setAuthSuccess(result.message || 'Account created! Please check your email to confirm your account.');
         } else {
-          setShowAuthModal(false);
-          setAuthForm({ email: '', password: '', displayName: '' });
-          // Show success message for signup
-          setAuthError(null);
+          setAuthSuccess('Account created successfully! You are now signed in.');
+          setTimeout(() => {
+            setShowAuthModal(false);
+            resetForm();
+          }, 1500);
         }
       }
     } catch (error: any) {
-      // Fallback error handling for unexpected errors
       console.error('Authentication error:', error);
-      
-      let errorMessage = 'An unexpected error occurred. Please try again.';
-      
-      if (error?.message) {
-        // Handle specific error cases that might not be caught above
-        if (error.message.includes('email_not_confirmed') || error.message.includes('Email not confirmed')) {
-          errorMessage = 'Please check your email and click the confirmation link before signing in.';
-        } else if (error.message.includes('invalid_credentials') || error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        } else if (error.message.includes('Network request failed') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
-        }
-      }
-      
-      setAuthError(errorMessage);
+      setAuthError('An unexpected error occurred. Please try again.');
     } finally {
       setIsAuthLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setIsAuthLoading(true);
+    const { error } = await resendConfirmation(confirmationEmail);
+    setIsAuthLoading(false);
+    
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setAuthSuccess('Confirmation email sent! Please check your inbox.');
+    }
+  };
+
+  const resetForm = () => {
+    setAuthForm({ email: '', password: '', confirmPassword: '', displayName: '' });
+    setAuthError(null);
+    setAuthSuccess(null);
+    setFieldErrors({});
+    setShowConfirmationMessage(false);
+    setConfirmationEmail('');
+  };
+
+  const handleCloseModal = () => {
+    if (!isAuthLoading) {
+      setShowAuthModal(false);
+      resetForm();
+    }
+  };
+
+  const handleModeSwitch = () => {
+    if (!isAuthLoading) {
+      setAuthMode(authMode === 'login' ? 'signup' : 'login');
+      resetForm();
     }
   };
 
@@ -118,6 +202,12 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
     }
   };
 
+  const handleEnterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEnter();
+  };
+
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 via-indigo-900 to-black text-white relative overflow-hidden">
       {/* Auth Button */}
@@ -126,6 +216,9 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
           <div className="flex items-center space-x-4">
             <div className="text-sm">
               <div className="text-white font-bold">Welcome, {user.username || user.email}!</div>
+              {!user.emailConfirmed && (
+                <div className="text-yellow-400 text-xs">Email not confirmed</div>
+              )}
             </div>
             <button
               onClick={handleSignOut}
@@ -148,115 +241,213 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
       {/* Auth Modal */}
       {showAuthModal && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl border-2 border-yellow-400/50 shadow-2xl p-8 w-96 max-w-[90vw]">
+          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl border-2 border-yellow-400/50 shadow-2xl p-8 w-96 max-w-[90vw] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
                 {authMode === 'login' ? 'Welcome Back' : 'Join the Realm'}
               </h2>
               <button
-                onClick={() => {
-                  setShowAuthModal(false);
-                  setAuthError(null);
-                  setAuthForm({ email: '', password: '', displayName: '' });
-                }}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                onClick={handleCloseModal}
+                disabled={isAuthLoading}
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleAuthSubmit} className="space-y-4">
-              {authMode === 'signup' && (
+            {showConfirmationMessage ? (
+              <div className="text-center">
+                <div className="mb-4">
+                  <Mail size={48} className="mx-auto text-blue-400 mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">Check Your Email</h3>
+                  <p className="text-gray-300 text-sm mb-4">
+                    We've sent a confirmation link to <strong>{confirmationEmail}</strong>
+                  </p>
+                  <p className="text-gray-400 text-xs mb-6">
+                    Click the link in your email to activate your account and start playing!
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={handleResendConfirmation}
+                    disabled={isAuthLoading}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAuthLoading ? 'Sending...' : 'Resend Confirmation Email'}
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowConfirmationMessage(false)}
+                    disabled={isAuthLoading}
+                    className="w-full py-3 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {authMode === 'signup' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Display Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="displayName"
+                      value={authForm.displayName}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white transition-colors ${
+                        fieldErrors.displayName ? 'border-red-500' : 'border-gray-600'
+                      }`}
+                      placeholder="Enter your display name"
+                      required={authMode === 'signup'}
+                      disabled={isAuthLoading}
+                    />
+                    {fieldErrors.displayName && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center">
+                        <AlertCircle size={12} className="mr-1" />
+                        {fieldErrors.displayName}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Display Name
+                    Email Address *
                   </label>
                   <input
-                    type="text"
-                    value={authForm.displayName}
-                    onChange={(e) => setAuthForm(prev => ({ ...prev, displayName: e.target.value }))}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white"
-                    placeholder="Enter your display name"
-                    required={authMode === 'signup'}
+                    type="email"
+                    name="email"
+                    value={authForm.email}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white transition-colors ${
+                      fieldErrors.email ? 'border-red-500' : 'border-gray-600'
+                    }`}
+                    placeholder="Enter your email"
+                    required
                     disabled={isAuthLoading}
                   />
+                  {fieldErrors.email && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center">
+                      <AlertCircle size={12} className="mr-1" />
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
-              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={authForm.email}
-                  onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white"
-                  placeholder="Enter your email"
-                  required
-                  disabled={isAuthLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={authForm.password}
-                  onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white"
-                  placeholder="Enter your password"
-                  required
-                  minLength={6}
-                  disabled={isAuthLoading}
-                />
-              </div>
-
-              {authError && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                  <div className="text-red-400 text-sm">{authError}</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={authForm.password}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white transition-colors ${
+                      fieldErrors.password ? 'border-red-500' : 'border-gray-600'
+                    }`}
+                    placeholder="Enter your password"
+                    required
+                    minLength={6}
+                    disabled={isAuthLoading}
+                  />
+                  {fieldErrors.password && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center">
+                      <AlertCircle size={12} className="mr-1" />
+                      {fieldErrors.password}
+                    </p>
+                  )}
+                  {authMode === 'signup' && !fieldErrors.password && (
+                    <p className="text-gray-400 text-xs mt-1">
+                      Must contain uppercase, lowercase, and numbers
+                    </p>
+                  )}
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={isAuthLoading}
-                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAuthLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                    {authMode === 'login' ? 'Signing In...' : 'Creating Account...'}
+                {authMode === 'signup' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Confirm Password *
+                    </label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={authForm.confirmPassword}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white transition-colors ${
+                        fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-600'
+                      }`}
+                      placeholder="Confirm your password"
+                      required={authMode === 'signup'}
+                      disabled={isAuthLoading}
+                    />
+                    {fieldErrors.confirmPassword && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center">
+                        <AlertCircle size={12} className="mr-1" />
+                        {fieldErrors.confirmPassword}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  authMode === 'login' ? 'Sign In' : 'Create Account'
                 )}
-              </button>
-            </form>
 
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => {
-                  setAuthMode(authMode === 'login' ? 'signup' : 'login');
-                  setAuthError(null);
-                  setAuthForm({ email: '', password: '', displayName: '' });
-                }}
-                className="text-yellow-400 hover:text-yellow-300 text-sm transition-colors"
-                disabled={isAuthLoading}
-              >
-                {authMode === 'login' 
-                  ? "Don't have an account? Sign up" 
-                  : "Already have an account? Sign in"
-                }
-              </button>
-            </div>
+                {authError && (
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
+                    <div className="text-red-400 text-sm flex items-center">
+                      <AlertCircle size={16} className="mr-2 flex-shrink-0" />
+                      {authError}
+                    </div>
+                  </div>
+                )}
+
+                {authSuccess && (
+                  <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3">
+                    <div className="text-green-400 text-sm flex items-center">
+                      <CheckCircle size={16} className="mr-2 flex-shrink-0" />
+                      {authSuccess}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isAuthLoading || !isFormValid()}
+                  className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-yellow-500 disabled:hover:to-orange-500"
+                >
+                  {isAuthLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                      {authMode === 'login' ? 'Signing In...' : 'Creating Account...'}
+                    </div>
+                  ) : (
+                    authMode === 'login' ? 'Sign In' : 'Create Account'
+                  )}
+                </button>
+              </form>
+            )}
+
+            {!showConfirmationMessage && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={handleModeSwitch}
+                  disabled={isAuthLoading}
+                  className="text-yellow-400 hover:text-yellow-300 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {authMode === 'login' 
+                    ? "Don't have an account? Sign up" 
+                    : "Already have an account? Sign in"
+                  }
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Animated background elements */}
+      {/* Rest of the welcome page content remains the same */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
