@@ -1016,183 +1016,98 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'PERFORM_ATTACK', payload: { moveId, targetId } });
   };
   
- const enterBuilding = (buildingId: string) => {
-  // Determine interior image based on building ID
-  let interiorImage = 'default-interior.png';
+  const enterBuilding = (buildingId: string) => {
+    // Determine interior image based on building ID
+    let interiorImage = 'default-interior.png';
 
-  if (buildingId === 'cozy-forest-cabin') {
-    interiorImage = 'cozy-forest-cabin.png';
-  }
+    if (buildingId === 'cozy-forest-cabin') {
+      interiorImage = 'cozy-forest-cabin.png';
+    }
 
-  dispatch({ type: 'ENTER_BUILDING', payload: { buildingId, interiorImage } });
-};
+    dispatch({ type: 'ENTER_BUILDING', payload: { buildingId } });
+  };
 
-const exitBuilding = () => {
-  dispatch({ type: 'EXIT_BUILDING' });
-};
+  const exitBuilding = () => {
+    dispatch({ type: 'EXIT_BUILDING' });
+  };
 
-const interactWithNPC = (npcId: string) => {
-  dispatch({ type: 'INTERACT_NPC', payload: { npcId } });
-};
+  const interactWithNPC = (npcId: string) => {
+    dispatch({ type: 'INTERACT_NPC', payload: { npcId } });
+  };
 
-const pickupItem = (itemId: string) => {
-  dispatch({ type: 'PICKUP_ITEM', payload: { itemId } });
-};
+  const pickupItem = (itemId: string) => {
+    dispatch({ type: 'PICKUP_ITEM', payload: { itemId } });
+  };
 
-const unlockCharacter = (characterClass: CharacterClass) => {
-  dispatch({ type: 'UNLOCK_CHARACTER', payload: { characterClass } });
-};
+  const unlockCharacter = (characterClass: CharacterClass) => {
+    dispatch({ type: 'UNLOCK_CHARACTER', payload: { characterClass } });
+  };
 
-const updateEnemyAI = () => {
-  // This will be called by the AI system
-};
+  const updateEnemyAI = () => {
+    // This will be called by the AI system
+  };
 
-const takeDamage = (damage: number, targetId: string) => {
-  dispatch({ type: 'TAKE_DAMAGE', payload: { damage, targetId } });
-};
+  const takeDamage = (damage: number, targetId: string) => {
+    dispatch({ type: 'TAKE_DAMAGE', payload: { damage, targetId } });
+  };
 
-const purchaseItem = (itemId: string, price: number, item: Item) => {
-  dispatch({ type: 'PURCHASE_ITEM', payload: { itemId, price, item } });
-};
+  const purchaseItem = (itemId: string, price: number, item: Item) => {
+    dispatch({ type: 'PURCHASE_ITEM', payload: { itemId, price, item } });
+  };
 
-const addCoins = (amount: number) => {
-  dispatch({ type: 'ADD_COINS', payload: { amount } });
-};
+  const addCoins = (amount: number) => {
+    dispatch({ type: 'ADD_COINS', payload: { amount } });
+  };
 
-const equipItem = (item: Item) => {
-  dispatch({ type: 'EQUIP_ITEM', payload: { item } });
-};
+  const equipItem = (item: Item) => {
+    dispatch({ type: 'EQUIP_ITEM', payload: { item } });
+  };
 
-const unequipItem = (itemType: 'weapon' | 'armor') => {
-  dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
-};
+  const unequipItem = (itemType: 'weapon' | 'armor') => {
+    dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
+  };
 
-  stopMoving: () => void;
-  performAttack: (moveId: string, targetId?: string) => void;
-  enterBuilding: (buildingId: string) => void;
-  exitBuilding: () => void;
-  interactWithNPC: (npcId: string) => void;
-  pickupItem: (itemId: string) => void;
-  unlockCharacter: (characterClass: CharacterClass) => void;
-  updateEnemyAI: () => void;
-  takeDamage: (damage: number, targetId: string) => void;
-  purchaseItem: (itemId: string, price: number, item: Item) => void;
-  addCoins: (amount: number) => void;
-  equipItem: (item: Item) => void;
-  unequipItem: (itemType: 'weapon' | 'armor') => void;
-  toggleDebugMode: () => void;
-  restartGame: () => void;
-  aiSystem: EnemyAISystem;
+  const toggleDebugMode = () => {
+    dispatch({ type: 'TOGGLE_DEBUG_MODE' });
+  };
+
+  const restartGame = () => {
+    dispatch({ type: 'RESTART_GAME' });
+  };
+
+  const value: GameContextType = {
+    state,
+    startGame,
+    movePlayer,
+    stopMoving,
+    performAttack,
+    enterBuilding,
+    exitBuilding,
+    interactWithNPC,
+    pickupItem,
+    unlockCharacter,
+    updateEnemyAI,
+    takeDamage,
+    purchaseItem,
+    addCoins,
+    equipItem,
+    unequipItem,
+    toggleDebugMode,
+    restartGame,
+    aiSystem
+  };
+
+  return (
+    <GameContext.Provider value={value}>
+      {children}
+    </GameContext.Provider>
+  );
 }
 
-type GameAction =
-  | { type: 'START_GAME'; payload: { characterClass: CharacterClass } }
-  | { type: 'MOVE_PLAYER'; payload: { direction: 'up' | 'down' | 'left' | 'right' } }
-  | { type: 'STOP_MOVING' }
-  | { type: 'PERFORM_ATTACK'; payload: { moveId: string; targetId?: string } }
-  | { type: 'ENTER_BUILDING'; payload: { buildingId: string } }
-  | { type: 'EXIT_BUILDING' }
-  | { type: 'INTERACT_NPC'; payload: { npcId: string } }
-  | { type: 'PICKUP_ITEM'; payload: { itemId: string } }
-  | { type: 'UNLOCK_CHARACTER'; payload: { characterClass: CharacterClass } }
-  | { type: 'UPDATE_ENEMY_AI'; payload: { updatedEnemies: Enemy[] } }
-  | { type: 'TAKE_DAMAGE'; payload: { damage: number; targetId: string } }
-  | { type: 'UPDATE_DAY_NIGHT' }
-  | { type: 'ADD_DAMAGE_NUMBER'; payload: { damageNumber: DamageNumber } }
-  | { type: 'REMOVE_DAMAGE_NUMBER'; payload: { id: string } }
-  | { type: 'PURCHASE_ITEM'; payload: { itemId: string; price: number; item: Item } }
-  | { type: 'ADD_COINS'; payload: { amount: number } }
-  | { type: 'ENEMY_ATTACK'; payload: { enemyId: string } }
-  | { type: 'EQUIP_ITEM'; payload: { item: Item } }
-  | { type: 'UNEQUIP_ITEM'; payload: { itemType: 'weapon' | 'armor' } }
-  | { type: 'SHURIKEN_THROW'; payload: { targetId: string } }
-  | { type: 'CONTACT_DAMAGE'; payload: { enemyId: string } }
-  | { type: 'TOGGLE_DEBUG_MODE' }
-  | { type: 'HEAL_PLAYER'; payload: { amount: number } }
-  | { type: 'LOAD_PLAYER_PROGRESS'; payload: { progress: any } }
-  | { type: 'SAVE_PLAYER_PROGRESS' }
-  | { type: 'GAME_OVER' }
-  | { type: 'RESTART_GAME' };
-
-const initialState: GameState = {
-  gameMode: 'character-select',
-  player: {
-    character: characters[0],
-    position: { x: 200, y: 3800 },
-    direction: 'down',
-    isMoving: false,
-    isSwimming: false,
-    inventory: [],
-    currency: 100,
-    equippedItems: {},
-    unlockedCharacters: ['balanced-fighter'],
-  },
-  currentWorld: gameWorld,
-  combat: {
-    inCombat: false,
-    playerTurn: true,
-    comboCount: 0,
-    lastHitTime: 0,
-    damageNumbers: []
-  },
-  camera: {
-    x: 200,
-    y: 3800,
-    zoom: 1
-  },
-  ui: {
-    showMinimap: true,
-    showInventory: false,
-    showCharacterStats: false
-  },
-  settings: {
-    soundEnabled: true,
-    musicVolume: 0.7,
-    sfxVolume: 0.8,
-    difficulty: 'medium'
-  },
-  debug: {
-    enabled: false,
-    showEnemyStates: false,
-    showPerformanceMetrics: false
+export function useGame() {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error('useGame must be used within a GameProvider');
   }
-};
-
-// Create AI system instance
-const aiSystem = new EnemyAISystem();
-
-const GameContext = createContext<GameContextType | undefined>(undefined);
-
-// Helper function to clamp camera position within map boundaries
-function clampCamera(
-  playerX: number, 
-  playerY: number, 
-  worldWidth: number, 
-  worldHeight: number, 
-  viewportWidth: number, 
-  viewportHeight: number
-): { x: number; y: number } {
-  const halfViewportWidth = viewportWidth / 2;
-  const halfViewportHeight = viewportHeight / 2;
-  
-  // If map is smaller than viewport, center the map
-  if (worldWidth <= viewportWidth) {
-    // Center the map horizontally
-    const cameraX = worldWidth / 2;
-    const cameraY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
-    return { x: cameraX, y: cameraY };
-  }
-  
-  if (worldHeight <= viewportHeight) {
-    // Center the map vertically
-    const cameraX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
-    const cameraY = worldHeight / 2;
-    return { x: cameraX, y: cameraY };
-  }
-  
-  // Normal clamping when map is larger than viewport
-  const clampedX = Math.max(halfViewportWidth, Math.min(worldWidth - halfViewportWidth, playerX));
-  const clampedY = Math.max(halfViewportHeight, Math.min(worldHeight - halfViewportHeight, playerY));
-  
-  return { x: clampedX, y: clampedY };
+  return context;
 }
