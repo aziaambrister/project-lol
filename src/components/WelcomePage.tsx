@@ -45,7 +45,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         else if (value.length < 6) errors.password = 'Password must be at least 6 characters long';
         else if (!/(?=.*[a-z])/.test(value)) errors.password = 'Password must contain at least one lowercase letter';
         else if (!/(?=.*[A-Z])/.test(value)) errors.password = 'Password must contain at least one uppercase letter';
-        else if (!/(?=.*\d)/.test(value)) errors.password = 'Password must contain at least one number';
         break;
       
       case 'confirmPassword':
@@ -363,7 +362,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                   )}
                   {authMode === 'signup' && !fieldErrors.password && (
                     <p className="text-gray-400 text-xs mt-1">
-                      Must contain uppercase, lowercase, and numbers
+                      Must contain uppercase and lowercase letters
                     </p>
                   )}
                 </div>

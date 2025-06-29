@@ -82,7 +82,6 @@ export function useAuth() {
     if (password.length < 6) return 'Password must be at least 6 characters long';
     if (!/(?=.*[a-z])/.test(password)) return 'Password must contain at least one lowercase letter';
     if (!/(?=.*[A-Z])/.test(password)) return 'Password must contain at least one uppercase letter';
-    if (!/(?=.*\d)/.test(password)) return 'Password must contain at least one number';
     return null;
   };
 
@@ -135,7 +134,7 @@ export function useAuth() {
           errorMessage = 'An account with this email already exists. Please try signing in instead.';
           errorCode = 'user_already_exists';
         } else if (error.message?.includes('weak_password') || error.message?.includes('Password should be')) {
-          errorMessage = 'Password is too weak. Please use at least 6 characters with uppercase, lowercase, and numbers.';
+          errorMessage = 'Password is too weak. Please use at least 6 characters with uppercase and lowercase letters.';
           errorCode = 'weak_password';
         } else if (error.message?.includes('invalid_email')) {
           errorMessage = 'Please enter a valid email address.';
