@@ -1016,185 +1016,155 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'PERFORM_ATTACK', payload: { moveId, targetId } });
   };
   
-  const enterBuilding = (buildingId: string) => {
-    dispatch({ type: 'ENTER_BUILDING', payload: { buildingId } });
-  };
-  
-  const exitBuilding = () => {
-    dispatch({ type: 'EXIT_BUILDING' });
-  };
-  
-  const interactWithNPC = (npcId: string) => {
-    dispatch({ type: 'INTERACT_NPC', payload: { npcId } });
-  };
-  
-  const pickupItem = (itemId: string) => {
-    dispatch({ type: 'PICKUP_ITEM', payload: { itemId } });
-  };
-  
-  const unlockCharacter = (characterClass: CharacterClass) => {
-    dispatch({ type: 'UNLOCK_CHARACTER', payload: { characterClass } });
-  };
-  
-  const updateEnemyAI = () => {
-    // This will be called by the AI system
-  };
-  
-  const takeDamage = (damage: number, targetId: string) => {
-    dispatch({ type: 'TAKE_DAMAGE', payload: { damage, targetId } });
-  };
-  
-  const purchaseItem = (itemId: string, price: number, item: Item) => {
-    dispatch({ type: 'PURCHASE_ITEM', payload: { itemId, price, item } });
-  };
-  
-  const addCoins = (amount: number) => {
-    dispatch({ type: 'ADD_COINS', payload: { amount } });
-  };
-  
-  const equipItem = (item: Item) => {
-    dispatch({ type: 'EQUIP_ITEM', payload: { item } });
-  };
-  
-  const unequipItem = (itemType: 'weapon' | 'armor') => {
-    dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
-  };
-  
-  const toggleDebugMode = () => {
-    dispatch({ type: 'TOGGLE_DEBUG_MODE' });
-  };
-  
-  const restartGame = () => {
-    dispatch({ type: 'RESTART_GAME' });
-  };
-  
-  const healPlayer = (amount: number) => {
-    dispatch({ type: 'HEAL_PLAYER', payload: { amount } });
-  };
-  
-  useEffect(() => {
-    let animationFrameId: number;
-    let lastFrameTime = 0;
-    
-    const gameLoop = (currentTime: number) => {
-      const deltaTime = currentTime - lastFrameTime;
-      lastFrameTime = currentTime;
-      
-      // Update AI system with delta time
-      if (state.gameMode === 'world-exploration') {
-        const updatedEnemies = aiSystem.updateEnemies(
-          state.player.position,
-          state.player.character,
-          deltaTime
-        );
-        
-        dispatch({ type: 'UPDATE_ENEMY_AI', payload: { updatedEnemies } });
-      }
-      
-      animationFrameId = requestAnimationFrame(gameLoop);
-    };
-    
+ const enterBuilding = (buildingId: string) => {
+  // Determine interior image based on building ID
+  let interiorImage = 'default-interior.png';
+
+  if (buildingId === 'cozy-forest-cabin') {
+    interiorImage = 'cozy-forest-cabin.png';
+  }
+
+  dispatch({ type: 'ENTER_BUILDING', payload: { buildingId, interiorImage } });
+};
+
+const exitBuilding = () => {
+  dispatch({ type: 'EXIT_BUILDING' });
+};
+
+const interactWithNPC = (npcId: string) => {
+  dispatch({ type: 'INTERACT_NPC', payload: { npcId } });
+};
+
+const pickupItem = (itemId: string) => {
+  dispatch({ type: 'PICKUP_ITEM', payload: { itemId } });
+};
+
+const unlockCharacter = (characterClass: CharacterClass) => {
+  dispatch({ type: 'UNLOCK_CHARACTER', payload: { characterClass } });
+};
+
+const updateEnemyAI = () => {
+  // This will be called by the AI system
+};
+
+const takeDamage = (damage: number, targetId: string) => {
+  dispatch({ type: 'TAKE_DAMAGE', payload: { damage, targetId } });
+};
+
+const purchaseItem = (itemId: string, price: number, item: Item) => {
+  dispatch({ type: 'PURCHASE_ITEM', payload: { itemId, price, item } });
+};
+
+const addCoins = (amount: number) => {
+  dispatch({ type: 'ADD_COINS', payload: { amount } });
+};
+
+const equipItem = (item: Item) => {
+  dispatch({ type: 'EQUIP_ITEM', payload: { item } });
+};
+
+const unequipItem = (itemType: 'weapon' | 'armor') => {
+  dispatch({ type: 'UNEQUIP_ITEM', payload: { itemType } });
+};
+
+const toggleDebugMode = () => {
+  dispatch({ type: 'TOGGLE_DEBUG_MODE' });
+};
+
+const restartGame = () => {
+  dispatch({ type: 'RESTART_GAME' });
+};
+
+const healPlayer = (amount: number) => {
+  dispatch({ type: 'HEAL_PLAYER', payload: { amount } });
+};
+
+useEffect(() => {
+  let animationFrameId: number;
+  let lastFrameTime = 0;
+
+  const gameLoop = (currentTime: number) => {
+    const deltaTime = currentTime - lastFrameTime;
+    lastFrameTime = currentTime;
+
+    // Update AI system with delta time
+    if (state.gameMode === 'world-exploration') {
+      const updatedEnemies = aiSystem.updateEnemies(
+        state.player.position,
+        state.player.character,
+        deltaTime
+      );
+
+      dispatch({ type: 'UPDATE_ENEMY_AI', payload: { updatedEnemies } });
+    }
+
     animationFrameId = requestAnimationFrame(gameLoop);
-    
-    // Enemy attack interval - exactly 2 seconds as requested
-    const enemyAttackInterval = setInterval(() => {
-      const now = Date.now();
-      const cameraX = state.camera.x - window.innerWidth / 2;
-      const cameraY = state.camera.y - window.innerHeight / 2;
-      
-      state.currentWorld.enemies.forEach(enemy => {
-        if (enemy.state === 'chase' && enemy.health > 0) {
-          // Check if enemy is visible on screen before allowing attack
-          const screenX = enemy.position.x - cameraX;
-          const screenY = enemy.position.y - cameraY;
-          const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
-                           screenY >= 0 && screenY <= window.innerHeight;
-          
-          if (!isVisible) return; // Don't allow attacks from off-screen enemies
-          
-          const distanceToPlayer = Math.sqrt(
-            Math.pow(enemy.position.x - state.player.position.x, 2) +
-            Math.pow(enemy.position.y - state.player.position.y, 2)
-          );
-          
-          // Only attack if enemy is close enough
-          if (distanceToPlayer <= 50) {
-            const attackCycle = aiSystem.getAttackCycle(enemy.id);
-            if (attackCycle && now - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
-              dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
-            }
+  };
+
+  animationFrameId = requestAnimationFrame(gameLoop);
+
+  // Enemy attack interval - exactly 2 seconds as requested
+  const enemyAttackInterval = setInterval(() => {
+    const now = Date.now();
+    const cameraX = state.camera.x - window.innerWidth / 2;
+    const cameraY = state.camera.y - window.innerHeight / 2;
+
+    state.currentWorld.enemies.forEach(enemy => {
+      if (enemy.state === 'chase' && enemy.health > 0) {
+        // Check if enemy is visible on screen before allowing attack
+        const screenX = enemy.position.x - cameraX;
+        const screenY = enemy.position.y - cameraY;
+        const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
+                         screenY >= 0 && screenY <= window.innerHeight;
+
+        if (!isVisible) return; // Don't allow attacks from off-screen enemies
+
+        const distanceToPlayer = Math.sqrt(
+          Math.pow(enemy.position.x - state.player.position.x, 2) +
+          Math.pow(enemy.position.y - state.player.position.y, 2)
+        );
+
+        // Only attack if enemy is close enough
+        if (distanceToPlayer <= 50) {
+          const attackCycle = aiSystem.getAttackCycle(enemy.id);
+          if (attackCycle && now - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
+            dispatch({ type: 'ENEMY_ATTACK', payload: { enemyId: enemy.id } });
           }
         }
-      });
-    }, 2000); // Check every 2 seconds for attacks
-    
-    const dayNightInterval = setInterval(() => {
-      dispatch({ type: 'UPDATE_DAY_NIGHT' });
-    }, 1000);
-    
-    const cooldownInterval = setInterval(() => {
-      // Update move cooldowns
-      const updatedMoveSet = state.player.character.moveSet.map(move => ({
-        ...move,
-        currentCooldown: Math.max(0, move.currentCooldown - 1)
-      }));
-      
-      if (updatedMoveSet.some((move, index) => move.currentCooldown !== state.player.character.moveSet[index].currentCooldown)) {
-        // Only update if there are actual changes
       }
-    }, 1000);
-    
-    const damageNumberCleanup = setInterval(() => {
-      const now = Date.now();
-      state.combat.damageNumbers.forEach(dn => {
-        if (now - dn.timestamp > 2000) {
-          dispatch({ type: 'REMOVE_DAMAGE_NUMBER', payload: { id: dn.id } });
-        }
-      });
-    }, 100);
-    
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      clearInterval(enemyAttackInterval);
-      clearInterval(dayNightInterval);
-      clearInterval(cooldownInterval);
-      clearInterval(damageNumberCleanup);
-    };
-  }, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet, state.gameMode, state.camera]);
-  
-  return (
-    <GameContext.Provider
-      value={{
-        state,
-        startGame,
-        movePlayer,
-        stopMoving,
-        performAttack,
-        enterBuilding,
-        exitBuilding,
-        interactWithNPC,
-        pickupItem,
-        unlockCharacter,
-        updateEnemyAI,
-        takeDamage,
-        purchaseItem,
-        addCoins,
-        equipItem,
-        unequipItem,
-        toggleDebugMode,
-        restartGame,
-        aiSystem
-      }}
-    >
-      {children}
-    </GameContext.Provider>
-  );
-}
+    });
+  }, 2000); // Check every 2 seconds for attacks
 
-export function useGame() {
-  const context = useContext(GameContext);
-  if (context === undefined) {
-    throw new Error('useGame must be used within a GameProvider');
-  }
-  return context;
-}
+  const dayNightInterval = setInterval(() => {
+    dispatch({ type: 'UPDATE_DAY_NIGHT' });
+  }, 1000);
+
+  const cooldownInterval = setInterval(() => {
+    // Update move cooldowns
+    const updatedMoveSet = state.player.character.moveSet.map(move => ({
+      ...move,
+      currentCooldown: Math.max(0, move.currentCooldown - 1)
+    }));
+
+    if (updatedMoveSet.some((move, index) => move.currentCooldown !== state.player.character.moveSet[index].currentCooldown)) {
+      // Only update if there are actual changes
+    }
+  }, 1000);
+
+  const damageNumberCleanup = setInterval(() => {
+    const now = Date.now();
+    state.combat.damageNumbers.forEach(dn => {
+      if (now - dn.timestamp > 2000) {
+        dispatch({ type: 'REMOVE_DAMAGE_NUMBER', payload: { id: dn.id } });
+      }
+    });
+  }, 100);
+
+  return () => {
+    cancelAnimationFrame(animationFrameId);
+    clearInterval(enemyAttackInterval);
+    clearInterval(dayNightInterval);
+    clearInterval(cooldownInterval);
+    clearInterval(damageNumberCleanup);
+  };
+}, [state.combat.damageNumbers, state.currentWorld.enemies, state.player.position, state.player.character.moveSet, state.gameMode, state.camera]);
