@@ -14,7 +14,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   const [authForm, setAuthForm] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     displayName: ''
   });
   const [authError, setAuthError] = useState<string | null>(null);
@@ -45,13 +44,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
         else if (value.length < 6) errors.password = 'Password must be at least 6 characters long';
         else if (!/(?=.*[a-z])/.test(value)) errors.password = 'Password must contain at least one lowercase letter';
         else if (!/(?=.*[A-Z])/.test(value)) errors.password = 'Password must contain at least one uppercase letter';
-        break;
-      
-      case 'confirmPassword':
-        if (authMode === 'signup') {
-          if (!value) errors.confirmPassword = 'Please confirm your password';
-          else if (value !== authForm.password) errors.confirmPassword = 'Passwords do not match';
-        }
         break;
       
       case 'displayName':
@@ -89,7 +81,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   const validateAllFields = () => {
     const fields = ['email', 'password'];
     if (authMode === 'signup') {
-      fields.push('confirmPassword', 'displayName');
+      fields.push('displayName');
     }
 
     let isValid = true;
@@ -105,7 +97,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
 
   const isFormValid = () => {
     const hasRequiredFields = authForm.email && authForm.password && 
-      (authMode === 'login' || (authForm.displayName && authForm.confirmPassword));
+      (authMode === 'login' || authForm.displayName);
     const hasNoFieldErrors = Object.values(fieldErrors).every(error => !error);
     return hasRequiredFields && hasNoFieldErrors;
   };
@@ -171,7 +163,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   };
 
   const resetForm = () => {
-    setAuthForm({ email: '', password: '', confirmPassword: '', displayName: '' });
+    setAuthForm({ email: '', password: '', displayName: '' });
     setAuthError(null);
     setAuthSuccess(null);
     setFieldErrors({});
@@ -366,32 +358,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
                     </p>
                   )}
                 </div>
-
-                {authMode === 'signup' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Confirm Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={authForm.confirmPassword}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white transition-colors ${
-                        fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-600'
-                      }`}
-                      placeholder="Confirm your password"
-                      required={authMode === 'signup'}
-                      disabled={isAuthLoading}
-                    />
-                    {fieldErrors.confirmPassword && (
-                      <p className="text-red-400 text-xs mt-1 flex items-center">
-                        <AlertCircle size={12} className="mr-1" />
-                        {fieldErrors.confirmPassword}
-                      </p>
-                    )}
-                  </div>
-                )}
 
                 {authError && (
                   <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
