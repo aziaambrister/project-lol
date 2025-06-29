@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { CharacterClass } from '../types/game';
 import { characters } from '../data/characters';
-import { Shield, Sword, Zap, Heart, ArrowLeft } from 'lucide-react';
+import { Shield, Sword, Zap, Heart, ArrowLeft, Clock, Target } from 'lucide-react';
 
 interface CharacterSelectProps {
-  onSelectComplete: () => void;
+  onSelectComplete: (characterClass?: CharacterClass) => void;
   onBack: () => void;
+  mode?: 'adventure' | 'survival';
 }
 
-const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onBack }) => {
-  const { startGame } = useGame();
+const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onBack, mode = 'adventure' }) => {
+  const { startGame, startSurvival } = useGame();
   const [selectedClass, setSelectedClass] = useState<CharacterClass>('balanced-fighter');
   const [isStarting, setIsStarting] = useState(false);
 
@@ -18,12 +19,16 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
     if (isStarting) return;
     
     setIsStarting(true);
-    console.log('Starting game with character:', selectedClass);
+    console.log(`Starting ${mode} with character:`, selectedClass);
     
-    startGame(selectedClass);
+    if (mode === 'survival') {
+      startSurvival(selectedClass);
+    } else {
+      startGame(selectedClass);
+    }
     
     setTimeout(() => {
-      onSelectComplete();
+      onSelectComplete(selectedClass);
       setIsStarting(false);
     }, 500);
   };
@@ -33,6 +38,30 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
       setSelectedClass(characterClass);
     }
   };
+
+  const getModeInfo = () => {
+    if (mode === 'survival') {
+      return {
+        title: 'Choose Your Survivor',
+        subtitle: 'Select your fighter for endless survival combat',
+        buttonText: '⚔️ ENTER SURVIVAL ⚔️',
+        buttonColor: 'from-red-500 via-purple-500 to-red-500 hover:from-red-400 hover:via-purple-400 hover:to-red-400',
+        icon: <Clock size={14} className="mr-2" />,
+        description: 'Face endless waves of enemies in the survival arena!'
+      };
+    } else {
+      return {
+        title: 'Choose Your Fighter',
+        subtitle: 'Select your character to begin your journey',
+        buttonText: '⚔️ START ADVENTURE ⚔️',
+        buttonColor: 'from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400',
+        icon: <Target size={14} className="mr-2" />,
+        description: 'Explore the vast world and uncover its secrets!'
+      };
+    }
+  };
+
+  const modeInfo = getModeInfo();
 
   return (
     <div className="w-full h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -45,15 +74,30 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
         <span className="text-sm">Back</span>
       </button>
 
+      {/* Mode Indicator */}
+      <div className="absolute top-4 right-4 z-50">
+        <div className={`px-4 py-2 rounded-lg border-2 ${
+          mode === 'survival' 
+            ? 'bg-red-900/50 border-red-500 text-red-300' 
+            : 'bg-blue-900/50 border-blue-500 text-blue-300'
+        }`}>
+          <div className="flex items-center">
+            {mode === 'survival' ? <Clock size={16} className="mr-2" /> : <Target size={16} className="mr-2" />}
+            <span className="font-bold">{mode === 'survival' ? 'SURVIVAL MODE' : 'ADVENTURE MODE'}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Scrollable Content Container */}
       <div className="h-full overflow-y-auto">
         <div className="flex flex-col items-center justify-start p-4 min-h-full">
           <div className="w-full max-w-7xl pt-16">
             {/* Title */}
             <h1 className="text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 text-center">
-              Choose Your Fighter
+              {modeInfo.title}
             </h1>
-            <p className="text-gray-300 mb-6 text-xl text-center">Select your character to begin your journey</p>
+            <p className="text-gray-300 mb-2 text-xl text-center">{modeInfo.subtitle}</p>
+            <p className="text-gray-400 mb-6 text-lg text-center">{modeInfo.description}</p>
             
             {/* CHARACTER GRID - Properly Scrollable */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mb-8">
@@ -72,7 +116,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                     } ${!isUnlocked ? 'opacity-60' : ''}`}
                     onClick={() => handleCharacterClick(character.class, isUnlocked)}
                   >
-                    {/* Character Portrait - Smaller to show full body */}
+                    {/* Character Portrait */}
                     <div className="w-full h-32 mb-6 overflow-hidden rounded-lg bg-slate-900 flex items-center justify-center relative">
                       <img 
                         src={character.portrait} 
@@ -169,7 +213,10 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                 </span>
               </p>
               <p className="text-xl text-gray-400 mt-3">
-                Ready to enter the world of combat!
+                {mode === 'survival' 
+                  ? 'Ready to face endless waves of enemies!' 
+                  : 'Ready to enter the world of combat!'
+                }
               </p>
             </div>
             
@@ -177,7 +224,7 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
             <div className="relative text-center mb-8">
               <button 
                 type="button"
-                className={`px-24 py-6 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 rounded-xl font-bold text-3xl text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden ${
+                className={`px-24 py-6 bg-gradient-to-r ${modeInfo.buttonColor} rounded-xl font-bold text-3xl text-black transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden ${
                   isStarting ? 'opacity-75 scale-95' : 'hover:shadow-yellow-500/50'
                 }`}
                 onClick={handleStartGame}
@@ -198,18 +245,20 @@ const CharacterSelect: React.FC<CharacterSelectProps> = ({ onSelectComplete, onB
                     </>
                   ) : (
                     <>
-                      ⚔️ START GAME ⚔️
+                      {modeInfo.icon}
+                      <span>{modeInfo.buttonText}</span>
                     </>
                   )}
                 </div>
               </button>
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-xl blur-xl opacity-40 animate-pulse pointer-events-none"></div>
+              <div className={`absolute inset-0 bg-gradient-to-r ${modeInfo.buttonColor} rounded-xl blur-xl opacity-40 animate-pulse pointer-events-none`}></div>
             </div>
             
             {/* Controls hint */}
             <div className="text-center text-xl text-gray-400 pb-8">
               <div>🎮 WASD to move • 👊 Space to attack • 🥷 2 to throw shuriken</div>
-              <div>🛡️ Shift to block • 🏠 Enter buildings • 💬 Talk to NPCs</div>
+              <div>🛡️ Shift to block • {mode === 'survival' ? '💊 Collect drops • ⚡ Use power-ups' : '🏠 Enter buildings • 💬 Talk to NPCs'}</div>
+              <div>💰 Earn coins by defeating enemies • 🛒 Buy upgrades in the shop</div>
             </div>
           </div>
         </div>

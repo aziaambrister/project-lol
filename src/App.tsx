@@ -7,6 +7,8 @@ import GameWorld from './components/GameWorld';
 import ForestCabinInterior from './components/ForestCabinInterior';
 import SuccessPage from './components/SuccessPage';
 import GameOverScreen from './components/GameOverScreen';
+import SurvivalMode from './components/SurvivalMode';
+import SurvivalResults from './components/SurvivalResults';
 
 // ✅ Add these for global WASD handling
 const keysHeld: Record<string, boolean> = {};
@@ -19,12 +21,10 @@ window.addEventListener("keyup", (e) => {
   keysHeld[e.key.toLowerCase()] = false;
 });
 
-// You can access keysHeld["w"], ["a"], etc. from anywhere (GameWorld, etc)
-
 function App() {
-  const { state } = useGame();
+  const { state, startGame, startSurvival } = useGame();
   const [gameState, setGameState] = useState<
-    'welcome' | 'start' | 'character-select' | 'playing' | 'cabin-interior' | 'success'
+    'welcome' | 'start' | 'character-select' | 'survival-character-select' | 'playing' | 'cabin-interior' | 'success'
   >('welcome');
 
   React.useEffect(() => {
@@ -49,12 +49,20 @@ function App() {
     setGameState('start');
   };
 
-  const handleStartGame = () => {
+  const handleStartAdventure = () => {
     setGameState('character-select');
+  };
+
+  const handleStartSurvival = () => {
+    setGameState('survival-character-select');
   };
 
   const handleCharacterSelected = () => {
     setGameState('playing');
+  };
+
+  const handleSurvivalCharacterSelected = (characterClass: any) => {
+    startSurvival(characterClass);
   };
 
   const handleBackToWelcome = () => {
@@ -70,6 +78,15 @@ function App() {
     setGameState('playing');
   };
 
+  // Handle game mode changes from context
+  React.useEffect(() => {
+    if (state.gameMode === 'survival-mode') {
+      // Already handled by character selection
+    } else if (state.gameMode === 'survival-results') {
+      // Results will be shown automatically
+    }
+  }, [state.gameMode]);
+
   return (
     <div className="min-h-screen bg-gray-100 relative">
       {gameState === 'welcome' && (
@@ -80,7 +97,11 @@ function App() {
 
       {gameState === 'start' && (
         <div className="absolute inset-0 z-10">
-          <StartScreen onStart={handleStartGame} onBack={handleBackToWelcome} />
+          <StartScreen 
+            onStart={handleStartAdventure} 
+            onSurvival={handleStartSurvival}
+            onBack={handleBackToWelcome} 
+          />
         </div>
       )}
 
@@ -90,15 +111,39 @@ function App() {
         </div>
       )}
 
-      {gameState === 'playing' && (
+      {gameState === 'survival-character-select' && (
         <div className="absolute inset-0 z-10">
-          <GameWorld keysHeld={keysHeld} /> {/* 👈 pass WASD state */}
+          <CharacterSelect 
+            onSelectComplete={(characterClass) => {
+              handleSurvivalCharacterSelected(characterClass);
+            }} 
+            onBack={handleBackToStart}
+            mode="survival"
+          />
+        </div>
+      )}
+
+      {gameState === 'playing' && state.gameMode === 'world-exploration' && (
+        <div className="absolute inset-0 z-10">
+          <GameWorld keysHeld={keysHeld} />
+        </div>
+      )}
+
+      {state.gameMode === 'survival-mode' && (
+        <div className="absolute inset-0 z-10">
+          <SurvivalMode />
+        </div>
+      )}
+
+      {state.gameMode === 'survival-results' && (
+        <div className="absolute inset-0 z-10">
+          <SurvivalResults />
         </div>
       )}
 
       {gameState === 'cabin-interior' && (
         <div className="absolute inset-0 z-10">
-          <ForestCabinInterior keysHeld={keysHeld} /> {/* 👈 pass WASD state */}
+          <ForestCabinInterior keysHeld={keysHeld} />
         </div>
       )}
 

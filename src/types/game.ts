@@ -96,17 +96,6 @@ export interface TerrainTile {
   sprite: string;
 }
 
-// New XP Orb interface
-export interface XPOrb {
-  id: string;
-  position: { x: number; y: number };
-  xpValue: number;
-  type: 'small' | 'medium' | 'large';
-  collected: boolean;
-  respawnTime?: number;
-  lastCollected?: number;
-}
-
 export interface GameWorld {
   id: string;
   name: string;
@@ -181,6 +170,106 @@ export interface DamageNumber {
   timestamp: number;
 }
 
+// New XP Orb interface
+export interface XPOrb {
+  id: string;
+  position: { x: number; y: number };
+  xpValue: number;
+  type: 'small' | 'medium' | 'large';
+  collected: boolean;
+  respawnTime?: number;
+  lastCollected?: number;
+}
+
+// New Survival Mode interfaces
+export interface SurvivalWave {
+  waveNumber: number;
+  enemyCount: number;
+  enemyTypes: string[];
+  spawnDelay: number; // milliseconds between spawns
+  bossWave: boolean;
+  completed: boolean;
+}
+
+export interface SurvivalDrop {
+  id: string;
+  type: 'currency' | 'health' | 'power-up' | 'special-attack';
+  position: { x: number; y: number };
+  value: number;
+  icon: string;
+  collected: boolean;
+  despawnTime: number;
+}
+
+export interface PowerUp {
+  id: string;
+  name: string;
+  type: 'damage-boost' | 'speed-boost' | 'invincibility' | 'rapid-fire' | 'shield';
+  duration: number; // in milliseconds
+  effect: {
+    type: string;
+    multiplier: number;
+  };
+  icon: string;
+  description: string;
+}
+
+export interface SurvivalStats {
+  survivalTime: number; // in seconds
+  enemiesDefeated: number;
+  waveReached: number;
+  coinsEarned: number;
+  powerUpsUsed: number;
+  damageDealt: number;
+  damageTaken: number;
+}
+
+export interface Leaderboard {
+  id: string;
+  playerName: string;
+  characterClass: CharacterClass;
+  survivalTime: number;
+  waveReached: number;
+  enemiesDefeated: number;
+  score: number;
+  date: string;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  progress: number;
+  maxProgress: number;
+  reward: {
+    type: 'currency' | 'character' | 'item';
+    value: number | string;
+  };
+}
+
+export interface SurvivalMode {
+  active: boolean;
+  currentWave: SurvivalWave;
+  nextWaveTimer: number;
+  waveInProgress: boolean;
+  enemiesRemaining: number;
+  drops: SurvivalDrop[];
+  activePowerUps: Array<{
+    powerUp: PowerUp;
+    startTime: number;
+    endTime: number;
+  }>;
+  stats: SurvivalStats;
+  arena: {
+    center: { x: number; y: number };
+    radius: number;
+    shrinking: boolean;
+    shrinkRate: number;
+  };
+}
+
 export interface DebugState {
   enabled: boolean;
   showEnemyStates: boolean;
@@ -188,7 +277,7 @@ export interface DebugState {
 }
 
 export interface GameState {
-  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu' | 'game-over';
+  gameMode: 'character-select' | 'world-exploration' | 'combat' | 'building-interior' | 'menu' | 'game-over' | 'survival-mode' | 'survival-results';
   player: {
     character: Character;
     position: { x: number; y: number };
@@ -200,9 +289,13 @@ export interface GameState {
     currentBuilding?: string;
     equippedItems: EquippedItems;
     unlockedCharacters: CharacterClass[];
+    achievements: Achievement[];
+    survivalBestScore: number;
+    survivalBestWave: number;
   };
   currentWorld: GameWorld;
   combat: Combat;
+  survival: SurvivalMode;
   camera: {
     x: number;
     y: number;
@@ -221,4 +314,5 @@ export interface GameState {
     difficulty: 'easy' | 'medium' | 'hard';
   };
   debug: DebugState;
+  leaderboard: Leaderboard[];
 }

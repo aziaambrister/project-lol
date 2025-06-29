@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Sword, Shield, Zap, Users, Play, Target, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Sword, Shield, Zap, Users, Play, Target, ShoppingBag, ArrowLeft, Clock } from 'lucide-react';
 import Shop from './Shop';
 
 interface StartScreenProps {
   onStart: () => void;
   onBack: () => void;
+  onSurvival: () => void; // New prop for survival mode
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack, onSurvival }) => {
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
   const [showShop, setShowShop] = useState(false);
   
@@ -16,6 +17,13 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
     e.stopPropagation();
     console.log('Start button clicked');
     onStart();
+  };
+
+  const handleSurvivalClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Survival mode clicked');
+    onSurvival();
   };
 
   const handleShopClick = (e: React.MouseEvent) => {
@@ -101,18 +109,18 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
           
           <div 
             className="bg-gray-800 bg-opacity-60 responsive-p-3 rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-opacity-80 border border-purple-500/20"
-            onMouseEnter={() => setHoveredFeature('ai')}
+            onMouseEnter={() => setHoveredFeature('survival')}
             onMouseLeave={() => setHoveredFeature(null)}
           >
             <div className="w-8 h-8 bg-purple-900 bg-opacity-60 rounded-full flex items-center justify-center mx-auto mb-2 relative">
-              <Zap size={12} className="text-purple-400" />
-              {hoveredFeature === 'ai' && (
+              <Clock size={12} className="text-purple-400" />
+              {hoveredFeature === 'survival' && (
                 <div className="absolute inset-0 bg-purple-500 rounded-full animate-ping opacity-30"></div>
               )}
             </div>
-            <h3 className="responsive-text-sm font-bold mb-1">Smart AI</h3>
-            <p className={`responsive-text-xs text-gray-300 transition-all duration-300 ${hoveredFeature === 'ai' ? 'opacity-100' : 'opacity-70'}`}>
-              Face intelligent enemies that adapt strategies
+            <h3 className="responsive-text-sm font-bold mb-1">Survival Mode</h3>
+            <p className={`responsive-text-xs text-gray-300 transition-all duration-300 ${hoveredFeature === 'survival' ? 'opacity-100' : 'opacity-70'}`}>
+              Endless waves of enemies with power-ups and rewards
             </p>
           </div>
           
@@ -158,7 +166,29 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-lg blur-xl opacity-40 animate-pulse pointer-events-none"></div>
           </div>
 
-          {/* START GAME BUTTON */}
+          {/* SURVIVAL MODE BUTTON */}
+          <div className="relative">
+            <button 
+              type="button"
+              className="px-6 py-3 bg-gradient-to-r from-red-600 via-purple-600 to-red-600 hover:from-red-500 hover:via-purple-500 hover:to-red-500 rounded-xl font-bold responsive-text-lg text-white transition-all duration-300 cursor-pointer select-none transform hover:scale-110 shadow-2xl relative overflow-hidden"
+              onClick={handleSurvivalClick}
+              style={{ 
+                minWidth: '150px',
+                minHeight: '40px',
+                zIndex: 1000,
+                position: 'relative'
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-full hover:translate-x-[-200%] transition-transform duration-1000"></div>
+              <div className="relative z-10 flex items-center justify-center">
+                <Clock className="mr-2" size={14} />
+                <span>⚔️ SURVIVAL ⚔️</span>
+              </div>
+            </button>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-purple-600 to-red-600 rounded-xl blur-xl opacity-40 animate-pulse pointer-events-none"></div>
+          </div>
+
+          {/* ADVENTURE MODE BUTTON */}
           <div className="relative">
             <button 
               type="button"
@@ -174,7 +204,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-full hover:translate-x-[-200%] transition-transform duration-1000"></div>
               <div className="relative z-10 flex items-center justify-center">
                 <Play className="mr-2" size={14} />
-                <span>⚔️ BEGIN JOURNEY ⚔️</span>
+                <span>🗺️ ADVENTURE 🗺️</span>
               </div>
             </button>
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-xl blur-xl opacity-40 animate-pulse pointer-events-none"></div>
@@ -185,6 +215,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onBack }) => {
           <div>🎮 WASD to move • 👊 Space to attack • 🥷 2 to throw shuriken</div>
           <div>🛡️ Shift to block • 🏠 Enter buildings • 💬 Talk to NPCs</div>
           <div>💰 Earn coins by defeating enemies • 🛒 Buy upgrades in the shop</div>
+          <div>⏰ Survival: Endless waves • 🗺️ Adventure: Open world exploration</div>
         </div>
         
         {/* Built with Bolt badge */}
