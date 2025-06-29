@@ -119,7 +119,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/cozy forest cabin.png', // NOW USING THE CORRECT COZY CABIN IMAGE
+        background: '/cozy-forest-cabin.png', // FIXED: Using the correct cozy cabin image
         npcs: [],
         items: [
           {
@@ -157,7 +157,7 @@ export const gameWorld: GameWorld = {
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
     },
-    // Snow Area Building - positioned to match the map
+    // Snow Area Building - FIXED background and added proper items
     {
       id: 'snow-cabin',
       name: 'Snow Cabin',
@@ -167,9 +167,42 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowycabin.png', // Using the new snowy cabin background
+        background: '/snowycabin.png', // FIXED: Correct snowy cabin background
         npcs: [],
-        items: [],
+        items: [
+          {
+            id: 'snow-cabin-hot-cocoa',
+            name: 'Hot Cocoa',
+            type: 'consumable',
+            rarity: 'common',
+            value: 0,
+            effect: { type: 'heal', value: 35 },
+            icon: '☕',
+            description: 'Warm cocoa that restores 35 health and warms the soul',
+            usable: true
+          },
+          {
+            id: 'snow-cabin-blanket',
+            name: 'Warm Blanket',
+            type: 'consumable',
+            rarity: 'uncommon',
+            value: 0,
+            effect: { type: 'heal', value: 40 },
+            icon: '🧣',
+            description: 'A cozy blanket that provides comfort and healing',
+            usable: true
+          },
+          {
+            id: 'snow-cabin-firewood',
+            name: 'Magical Firewood',
+            type: 'key',
+            rarity: 'rare',
+            value: 0,
+            icon: '🪵',
+            description: 'Enchanted wood that burns with eternal warmth',
+            usable: false
+          }
+        ],
         exits: [{ x: 60, y: 90, leadsTo: 'main-world' }]
       }
     }

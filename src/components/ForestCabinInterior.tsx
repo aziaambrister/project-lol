@@ -131,6 +131,8 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
     if (currentBuilding?.id === 'forest-cabin-2') {
       return 'A scholarly retreat filled with books and knowledge';
+    } else if (currentBuilding?.id === 'snow-cabin') {
+      return 'A warm refuge from the cold mountain winds';
     }
     return 'A cozy refuge in the woods';
   };
@@ -158,6 +160,31 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         {
           id: 'cozy-cabin-book',
           name: 'Leather Tome',
+          position: { x: 380, y: 340 },
+          picked: false,
+          healAmount: 0
+        }
+      ];
+    } else if (currentBuilding?.id === 'snow-cabin') {
+      // Snow cabin has winter-themed items
+      return [
+        {
+          id: 'snow-cabin-hot-cocoa',
+          name: 'Hot Cocoa',
+          position: { x: 420, y: 380 },
+          picked: false,
+          healAmount: 35
+        },
+        {
+          id: 'snow-cabin-blanket',
+          name: 'Warm Blanket',
+          position: { x: 450, y: 370 },
+          picked: false,
+          healAmount: 40
+        },
+        {
+          id: 'snow-cabin-firewood',
+          name: 'Magical Firewood',
           position: { x: 380, y: 340 },
           picked: false,
           healAmount: 0
@@ -194,10 +221,10 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* Exit Button */}
+      {/* Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
       <button
         onClick={handleExitCabin}
-        className="absolute top-6 left-6 z-30 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
+        className="absolute top-6 left-6 z-50 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
       >
         <ArrowLeft size={20} className="mr-2" />
         Exit Cabin
@@ -253,6 +280,12 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
                   <div>🧙‍♂️ A place of learning and wisdom</div>
                   <div>🕯️ Candlelight illuminates ancient texts</div>
                 </>
+              ) : state.player.currentBuilding === 'snow-cabin' ? (
+                <>
+                  <div>☕ Click on items to warm up and restore health</div>
+                  <div>🔥 A cozy retreat from the winter cold</div>
+                  <div>❄️ Safe from the mountain's harsh winds</div>
+                </>
               ) : (
                 <>
                   <div>🍞 Click on food items to restore health</div>
@@ -275,6 +308,12 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
                 <div>📖 Pages rustling softly</div>
                 <div>🕯️ Candles flickering gently</div>
                 <div>📚 Knowledge fills the air</div>
+              </>
+            ) : state.player.currentBuilding === 'snow-cabin' ? (
+              <>
+                <div>🔥 Fireplace crackling warmly</div>
+                <div>❄️ Snow falling outside</div>
+                <div>☕ Steam rising from hot drinks</div>
               </>
             ) : (
               <>
