@@ -66,8 +66,9 @@ type GameAction =
   | { type: 'LEVEL_UP' }
   | { type: 'GAME_OVER' };
 
-// Create survival enemies from adventure mode enemies
+// Create survival enemies from adventure mode enemies - FIXED VERSION
 const createSurvivalEnemies = (): Enemy[] => {
+  console.log('🎯 Creating survival enemies...');
   const survivalEnemies: Enemy[] = [];
   const arenaCenter = { x: 2000, y: 2000 };
   const arenaRadius = 400;
@@ -78,70 +79,85 @@ const createSurvivalEnemies = (): Enemy[] => {
       name: 'Mindless Zombie',
       sprite: '/zombie.png',
       health: 60,
+      maxHealth: 60,
       attack: 8,
       defense: 4,
       speed: 4,
-      experience: 25
+      experience: 25,
+      detectionRadius: 120,
+      patrolRadius: 100
     },
     {
       name: 'Wild Wolf',
       sprite: '/wolf.png',
       health: 40,
+      maxHealth: 40,
       attack: 10,
       defense: 2,
       speed: 6,
-      experience: 20
+      experience: 20,
+      detectionRadius: 150,
+      patrolRadius: 150
     },
     {
       name: 'Snow Wolf',
       sprite: '/wolf.png',
       health: 50,
+      maxHealth: 50,
       attack: 12,
       defense: 4,
       speed: 7,
-      experience: 30
+      experience: 30,
+      detectionRadius: 160,
+      patrolRadius: 160
     },
     {
       name: 'Ice Bear',
       sprite: '/icebear.png',
       health: 120,
+      maxHealth: 120,
       attack: 18,
       defense: 10,
       speed: 4,
-      experience: 60
+      experience: 60,
+      detectionRadius: 140,
+      patrolRadius: 140
     },
     {
       name: 'Lake Serpent',
       sprite: '/dragonsnake.png',
       health: 80,
+      maxHealth: 80,
       attack: 14,
       defense: 6,
       speed: 6,
-      experience: 45
+      experience: 45,
+      detectionRadius: 150,
+      patrolRadius: 100
     }
   ];
 
-  // Generate enemies around the arena
+  // Generate enemies around the arena - CREATE MORE ENEMIES
   enemyTemplates.forEach((template, templateIndex) => {
-    for (let i = 0; i < 3; i++) { // 3 of each enemy type
-      const angle = (templateIndex * 3 + i) * (Math.PI * 2) / (enemyTemplates.length * 3);
+    for (let i = 0; i < 4; i++) { // 4 of each enemy type = 20 total enemies
+      const angle = (templateIndex * 4 + i) * (Math.PI * 2) / (enemyTemplates.length * 4);
       const distance = Math.random() * (arenaRadius - 100) + 50;
       
       const enemy: Enemy = {
-        id: `survival-${template.name.toLowerCase().replace(/\s+/g, '-')}-${i}`,
+        id: `survival-${template.name.toLowerCase().replace(/\s+/g, '-')}-${templateIndex}-${i}`,
         name: template.name,
         type: 'aggressive',
         health: template.health,
-        maxHealth: template.health,
+        maxHealth: template.maxHealth,
         attack: template.attack,
         defense: template.defense,
         speed: template.speed,
-        detectionRadius: 150,
-        patrolRadius: 100,
+        detectionRadius: template.detectionRadius,
+        patrolRadius: template.patrolRadius,
         experience: template.experience,
         loot: [
           {
-            id: `${template.name.toLowerCase()}-coin-${i}`,
+            id: `${template.name.toLowerCase()}-coin-${templateIndex}-${i}`,
             name: 'Battle Coin',
             type: 'material',
             rarity: 'common',
@@ -158,13 +174,13 @@ const createSurvivalEnemies = (): Enemy[] => {
           x: arenaCenter.x + Math.cos(angle) * distance,
           y: arenaCenter.y + Math.sin(angle) * distance
         },
-        state: 'patrol',
+        state: 'patrol', // IMPORTANT: Start in patrol state, not dead!
         lastAction: 0,
         sprite: template.sprite,
         aiDifficulty: 'medium',
         moveSet: [
           {
-            id: `${template.name.toLowerCase()}-attack`,
+            id: `${template.name.toLowerCase()}-attack-${templateIndex}-${i}`,
             name: `${template.name} Attack`,
             type: 'basic-attack',
             damage: template.attack + 2,
@@ -182,6 +198,7 @@ const createSurvivalEnemies = (): Enemy[] => {
     }
   });
 
+  console.log(`✅ Created ${survivalEnemies.length} survival enemies`);
   return survivalEnemies;
 };
 
@@ -213,7 +230,7 @@ const initialState: GameState = {
     active: false,
     currentWave: {
       waveNumber: 1,
-      enemyCount: 15, // Total enemies in first wave
+      enemyCount: 20, // Updated to match actual enemy count
       enemyTypes: ['zombie', 'wolf', 'bear', 'serpent'],
       spawnDelay: 2000,
       bossWave: false,
@@ -283,6 +300,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const survivalEnemies = createSurvivalEnemies();
       
       console.log('🎮 Starting survival mode with', survivalEnemies.length, 'enemies');
+      console.log('🎯 First enemy:', survivalEnemies[0]);
       
       return {
         ...state,
@@ -455,10 +473,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const aliveEnemies = updatedEnemies.filter(e => e.state !== 'dead').length;
             const newEnemiesRemaining = state.gameMode === 'survival-mode' ? aliveEnemies : state.survival.enemiesRemaining;
 
-            // Check if survival wave is complete
+            // Check if survival wave is complete - ONLY if there are actually 0 enemies left
             let newGameMode = state.gameMode;
-            if (state.gameMode === 'survival-mode' && newEnemiesRemaining === 0) {
-              console.log('🏆 Survival wave completed! Transitioning to results...');
+            if (state.gameMode === 'survival-mode' && newEnemiesRemaining === 0 && state.survival.waveInProgress) {
+              console.log('🏆 Survival wave completed! All enemies defeated. Transitioning to results...');
               newGameMode = 'survival-results';
             }
 
