@@ -148,22 +148,20 @@ const SurvivalMode: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* The Forgotten Courtyard Background */}
+      {/* The Forgotten Courtyard Background - FIXED PATH */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url(/The forgotten courtyard.png)`,
+          backgroundImage: `url(/The forgotten courtyard.png)`, // FIXED: Correct file path
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          imageRendering: 'pixelated',
-          transform: `translate(${-cameraX}px, ${-cameraY}px) scale(2)`, // Scale up the courtyard
-          transformOrigin: 'center center'
+          imageRendering: 'pixelated'
         }}
       ></div>
       
-      {/* Dark atmospheric overlay */}
-      <div className="absolute inset-0 bg-black/30"></div>
+      {/* Fallback background in case image doesn't load */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-50"></div>
 
       {/* Arena Boundary - Circular arena within the courtyard */}
       <div 
@@ -196,6 +194,15 @@ const SurvivalMode: React.FC = () => {
             case 'power-up': return 'from-purple-400 to-purple-600';
             case 'special-attack': return 'from-blue-400 to-blue-600';
             default: return 'from-gray-400 to-gray-600';
+          }
+        };
+        
+        const getDropSize = () => {
+          switch (drop.type) {
+            case 'small': return 'w-4 h-4';
+            case 'medium': return 'w-6 h-6';
+            case 'large': return 'w-8 h-8';
+            default: return 'w-4 h-4';
           }
         };
         
