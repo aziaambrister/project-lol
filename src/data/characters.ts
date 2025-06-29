@@ -322,7 +322,7 @@ export const characters: Character[] = [
       hurt: '/ARIA THE GUARDIAN.png'
     }
   },
-  // New Founder Character
+  // UPDATED Founder Character - INCREASED ATTACK TO 40
   {
     id: 'founder',
     name: 'The Founder',
@@ -332,7 +332,7 @@ export const characters: Character[] = [
     maxHealth: 400,
     experience: 0,
     experienceToNextLevel: 100,
-    attack: 20,
+    attack: 40, // INCREASED FROM 20 TO 40
     defense: 15,
     speed: 10,
     unlocked: false,
@@ -342,7 +342,7 @@ export const characters: Character[] = [
         id: 'founder-strike',
         name: 'Founder\'s Strike',
         type: 'basic-attack',
-        damage: 25,
+        damage: 45, // Increased to match new attack
         staminaCost: 15,
         cooldown: 0,
         currentCooldown: 0,
@@ -354,7 +354,7 @@ export const characters: Character[] = [
         id: 'scepter-blast',
         name: 'Scepter Blast',
         type: 'special',
-        damage: 50,
+        damage: 70, // Increased to match new attack
         staminaCost: 30,
         cooldown: 5,
         currentCooldown: 0,
@@ -378,7 +378,7 @@ export const characters: Character[] = [
         id: 'royal-dash',
         name: 'Royal Dash',
         type: 'special',
-        damage: 30,
+        damage: 50, // Increased to match new attack
         staminaCost: 25,
         cooldown: 3,
         currentCooldown: 0,
@@ -397,17 +397,17 @@ export const characters: Character[] = [
       hurt: "/Founder's glory bundle.png"
     }
   },
-  // New Mystic Alchemist Character
+  // UPDATED Mystic Alchemist Character - INCREASED HEALTH TO 400 AND ATTACK TO 30
   {
     id: 'mystic-alchemist',
     name: 'Mystic Alchemist',
     class: 'mystic-alchemist',
     level: 1,
-    health: 90,
-    maxHealth: 90,
+    health: 400, // INCREASED FROM 90 TO 400
+    maxHealth: 400, // INCREASED FROM 90 TO 400
     experience: 0,
     experienceToNextLevel: 100,
-    attack: 12,
+    attack: 30, // INCREASED FROM 12 TO 30
     defense: 8,
     speed: 9,
     unlocked: false,
@@ -417,7 +417,7 @@ export const characters: Character[] = [
         id: 'vial-throw',
         name: 'Vial Throw',
         type: 'basic-attack',
-        damage: 18,
+        damage: 35, // Increased to match new attack
         staminaCost: 12,
         cooldown: 0,
         currentCooldown: 0,
@@ -429,7 +429,7 @@ export const characters: Character[] = [
         id: 'poison-cloud',
         name: 'Poison Cloud',
         type: 'special',
-        damage: 25,
+        damage: 45, // Increased to match new attack
         staminaCost: 25,
         cooldown: 4,
         currentCooldown: 0,
@@ -453,7 +453,7 @@ export const characters: Character[] = [
         id: 'staff-strike',
         name: 'Vialborne Staff Strike',
         type: 'basic-attack',
-        damage: 22,
+        damage: 40, // Increased to match new attack
         staminaCost: 18,
         cooldown: 0,
         currentCooldown: 0,

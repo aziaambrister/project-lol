@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { ArrowLeft, Coins, ShoppingCart, Star, CreditCard, Crown, Zap } from 'lucide-react';
+import { ArrowLeft, DollarSign } from 'lucide-react';
 import { allItems } from '../data/items';
 import { stripeProducts } from '../stripe-config';
 import { useAuth } from '../hooks/useAuth';
@@ -132,29 +132,16 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
   
   const currentItems = shopItems[selectedCategory];
   
-  // FIXED: Regular item purchase - no authentication needed for in-game purchases
   const handlePurchase = (item: any, price: number) => {
     if (player.currency >= price) {
-      try {
-        purchaseItem(item.id, price, item);
-        setSelectedItem(null);
-        console.log(`✅ Successfully purchased ${item.name} for ${price} coins`);
-      } catch (error) {
-        console.error('❌ Purchase failed:', error);
-        setCheckoutError('Failed to purchase item. Please try again.');
-      }
-    } else {
-      setCheckoutError(`Not enough coins! You need ${price} coins but only have ${player.currency}.`);
+      purchaseItem(item.id, price, item);
+      setSelectedItem(null);
     }
   };
 
-  // FIXED: Premium purchase with proper authentication
   const handlePremiumPurchase = async (item: any) => {
-    console.log('🛒 Starting premium purchase for:', item.name);
-    console.log('👤 Current user:', user);
-
     if (!user) {
-      setCheckoutError('Please log in to make premium purchases');
+      setCheckoutError('Please log in to make purchases');
       return;
     }
 
@@ -165,8 +152,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       // FIXED: Get fresh session with proper error handling
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      console.log('🔐 Session data:', sessionData);
-      
       if (sessionError) {
         console.error('❌ Session error:', sessionError);
         throw new Error(`Authentication failed: ${sessionError.message}`);
@@ -176,8 +161,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         console.error('❌ No access token found');
         throw new Error('No valid session found. Please log in again.');
       }
-
-      console.log('✅ Valid session found, making checkout request...');
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
@@ -192,8 +175,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           cancel_url: `${window.location.origin}`,
         }),
       });
-
-      console.log('📡 Checkout response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -210,10 +191,8 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
       }
 
       const { url } = await response.json();
-      console.log('✅ Checkout URL received:', url);
       
       if (url) {
-        console.log('🚀 Redirecting to Stripe checkout...');
         window.location.href = url;
       } else {
         throw new Error('No checkout URL received from server');
@@ -275,7 +254,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
           
           {/* Currency Display - TINY */}
           <div className="flex items-center bg-yellow-500/20 rounded px-2 py-1 border border-yellow-400/50">
-            <Coins className="text-yellow-400 mr-1" size={8} />
+            <DollarSign className="text-yellow-400 mr-1" size={8} />
             <div>
               <div className="text-yellow-400 font-bold text-xs">{player.currency}</div>
               <div className="text-yellow-300 text-xs">Coins</div>
@@ -295,7 +274,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
             >
-              {category === 'premium' && <CreditCard className="mr-1" size={6} />}
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>
           ))}
@@ -305,7 +283,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {selectedCategory === 'premium' && (
           <div className="mb-1 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded p-1 border border-purple-500/50">
             <div className="flex items-center mb-1">
-              <Crown className="text-yellow-400 mr-1" size={8} />
               <div>
                 <h2 className="text-sm font-bold text-yellow-400">Premium Store</h2>
                 <p className="text-gray-300 text-xs">Purchase with real money</p>
@@ -313,8 +290,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
             </div>
             {!user && (
               <div className="bg-yellow-500/20 border border-yellow-400/50 rounded p-1">
-                <div className="text-yellow-400 font-bold text-xs">⚠️ Login Required for Premium Purchases</div>
-                <div className="text-gray-300 text-xs">Regular items can be purchased with coins without login</div>
+                <div className="text-yellow-400 font-bold text-xs">⚠️ Login Required</div>
               </div>
             )}
           </div>
@@ -323,7 +299,7 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {/* Error Message - TINY */}
         {checkoutError && (
           <div className="mb-1 bg-red-500/20 border border-red-500/50 rounded p-1">
-            <div className="text-red-400 font-bold text-xs">Purchase Error</div>
+            <div className="text-red-400 font-bold text-xs">Payment Error</div>
             <div className="text-white text-xs">{checkoutError}</div>
             <button 
               onClick={() => setCheckoutError(null)}
@@ -377,12 +353,12 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                   <div className="flex items-center">
                     {isPremium ? (
                       <>
-                        <CreditCard className="text-green-400 mr-0.5" size={4} />
+                        <DollarSign className="text-green-400 mr-0.5" size={4} />
                         <span className="text-green-400 font-bold text-xs">{item.realPrice}</span>
                       </>
                     ) : (
                       <>
-                        <Coins className="text-yellow-400 mr-0.5" size={4} />
+                        <DollarSign className="text-yellow-400 mr-0.5" size={4} />
                         <span className="text-yellow-400 font-bold text-xs">{item.price}</span>
                       </>
                     )}
@@ -408,7 +384,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    <ShoppingCart size={4} className="mr-0.5" />
                     {isLoading && isPremium ? '...' : 
                      isPremium ? (canAfford ? 'Buy' : 'Login') : 
                      canAfford ? 'Buy' : 'X'}
@@ -464,7 +439,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
         {/* Shop Info - TINY */}
         <div className="mt-1 bg-gray-800/50 rounded p-1 border border-gray-600">
           <div className="flex items-center mb-1">
-            <Star className="text-yellow-400 mr-1" size={8} />
             <h3 className="text-xs font-bold">Shop Information</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs text-gray-300">
@@ -473,7 +447,6 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               <ul className="space-y-0 text-xs">
                 <li>• Defeat enemies to earn coins</li>
                 <li>• Each enemy drops 10 coins</li>
-                <li>• No login required for coin purchases</li>
               </ul>
             </div>
             <div>
@@ -481,13 +454,11 @@ const Shop: React.FC<ShopProps> = ({ onClose }) => {
               <ul className="space-y-0 text-xs">
                 <li>• Higher price = more damage</li>
                 <li>• Armor provides defense bonuses</li>
-                <li>• Instant purchase with coins</li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-0.5 text-xs">💳 Premium Store:</h4>
               <ul className="space-y-0 text-xs">
-                <li>• Requires login for real money purchases</li>
                 <li>• Instant coin packages available</li>
                 <li>• Exclusive character bundles</li>
               </ul>
