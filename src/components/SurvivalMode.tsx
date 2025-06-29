@@ -14,8 +14,10 @@ const SurvivalMode: React.FC = () => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
-  // Handle keyboard input
+  // Handle keyboard input - ONLY when game has started
   useEffect(() => {
+    if (!gameStarted) return; // Don't handle input until game starts
+
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
@@ -67,10 +69,12 @@ const SurvivalMode: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [performAttack, usePowerUp]);
+  }, [performAttack, usePowerUp, gameStarted]); // Added gameStarted dependency
 
-  // Movement loop
+  // Movement loop - ONLY when game has started
   useEffect(() => {
+    if (!gameStarted) return; // Don't move until game starts
+
     let animationFrameId: number;
 
     const moveLoop = () => {
@@ -100,18 +104,18 @@ const SurvivalMode: React.FC = () => {
       animationFrameId = requestAnimationFrame(moveLoop);
     };
 
-    if (gameStarted) {
-      animationFrameId = requestAnimationFrame(moveLoop);
-    }
+    animationFrameId = requestAnimationFrame(moveLoop);
 
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [movePlayer, stopMoving, gameStarted, state.player.isMoving]);
+  }, [movePlayer, stopMoving, gameStarted, state.player.isMoving]); // Added gameStarted dependency
 
   const findNearestEnemy = () => {
+    if (!gameStarted) return null; // Don't find enemies until game starts
+
     const playerPos = state.player.position;
     let nearestEnemy = null;
     let minDistance = Infinity;
@@ -173,13 +177,13 @@ const SurvivalMode: React.FC = () => {
         }}
       ></div>
 
-      {/* Enemies from Adventure Mode */}
-      {state.currentWorld.enemies.map(enemy => (
+      {/* Enemies from Adventure Mode - ONLY render when game started */}
+      {gameStarted && state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
-      {/* Survival Drops */}
-      {state.survival.drops.map(drop => {
+      {/* Survival Drops - ONLY when game started */}
+      {gameStarted && state.survival.drops.map(drop => {
         if (drop.collected) return null;
         
         const screenX = drop.position.x - cameraX;
@@ -217,8 +221,8 @@ const SurvivalMode: React.FC = () => {
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* Damage Numbers */}
-      {state.combat.damageNumbers.map(damageNumber => (
+      {/* Damage Numbers - ONLY when game started */}
+      {gameStarted && state.combat.damageNumbers.map(damageNumber => (
         <div
           key={damageNumber.id}
           className={`absolute font-bold text-2xl pointer-events-none animate-bounce ${
@@ -237,139 +241,143 @@ const SurvivalMode: React.FC = () => {
         </div>
       ))}
 
-      {/* Survival HUD */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 border border-red-500/50">
-          <div className="flex items-center space-x-6 text-white">
-            {/* Wave Info */}
-            <div className="flex items-center space-x-2">
-              <Target className="text-red-400" size={20} />
-              <span className="font-bold">Wave {state.survival.currentWave.waveNumber}</span>
-            </div>
-            
-            {/* Survival Time */}
-            <div className="flex items-center space-x-2">
-              <Clock className="text-blue-400" size={20} />
-              <span className="font-mono">{formatTime(state.survival.stats.survivalTime)}</span>
-            </div>
-            
-            {/* Enemies Remaining */}
-            <div className="flex items-center space-x-2">
-              <Users className="text-orange-400" size={20} />
-              <span>{state.survival.enemiesRemaining} left</span>
-            </div>
-            
-            {/* Score */}
-            <div className="flex items-center space-x-2">
-              <Trophy className="text-yellow-400" size={20} />
-              <span>{state.survival.stats.enemiesDefeated * 100 + state.survival.stats.survivalTime * 10}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Location Title */}
-      <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30">
-        <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-orange-500/50">
-          <h2 className="text-orange-400 font-bold text-lg text-center">🏛️ The Forgotten Courtyard</h2>
-          <p className="text-gray-300 text-sm text-center">Ancient arena of eternal combat</p>
-        </div>
-      </div>
-
-      {/* Player Stats */}
-      <div className="absolute top-4 left-4 z-30">
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-          {/* Health */}
-          <div className="flex items-center mb-3">
-            <Heart className="text-red-500 mr-2" size={20} />
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-white font-bold">{state.player.character.health}</span>
-                <span className="text-gray-300">/{state.player.character.maxHealth}</span>
-              </div>
-              <div className="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
-                  style={{ width: `${(state.player.character.health / state.player.character.maxHealth) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Character Info */}
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400 mr-3">
-              <img 
-                src={state.player.character.portrait}
-                alt={state.player.character.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-sm">{state.player.character.name}</h3>
-              <div className="text-yellow-400 text-xs">Level {state.player.character.level}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Power-ups */}
-      <div className="absolute top-4 right-4 z-30">
-        <div className="space-y-2">
-          {state.survival.activePowerUps.map((activePowerUp, index) => {
-            const timeLeft = Math.max(0, activePowerUp.endTime - Date.now());
-            const progress = (timeLeft / activePowerUp.powerUp.duration) * 100;
-            
-            return (
-              <div key={index} className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-purple-500/50">
+      {/* Survival HUD - ONLY when game started */}
+      {gameStarted && (
+        <>
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+            <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 border border-red-500/50">
+              <div className="flex items-center space-x-6 text-white">
+                {/* Wave Info */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl">{activePowerUp.powerUp.icon}</span>
-                  <div>
-                    <div className="text-white font-bold text-sm">{activePowerUp.powerUp.name}</div>
-                    <div className="w-20 h-1 bg-gray-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-purple-500 transition-all duration-100"
-                        style={{ width: `${progress}%` }}
-                      ></div>
-                    </div>
+                  <Target className="text-red-400" size={20} />
+                  <span className="font-bold">Wave {state.survival.currentWave.waveNumber}</span>
+                </div>
+                
+                {/* Survival Time */}
+                <div className="flex items-center space-x-2">
+                  <Clock className="text-blue-400" size={20} />
+                  <span className="font-mono">{formatTime(state.survival.stats.survivalTime)}</span>
+                </div>
+                
+                {/* Enemies Remaining */}
+                <div className="flex items-center space-x-2">
+                  <Users className="text-orange-400" size={20} />
+                  <span>{state.survival.enemiesRemaining} left</span>
+                </div>
+                
+                {/* Score */}
+                <div className="flex items-center space-x-2">
+                  <Trophy className="text-yellow-400" size={20} />
+                  <span>{state.survival.stats.enemiesDefeated * 100 + state.survival.stats.survivalTime * 10}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Location Title */}
+          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30">
+            <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-orange-500/50">
+              <h2 className="text-orange-400 font-bold text-lg text-center">🏛️ The Forgotten Courtyard</h2>
+              <p className="text-gray-300 text-sm text-center">Ancient arena of eternal combat</p>
+            </div>
+          </div>
+
+          {/* Player Stats */}
+          <div className="absolute top-4 left-4 z-30">
+            <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              {/* Health */}
+              <div className="flex items-center mb-3">
+                <Heart className="text-red-500 mr-2" size={20} />
+                <div className="flex-1">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-white font-bold">{state.player.character.health}</span>
+                    <span className="text-gray-300">/{state.player.character.maxHealth}</span>
+                  </div>
+                  <div className="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
+                      style={{ width: `${(state.player.character.health / state.player.character.maxHealth) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Wave Progress */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-blue-500/50">
-          <div className="text-center">
-            {state.survival.waveInProgress ? (
-              <div className="text-white">
-                <div className="text-sm">Enemies Remaining</div>
-                <div className="text-2xl font-bold text-red-400">{state.survival.enemiesRemaining}</div>
+              
+              {/* Character Info */}
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400 mr-3">
+                  <img 
+                    src={state.player.character.portrait}
+                    alt={state.player.character.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-sm">{state.player.character.name}</h3>
+                  <div className="text-yellow-400 text-xs">Level {state.player.character.level}</div>
+                </div>
               </div>
-            ) : (
-              <div className="text-white">
-                <div className="text-sm">Next Wave In</div>
-                <div className="text-2xl font-bold text-blue-400">{Math.ceil(state.survival.nextWaveTimer / 1000)}s</div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Controls */}
-      <div className="absolute bottom-4 right-4 z-30">
-        <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-          <div className="text-white text-xs space-y-1">
-            <div>WASD - Move</div>
-            <div>Space - Attack</div>
-            <div>2 - Shuriken</div>
-            <div>1,3,4,5 - Power-ups</div>
+          {/* Active Power-ups */}
+          <div className="absolute top-4 right-4 z-30">
+            <div className="space-y-2">
+              {state.survival.activePowerUps.map((activePowerUp, index) => {
+                const timeLeft = Math.max(0, activePowerUp.endTime - Date.now());
+                const progress = (timeLeft / activePowerUp.powerUp.duration) * 100;
+                
+                return (
+                  <div key={index} className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-purple-500/50">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">{activePowerUp.powerUp.icon}</span>
+                      <div>
+                        <div className="text-white font-bold text-sm">{activePowerUp.powerUp.name}</div>
+                        <div className="w-20 h-1 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-purple-500 transition-all duration-100"
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </div>
+
+          {/* Wave Progress */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
+            <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-blue-500/50">
+              <div className="text-center">
+                {state.survival.waveInProgress ? (
+                  <div className="text-white">
+                    <div className="text-sm">Enemies Remaining</div>
+                    <div className="text-2xl font-bold text-red-400">{state.survival.enemiesRemaining}</div>
+                  </div>
+                ) : (
+                  <div className="text-white">
+                    <div className="text-sm">Next Wave In</div>
+                    <div className="text-2xl font-bold text-blue-400">{Math.ceil(state.survival.nextWaveTimer / 1000)}s</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="absolute bottom-4 right-4 z-30">
+            <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+              <div className="text-white text-xs space-y-1">
+                <div>WASD - Move</div>
+                <div>Space - Attack</div>
+                <div>2 - Shuriken</div>
+                <div>1,3,4,5 - Power-ups</div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Start Game Overlay */}
       {!gameStarted && (

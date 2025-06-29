@@ -756,10 +756,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   }, [state.currentWorld.enemies]);
 
-  // Update AI system
+  // Update AI system - ONLY when in world exploration or survival mode AND game is active
   useEffect(() => {
     const updateAI = () => {
-      if (state.gameMode === 'world-exploration' || state.gameMode === 'survival-mode') {
+      // Only update AI for active game modes
+      if (state.gameMode === 'world-exploration' || 
+          (state.gameMode === 'survival-mode' && state.survival.active)) {
+        
         const updatedEnemies = aiSystem.updateEnemies(
           state.player.position,
           state.player.character,
@@ -768,7 +771,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
 
-        // Check for enemy attacks
+        // Check for enemy attacks - ONLY in active game modes
         updatedEnemies.forEach(enemy => {
           if (enemy.state !== 'dead') {
             const attackCycle = aiSystem.getAttackCycle(enemy.id);
@@ -789,7 +792,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const aiInterval = setInterval(updateAI, 100); // Update AI every 100ms
     return () => clearInterval(aiInterval);
-  }, [state.gameMode, state.player.position, state.player.character]);
+  }, [state.gameMode, state.player.position, state.player.character, state.survival.active]);
 
   // Clean up damage numbers
   useEffect(() => {
