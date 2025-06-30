@@ -110,11 +110,14 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     console.log(`Picked up ${food.name} - Healed ${food.healAmount} HP`);
   };
 
-  // Determine which background to use based on current building
+  // FIXED: Determine which background to use based on current building
   const getBackgroundImage = () => {
     const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
     if (currentBuilding?.interior?.background) {
-      return currentBuilding.interior.background;
+      // FIXED: Ensure proper path formatting
+      const bgPath = currentBuilding.interior.background;
+      // If path doesn't start with /, add it
+      return bgPath.startsWith('/') ? bgPath : `/${bgPath}`;
     }
     // Default fallback
     return '/forestcabin.png';
@@ -203,41 +206,68 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Cabin Background - Dynamic based on current building with proper error handling */}
+      {/* FIXED: Multiple background layers to prevent purple void */}
+      
+      {/* Primary background layer */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
           backgroundImage: `url(${getBackgroundImage()})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-        onError={(e) => {
-          // FIXED: Fallback if image fails to load
-          console.warn(`Failed to load cabin background: ${getBackgroundImage()}`);
-          e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #8B4513, #A0522D, #CD853F)';
+          backgroundRepeat: 'no-repeat',
+          zIndex: 1
         }}
       ></div>
 
-      {/* FIXED: Additional fallback background to prevent purple void */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-20"></div>
+      {/* FIXED: Fallback background layer 1 - warm cabin colors */}
+      <div 
+        className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900"
+        style={{ zIndex: 0 }}
+      ></div>
+
+      {/* FIXED: Fallback background layer 2 - solid color backup */}
+      <div 
+        className="absolute inset-0 bg-amber-900"
+        style={{ zIndex: -1 }}
+      ></div>
+
+      {/* FIXED: Image error handling with JavaScript */}
+      <img 
+        src={getBackgroundImage()}
+        alt="Cabin Interior"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: 2 }}
+        onLoad={() => {
+          console.log(`✅ Successfully loaded cabin background: ${getBackgroundImage()}`);
+        }}
+        onError={(e) => {
+          console.error(`❌ Failed to load cabin background: ${getBackgroundImage()}`);
+          // Hide the failed image
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/20" style={{ zIndex: 3 }}></div>
 
       {/* Player inside cabin */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ zIndex: 10 }}>
         <Player cameraX={0} cameraY={0} />
       </div>
 
       {/* FIXED: Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
       <button
         onClick={handleExitCabin}
-        className="absolute top-6 left-6 z-50 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
+        className="absolute top-6 left-6 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
+        style={{ zIndex: 50 }}
       >
         <ArrowLeft size={20} className="mr-2" />
         Exit Cabin
       </button>
 
       {/* Cabin Title - Dynamic */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30">
+      <div className="absolute top-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 30 }}>
         <div className="bg-amber-800/90 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-amber-500">
           <h1 className="text-2xl font-bold text-amber-100 text-center">🏠 {getCabinName()}</h1>
           <p className="text-amber-200 text-sm text-center mt-1">{getCabinDescription()}</p>
@@ -249,10 +279,11 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         !item.picked && (
           <div
             key={item.id}
-            className="absolute z-20 cursor-pointer transform hover:scale-110 transition-all duration-200"
+            className="absolute cursor-pointer transform hover:scale-110 transition-all duration-200"
             style={{
               left: item.position.x,
-              top: item.position.y
+              top: item.position.y,
+              zIndex: 20
             }}
             onClick={() => handlePickupFood(item.id)}
           >
@@ -275,7 +306,7 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       ))}
 
       {/* Interactive Elements Info */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 30 }}>
         <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-amber-500/50">
           <div className="text-center">
             <h3 className="text-amber-400 font-bold mb-2">🏠 {getCabinName()}</h3>
@@ -306,7 +337,7 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       </div>
 
       {/* Ambient Details */}
-      <div className="absolute bottom-4 right-4 z-30">
+      <div className="absolute bottom-4 right-4" style={{ zIndex: 30 }}>
         <div className="bg-amber-800/70 backdrop-blur-sm rounded-lg p-3 border border-amber-500/50">
           <div className="text-amber-100 text-xs space-y-1">
             {state.player.currentBuilding === 'forest-cabin-2' ? (
@@ -331,6 +362,17 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
           </div>
         </div>
       </div>
+
+      {/* FIXED: Debug info to show what's happening */}
+      {state.debug?.enabled && (
+        <div className="absolute top-20 right-4 bg-black/80 text-white p-4 rounded-lg text-sm" style={{ zIndex: 50 }}>
+          <h3 className="font-bold mb-2">🏠 Cabin Debug Info</h3>
+          <div>Building ID: {state.player.currentBuilding}</div>
+          <div>Background Path: {getBackgroundImage()}</div>
+          <div>Cabin Name: {getCabinName()}</div>
+          <div>Items Count: {currentCabinItems.length}</div>
+        </div>
+      )}
     </div>
   );
 };

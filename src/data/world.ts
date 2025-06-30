@@ -119,7 +119,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/cozy-forest-cabin.png', // FIXED: Using the correct image path
+        background: 'cozy-forest-cabin.png', // FIXED: Removed leading slash - this was causing the issue!
         npcs: [],
         items: [
           {
