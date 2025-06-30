@@ -813,6 +813,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'UPDATE_ENEMY_AI': {
+      // FIXED: Don't update enemies if they're empty - this prevents disappearing
+      if (action.enemies.length === 0 && state.currentWorld.enemies.length > 0) {
+        console.log('⚠️ Preventing enemy disappearing - keeping current enemies');
+        return state;
+      }
+      
       return {
         ...state,
         currentWorld: {
@@ -925,49 +931,59 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const aiSystem = new EnemyAISystem();
 
-  // FIXED: Re-enable AI system with proper enemy management
+  // FIXED: Properly manage AI system without causing enemy disappearing
   useEffect(() => {
+    // Only add enemies to AI system, don't remove them unless they're actually dead
     state.currentWorld.enemies.forEach(enemy => {
-      if (enemy.state !== 'dead') {
+      if (enemy.state !== 'dead' && !aiSystem.getEnemyState(enemy.id)) {
         aiSystem.addEnemy(enemy);
       }
     });
-  }, [state.currentWorld.enemies]);
+  }, [state.currentWorld.enemies.length]); // Only trigger when enemy count changes
 
   // FIXED: Update AI system - ONLY when in survival mode and game is active
   useEffect(() => {
+    if (state.gameMode !== 'survival-mode' || !state.survival.active) {
+      return;
+    }
+
     const updateAI = () => {
-      if (state.gameMode === 'survival-mode' && state.survival.active) {
+      try {
         const updatedEnemies = aiSystem.updateEnemies(
           state.player.position,
           state.player.character,
           16 // 60fps delta time
         );
         
-        dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
+        // FIXED: Only update if we have enemies to prevent disappearing
+        if (updatedEnemies.length > 0) {
+          dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
 
-        // Check for enemy attacks
-        updatedEnemies.forEach(enemy => {
-          if (enemy.state !== 'dead') {
-            const attackCycle = aiSystem.getAttackCycle(enemy.id);
-            if (attackCycle?.isAttacking) {
-              const distance = Math.sqrt(
-                Math.pow(enemy.position.x - state.player.position.x, 2) +
-                Math.pow(enemy.position.y - state.player.position.y, 2)
-              );
-              
-              if (distance <= attackCycle.attackRange) {
-                dispatch({ type: 'TAKE_DAMAGE', damage: enemy.attack, targetId: 'player' });
+          // Check for enemy attacks
+          updatedEnemies.forEach(enemy => {
+            if (enemy.state !== 'dead') {
+              const attackCycle = aiSystem.getAttackCycle(enemy.id);
+              if (attackCycle?.isAttacking) {
+                const distance = Math.sqrt(
+                  Math.pow(enemy.position.x - state.player.position.x, 2) +
+                  Math.pow(enemy.position.y - state.player.position.y, 2)
+                );
+                
+                if (distance <= attackCycle.attackRange) {
+                  dispatch({ type: 'TAKE_DAMAGE', damage: enemy.attack, targetId: 'player' });
+                }
               }
             }
-          }
-        });
+          });
+        }
+      } catch (error) {
+        console.error('AI update error:', error);
       }
     };
 
     const aiInterval = setInterval(updateAI, 100); // Update AI every 100ms
     return () => clearInterval(aiInterval);
-  }, [state.gameMode, state.player.position, state.player.character, state.survival.active]);
+  }, [state.gameMode, state.player.position.x, state.player.position.y, state.survival.active]);
 
   // Clean up damage numbers
   useEffect(() => {
@@ -982,27 +998,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => clearInterval(cleanup);
   }, [state.combat.damageNumbers]);
-
-  // Respawn XP orbs
-  useEffect(() => {
-    const respawnInterval = setInterval(() => {
-      const now = Date.now();
-      const updatedOrbs = state.currentWorld.xpOrbs.map(orb => {
-        if (orb.collected && orb.lastCollected && orb.respawnTime) {
-          if (now - orb.lastCollected >= orb.respawnTime) {
-            return { ...orb, collected: false, lastCollected: undefined };
-          }
-        }
-        return orb;
-      });
-
-      if (updatedOrbs.some((orb, index) => orb.collected !== state.currentWorld.xpOrbs[index].collected)) {
-        // Don't update enemies here to prevent conflicts
-      }
-    }, 5000);
-
-    return () => clearInterval(respawnInterval);
-  }, [state.currentWorld.xpOrbs]);
 
   // FIXED: Survival mode timer
   useEffect(() => {
