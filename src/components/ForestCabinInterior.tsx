@@ -110,20 +110,20 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     console.log(`Picked up ${food.name} - Healed ${food.healAmount} HP`);
   };
 
-  // FIXED: Get the correct background based on building ID - using correct file paths
+  // FIXED: Get the correct background based on building ID - using CORRECT file paths from public folder
   const getBackgroundImage = () => {
     const currentBuilding = state.player.currentBuilding;
     
-    // FIXED: Using the actual file paths from the public folder
+    // FIXED: Using the actual file paths from the public folder WITHOUT leading slash
     switch (currentBuilding) {
       case 'forest-cabin-1':
-        return '/forestcabin.png';
+        return 'forestcabin.png';
       case 'forest-cabin-2':
-        return '/cozy-forest-cabin.png'; // FIXED: This is the correct path from public folder!
+        return 'cozy-forest-cabin.png'; // FIXED: This is the correct path - no leading slash!
       case 'snow-cabin':
-        return '/snowycabin.png';
+        return 'snowycabin.png';
       default:
-        return '/forestcabin.png';
+        return 'forestcabin.png';
     }
   };
 
@@ -384,13 +384,14 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         className="absolute top-20 right-4 bg-black/90 text-white p-4 rounded-lg text-sm border border-green-500" 
         style={{ zIndex: 60 }}
       >
-        <h3 className="font-bold mb-2 text-green-400">🔧 IMAGE PATH DEBUG</h3>
+        <h3 className="font-bold mb-2 text-green-400">🔧 FIXED IMAGE PATH DEBUG</h3>
         <div>Building ID: <span className="text-yellow-400">{state.player.currentBuilding}</span></div>
         <div>Image Path: <span className="text-yellow-400">{backgroundImage}</span></div>
         <div>Full URL: <span className="text-yellow-400">url({backgroundImage})</span></div>
-        <div className="mt-2 text-green-400">✅ Using correct path from public folder!</div>
+        <div className="mt-2 text-green-400">✅ REMOVED LEADING SLASH - SHOULD WORK NOW!</div>
         <div className="text-green-400">✅ 4 background layers prevent purple void!</div>
-        <div className="text-blue-400">📁 File should be at: public{backgroundImage}</div>
+        <div className="text-blue-400">📁 File location: public/{backgroundImage}</div>
+        <div className="text-purple-400">🎯 This should display cozy-forest-cabin.png!</div>
       </div>
     </div>
   );
