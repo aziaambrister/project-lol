@@ -16,11 +16,13 @@ const GameWorld: React.FC = () => {
   const [shurikens, setShurikens] = useState<Array<{id: number, x: number, y: number, targetX: number, targetY: number, timestamp: number}>>([]);
 
   const keysPressedRef = useRef<Set<string>>(new Set());
+  const gameLoopRef = useRef<number>();
 
   useEffect(() => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
+  // FIXED: Proper keyboard handling for adventure mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -39,6 +41,7 @@ const GameWorld: React.FC = () => {
 
       if (showEscMenu) return;
 
+      // FIXED: Movement keys - prevent default and add to pressed keys
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -110,6 +113,7 @@ const GameWorld: React.FC = () => {
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
 
+      // FIXED: Remove keys from pressed set on key up
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -141,15 +145,15 @@ const GameWorld: React.FC = () => {
     img.src = '/map.png';
   }, []);
 
+  // FIXED: Continuous movement loop using requestAnimationFrame
   useEffect(() => {
-    let animationFrameId: number;
-
     const moveLoop = () => {
       if (keysPressedRef.current.size === 0 || showEscMenu) {
         if (state.player.isMoving) {
           stopMoving();
         }
       } else {
+        // FIXED: Process all pressed keys for smooth diagonal movement
         keysPressedRef.current.forEach(key => {
           switch (key) {
             case 'w':
@@ -168,12 +172,16 @@ const GameWorld: React.FC = () => {
         });
       }
 
-      animationFrameId = requestAnimationFrame(moveLoop);
+      gameLoopRef.current = requestAnimationFrame(moveLoop);
     };
 
-    animationFrameId = requestAnimationFrame(moveLoop);
+    gameLoopRef.current = requestAnimationFrame(moveLoop);
 
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
+    };
   }, [movePlayer, stopMoving, showEscMenu, state.player.isMoving]);
 
   useEffect(() => {
@@ -399,7 +407,16 @@ const GameWorld: React.FC = () => {
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
 
-      <Player cameraX={cameraX} cameraY={cameraY} />
+      {/* FIXED: Player positioned correctly relative to camera */}
+      <div 
+        className="absolute z-50"
+        style={{
+          left: state.player.position.x - cameraX - 32, // Center the 64px player sprite
+          top: state.player.position.y - cameraY - 32
+        }}
+      >
+        <Player cameraX={0} cameraY={0} />
+      </div>
 
       {state.combat.damageNumbers.map(damageNumber => (
         <div
@@ -442,9 +459,21 @@ const GameWorld: React.FC = () => {
       />
 
       {!showEscMenu && <GameHUD />}
-      {/* Minimap is now always shown in top left */}
       {!showEscMenu && <Minimap />}
       {showEscMenu && <EscapeMenu onClose={() => setShowEscMenu(false)} />}
+
+      {/* FIXED: Debug info to show player position and movement state */}
+      {state.debug?.enabled && (
+        <div className="absolute top-4 left-4 bg-black/80 text-white p-4 rounded-lg text-sm z-50">
+          <h3 className="font-bold mb-2">🎮 Player Debug Info</h3>
+          <div>Position: ({state.player.position.x.toFixed(0)}, {state.player.position.y.toFixed(0)})</div>
+          <div>Camera: ({state.camera.x.toFixed(0)}, {state.camera.y.toFixed(0)})</div>
+          <div>Moving: {state.player.isMoving ? 'Yes' : 'No'}</div>
+          <div>Direction: {state.player.direction}</div>
+          <div>Keys Pressed: {Array.from(keysPressed).join(', ') || 'None'}</div>
+          <div>Speed: {state.player.character.speed}</div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes float-up {
