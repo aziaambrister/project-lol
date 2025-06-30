@@ -22,7 +22,7 @@ const GameWorld: React.FC = () => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
-  // FIXED: Proper keyboard handling for adventure mode
+  // FIXED: Enhanced keyboard handling for adventure mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -142,7 +142,7 @@ const GameWorld: React.FC = () => {
     img.onerror = () => {
       setMapLoaded(false);
     };
-    img.src = '/map.png';
+    img.src = 'map.png'; // FIXED: Removed leading slash
   }, []);
 
   // FIXED: Continuous movement loop using requestAnimationFrame
@@ -207,8 +207,8 @@ const GameWorld: React.FC = () => {
       // Check if enemy is visible on screen
       const screenX = enemy.position.x - cameraX;
       const screenY = enemy.position.y - cameraY;
-      const isVisible = screenX >= 0 && screenX <= window.innerWidth && 
-                       screenY >= 0 && screenY <= window.innerHeight;
+      const isVisible = screenX >= -200 && screenX <= window.innerWidth + 200 && 
+                       screenY >= -200 && screenY <= window.innerHeight + 200;
 
       if (!isVisible) return; // Only consider visible enemies
 
@@ -217,7 +217,7 @@ const GameWorld: React.FC = () => {
         Math.pow(enemy.position.y - playerPos.y, 2)
       );
 
-      if (distance < 150 && distance < minDistance) {
+      if (distance < 200 && distance < minDistance) { // Increased range
         minDistance = distance;
         nearestEnemy = enemy;
       }
@@ -270,7 +270,7 @@ const GameWorld: React.FC = () => {
           top: -cameraY - 500,
           width: state.currentWorld.size.width + 1000, // Extended width
           height: state.currentWorld.size.height + 1000, // Extended height
-          backgroundImage: `url(/map.png)`,
+          backgroundImage: `url(map.png)`, // FIXED: Removed leading slash
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -373,7 +373,7 @@ const GameWorld: React.FC = () => {
             }}
           >
             <img
-              src="/shuriken.png"
+              src="shuriken.png" // FIXED: Removed leading slash
               alt="Shuriken"
               className="w-4 h-4 object-contain"
             />
@@ -402,10 +402,13 @@ const GameWorld: React.FC = () => {
         </div>
       ))}
 
-      {/* Only render enemies that are fully visible on screen */}
-      {state.currentWorld.enemies.map(enemy => (
-        <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
-      ))}
+      {/* FIXED: Enhanced enemy rendering with debug info */}
+      {state.currentWorld.enemies.map(enemy => {
+        console.log(`🎯 Rendering enemy: ${enemy.id} (${enemy.name}) at position (${enemy.position.x}, ${enemy.position.y}) with sprite: ${enemy.sprite}`);
+        return (
+          <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
+        );
+      })}
 
       {/* FIXED: Player positioned correctly relative to camera */}
       <div 
@@ -462,16 +465,29 @@ const GameWorld: React.FC = () => {
       {!showEscMenu && <Minimap />}
       {showEscMenu && <EscapeMenu onClose={() => setShowEscMenu(false)} />}
 
-      {/* FIXED: Debug info to show player position and movement state */}
+      {/* FIXED: Enhanced debug info to show enemy status */}
       {state.debug?.enabled && (
-        <div className="absolute top-4 left-4 bg-black/80 text-white p-4 rounded-lg text-sm z-50">
-          <h3 className="font-bold mb-2">🎮 Player Debug Info</h3>
-          <div>Position: ({state.player.position.x.toFixed(0)}, {state.player.position.y.toFixed(0)})</div>
-          <div>Camera: ({state.camera.x.toFixed(0)}, {state.camera.y.toFixed(0)})</div>
-          <div>Moving: {state.player.isMoving ? 'Yes' : 'No'}</div>
-          <div>Direction: {state.player.direction}</div>
-          <div>Keys Pressed: {Array.from(keysPressed).join(', ') || 'None'}</div>
-          <div>Speed: {state.player.character.speed}</div>
+        <div className="absolute top-4 left-4 bg-black/90 text-white p-4 rounded-lg text-sm z-50 max-w-md">
+          <h3 className="font-bold mb-2 text-green-400">🎮 ADVENTURE MODE DEBUG</h3>
+          <div className="space-y-1">
+            <div>Position: ({state.player.position.x.toFixed(0)}, {state.player.position.y.toFixed(0)})</div>
+            <div>Camera: ({state.camera.x.toFixed(0)}, {state.camera.y.toFixed(0)})</div>
+            <div>Moving: {state.player.isMoving ? 'Yes' : 'No'}</div>
+            <div>Direction: {state.player.direction}</div>
+            <div>Keys Pressed: {Array.from(keysPressed).join(', ') || 'None'}</div>
+            <div>Speed: {state.player.character.speed}</div>
+            <div className="border-t border-gray-600 pt-2 mt-2">
+              <div className="text-yellow-400 font-bold">🎯 ENEMIES ({state.currentWorld.enemies.length} total):</div>
+              {state.currentWorld.enemies.slice(0, 5).map(enemy => (
+                <div key={enemy.id} className="text-xs">
+                  • {enemy.name} at ({enemy.position.x.toFixed(0)}, {enemy.position.y.toFixed(0)}) - {enemy.state} - HP: {enemy.health}/{enemy.maxHealth}
+                </div>
+              ))}
+              {state.currentWorld.enemies.length > 5 && (
+                <div className="text-xs text-gray-400">... and {state.currentWorld.enemies.length - 5} more</div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
