@@ -207,6 +207,7 @@ const SurvivalMode: React.FC = () => {
     window.location.reload();
   };
 
+  // ✅ FIXED: Calculate camera offset for world positioning
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
@@ -214,7 +215,7 @@ const SurvivalMode: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Using the correct filename for your background image */}
+      {/* ✅ FIXED: Static background map - NO camera transforms applied */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
@@ -222,14 +223,16 @@ const SurvivalMode: React.FC = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          imageRendering: 'pixelated'
+          imageRendering: 'pixelated',
+          // ✅ NO transform applied - map stays fixed
+          zIndex: 1
         }}
       ></div>
       
-      {/* Fallback background overlay in case image doesn't load */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-30"></div>
+      {/* Fallback background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-20 z-2"></div>
 
-      {/* Arena Boundary */}
+      {/* ✅ FIXED: Arena boundary positioned relative to world coordinates */}
       {gameStarted && (
         <div 
           className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
@@ -244,18 +247,35 @@ const SurvivalMode: React.FC = () => {
         ></div>
       )}
 
-      {/* Enemies */}
-      {gameStarted && state.currentWorld.enemies.map(enemy => (
-        <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
-      ))}
+      {/* ✅ FIXED: Enemies positioned absolutely using world coordinates minus camera offset */}
+      {gameStarted && state.currentWorld.enemies.map(enemy => {
+        const screenX = enemy.position.x - cameraX;
+        const screenY = enemy.position.y - cameraY;
+        
+        return (
+          <div
+            key={enemy.id}
+            className="absolute z-15"
+            style={{
+              left: screenX - 32, // Center the enemy sprite
+              top: screenY - 32,
+              width: '64px',
+              height: '64px'
+            }}
+          >
+            <Enemy enemy={enemy} cameraX={0} cameraY={0} />
+          </div>
+        );
+      })}
 
-      {/* Survival Drops */}
+      {/* ✅ FIXED: Survival drops positioned absolutely */}
       {gameStarted && state.survival.drops.map(drop => {
         if (drop.collected) return null;
         
         const screenX = drop.position.x - cameraX;
         const screenY = drop.position.y - cameraY;
         
+        // Only render drops visible on screen
         if (screenX < -50 || screenX > window.innerWidth + 50 || 
             screenY < -50 || screenY > window.innerHeight + 50) {
           return null;
@@ -288,12 +308,21 @@ const SurvivalMode: React.FC = () => {
         );
       })}
 
-      {/* Player - Always visible in center */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
+      {/* ✅ FIXED: Player positioned absolutely in center of screen */}
+      <div 
+        className="absolute z-30"
+        style={{
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '64px',
+          height: '64px'
+        }}
+      >
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* Damage Numbers */}
+      {/* ✅ FIXED: Damage numbers positioned absolutely using world coordinates */}
       {gameStarted && state.combat.damageNumbers.map(damageNumber => (
         <div
           key={damageNumber.id}
@@ -314,10 +343,11 @@ const SurvivalMode: React.FC = () => {
         </div>
       ))}
 
-      {/* Survival HUD */}
+      {/* ✅ FIXED: UI elements positioned relative to screen (not world) */}
       {gameStarted && !showEscMenu && (
         <>
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+          {/* Top HUD */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 border border-red-500/50">
               <div className="flex items-center space-x-6 text-white">
                 <div className="flex items-center space-x-2">
@@ -344,7 +374,7 @@ const SurvivalMode: React.FC = () => {
           </div>
 
           {/* Location Title */}
-          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50">
             <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-orange-500/50">
               <h2 className="text-orange-400 font-bold text-lg text-center">🏛️ The Forgotten Courtyard</h2>
               <p className="text-gray-300 text-sm text-center">Ancient arena of eternal combat</p>
@@ -352,7 +382,7 @@ const SurvivalMode: React.FC = () => {
           </div>
 
           {/* Player Stats */}
-          <div className="absolute top-4 left-4 z-30">
+          <div className="absolute top-4 left-4 z-50">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
               <div className="flex items-center mb-3">
                 <Heart className="text-red-500 mr-2" size={20} />
@@ -387,7 +417,7 @@ const SurvivalMode: React.FC = () => {
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-4 right-4 z-30">
+          <div className="absolute bottom-4 right-4 z-50">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
               <div className="text-white text-xs space-y-1">
                 <div>WASD - Move</div>
