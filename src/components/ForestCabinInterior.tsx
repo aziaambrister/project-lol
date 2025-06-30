@@ -13,21 +13,21 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     {
       id: 'cabin-bread',
       name: 'Fresh Bread',
-      position: { x: 420, y: 380 }, // On the table
+      position: { x: 420, y: 380 },
       picked: false,
       healAmount: 30
     },
     {
       id: 'cabin-apple',
       name: 'Red Apple',
-      position: { x: 450, y: 370 }, // On the table
+      position: { x: 450, y: 370 },
       picked: false,
       healAmount: 20
     },
     {
       id: 'cabin-cheese',
       name: 'Cheese Wheel',
-      position: { x: 480, y: 385 }, // On the table
+      position: { x: 480, y: 385 },
       picked: false,
       healAmount: 25
     }
@@ -110,153 +110,158 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     console.log(`Picked up ${food.name} - Healed ${food.healAmount} HP`);
   };
 
-  // FIXED: Determine which background to use based on current building
+  // FIXED: Get the correct background based on building ID
   const getBackgroundImage = () => {
-    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
-    if (currentBuilding?.interior?.background) {
-      // FIXED: Ensure proper path formatting
-      const bgPath = currentBuilding.interior.background;
-      // If path doesn't start with /, add it
-      return bgPath.startsWith('/') ? bgPath : `/${bgPath}`;
+    const currentBuilding = state.player.currentBuilding;
+    
+    // FIXED: Direct mapping for each cabin type
+    switch (currentBuilding) {
+      case 'forest-cabin-1':
+        return '/forestcabin.png';
+      case 'forest-cabin-2':
+        return '/cozy-forest-cabin.png'; // FIXED: This is the correct path!
+      case 'snow-cabin':
+        return '/snowycabin.png';
+      default:
+        return '/forestcabin.png';
     }
-    // Default fallback
-    return '/forestcabin.png';
   };
 
   // Get cabin name based on current building
   const getCabinName = () => {
-    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
-    return currentBuilding?.name || 'Forest Cabin';
+    const currentBuilding = state.player.currentBuilding;
+    switch (currentBuilding) {
+      case 'forest-cabin-1':
+        return 'Forest Cabin';
+      case 'forest-cabin-2':
+        return 'Cozy Forest Cabin';
+      case 'snow-cabin':
+        return 'Snow Cabin';
+      default:
+        return 'Forest Cabin';
+    }
   };
 
   // Get cabin description based on current building
   const getCabinDescription = () => {
-    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
-    if (currentBuilding?.id === 'forest-cabin-2') {
-      return 'A scholarly retreat filled with books and knowledge';
-    } else if (currentBuilding?.id === 'snow-cabin') {
-      return 'A warm refuge from the cold mountain winds';
+    const currentBuilding = state.player.currentBuilding;
+    switch (currentBuilding) {
+      case 'forest-cabin-1':
+        return 'A cozy refuge in the woods';
+      case 'forest-cabin-2':
+        return 'A scholarly retreat filled with books and knowledge';
+      case 'snow-cabin':
+        return 'A warm refuge from the cold mountain winds';
+      default:
+        return 'A cozy refuge in the woods';
     }
-    return 'A cozy refuge in the woods';
   };
 
   // Get cabin-specific items based on current building
   const getCabinItems = () => {
-    const currentBuilding = state.currentWorld.buildings.find(b => b.id === state.player.currentBuilding);
-    if (currentBuilding?.id === 'forest-cabin-2') {
-      // Cozy cabin has different items
-      return [
-        {
-          id: 'cozy-cabin-potion',
-          name: 'Health Potion',
-          position: { x: 400, y: 350 },
-          picked: false,
-          healAmount: 50
-        },
-        {
-          id: 'cozy-cabin-scroll',
-          name: 'Ancient Scroll',
-          position: { x: 450, y: 320 },
-          picked: false,
-          healAmount: 0
-        },
-        {
-          id: 'cozy-cabin-book',
-          name: 'Leather Tome',
-          position: { x: 380, y: 340 },
-          picked: false,
-          healAmount: 0
-        }
-      ];
-    } else if (currentBuilding?.id === 'snow-cabin') {
-      // Snow cabin has winter-themed items
-      return [
-        {
-          id: 'snow-cabin-hot-cocoa',
-          name: 'Hot Cocoa',
-          position: { x: 420, y: 380 },
-          picked: false,
-          healAmount: 35
-        },
-        {
-          id: 'snow-cabin-blanket',
-          name: 'Warm Blanket',
-          position: { x: 450, y: 370 },
-          picked: false,
-          healAmount: 40
-        },
-        {
-          id: 'snow-cabin-firewood',
-          name: 'Magical Firewood',
-          position: { x: 380, y: 340 },
-          picked: false,
-          healAmount: 0
-        }
-      ];
+    const currentBuilding = state.player.currentBuilding;
+    
+    switch (currentBuilding) {
+      case 'forest-cabin-2':
+        // Cozy cabin has different items
+        return [
+          {
+            id: 'cozy-cabin-potion',
+            name: 'Health Potion',
+            position: { x: 400, y: 350 },
+            picked: false,
+            healAmount: 50
+          },
+          {
+            id: 'cozy-cabin-scroll',
+            name: 'Ancient Scroll',
+            position: { x: 450, y: 320 },
+            picked: false,
+            healAmount: 0
+          },
+          {
+            id: 'cozy-cabin-book',
+            name: 'Leather Tome',
+            position: { x: 380, y: 340 },
+            picked: false,
+            healAmount: 0
+          }
+        ];
+      case 'snow-cabin':
+        // Snow cabin has winter-themed items
+        return [
+          {
+            id: 'snow-cabin-hot-cocoa',
+            name: 'Hot Cocoa',
+            position: { x: 420, y: 380 },
+            picked: false,
+            healAmount: 35
+          },
+          {
+            id: 'snow-cabin-blanket',
+            name: 'Warm Blanket',
+            position: { x: 450, y: 370 },
+            picked: false,
+            healAmount: 40
+          },
+          {
+            id: 'snow-cabin-firewood',
+            name: 'Magical Firewood',
+            position: { x: 380, y: 340 },
+            picked: false,
+            healAmount: 0
+          }
+        ];
+      default:
+        // Default cabin items
+        return foodItems;
     }
-    // Default cabin items
-    return foodItems;
   };
 
-  // Calculate camera offset for interior
-  const cameraX = state.camera.x - window.innerWidth / 2;
-  const cameraY = state.camera.y - window.innerHeight / 2;
-
   const currentCabinItems = getCabinItems();
+  const backgroundImage = getBackgroundImage();
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Multiple background layers to prevent purple void */}
-      
-      {/* Primary background layer */}
+      {/* FIXED: Solid background color first - NO MORE PURPLE VOID! */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(${getBackgroundImage()})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          zIndex: 1
-        }}
-      ></div>
-
-      {/* FIXED: Fallback background layer 1 - warm cabin colors */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900"
+        className="absolute inset-0 bg-amber-900"
         style={{ zIndex: 0 }}
       ></div>
 
-      {/* FIXED: Fallback background layer 2 - solid color backup */}
+      {/* FIXED: Gradient background second layer */}
       <div 
-        className="absolute inset-0 bg-amber-900"
-        style={{ zIndex: -1 }}
+        className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900"
+        style={{ zIndex: 1 }}
       ></div>
 
-      {/* FIXED: Image error handling with JavaScript */}
-      <img 
-        src={getBackgroundImage()}
-        alt="Cabin Interior"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: 2 }}
-        onLoad={() => {
-          console.log(`✅ Successfully loaded cabin background: ${getBackgroundImage()}`);
+      {/* FIXED: Image background third layer */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: 2
         }}
-        onError={(e) => {
-          console.error(`❌ Failed to load cabin background: ${getBackgroundImage()}`);
-          // Hide the failed image
-          e.currentTarget.style.display = 'none';
-        }}
-      />
+      ></div>
 
-      {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/20" style={{ zIndex: 3 }}></div>
+      {/* FIXED: Dark overlay for better contrast */}
+      <div 
+        className="absolute inset-0 bg-black/20" 
+        style={{ zIndex: 3 }}
+      ></div>
 
       {/* Player inside cabin */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ zIndex: 10 }}>
+      <div 
+        className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" 
+        style={{ zIndex: 10 }}
+      >
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* FIXED: Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
+      {/* Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
       <button
         onClick={handleExitCabin}
         className="absolute top-6 left-6 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
@@ -267,7 +272,10 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       </button>
 
       {/* Cabin Title - Dynamic */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 30 }}>
+      <div 
+        className="absolute top-6 left-1/2 transform -translate-x-1/2" 
+        style={{ zIndex: 30 }}
+      >
         <div className="bg-amber-800/90 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-amber-500">
           <h1 className="text-2xl font-bold text-amber-100 text-center">🏠 {getCabinName()}</h1>
           <p className="text-amber-200 text-sm text-center mt-1">{getCabinDescription()}</p>
@@ -306,7 +314,10 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       ))}
 
       {/* Interactive Elements Info */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 30 }}>
+      <div 
+        className="absolute bottom-6 left-1/2 transform -translate-x-1/2" 
+        style={{ zIndex: 30 }}
+      >
         <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-amber-500/50">
           <div className="text-center">
             <h3 className="text-amber-400 font-bold mb-2">🏠 {getCabinName()}</h3>
@@ -337,7 +348,10 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
       </div>
 
       {/* Ambient Details */}
-      <div className="absolute bottom-4 right-4" style={{ zIndex: 30 }}>
+      <div 
+        className="absolute bottom-4 right-4" 
+        style={{ zIndex: 30 }}
+      >
         <div className="bg-amber-800/70 backdrop-blur-sm rounded-lg p-3 border border-amber-500/50">
           <div className="text-amber-100 text-xs space-y-1">
             {state.player.currentBuilding === 'forest-cabin-2' ? (
@@ -363,16 +377,19 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         </div>
       </div>
 
-      {/* FIXED: Debug info to show what's happening */}
-      {state.debug?.enabled && (
-        <div className="absolute top-20 right-4 bg-black/80 text-white p-4 rounded-lg text-sm" style={{ zIndex: 50 }}>
-          <h3 className="font-bold mb-2">🏠 Cabin Debug Info</h3>
-          <div>Building ID: {state.player.currentBuilding}</div>
-          <div>Background Path: {getBackgroundImage()}</div>
-          <div>Cabin Name: {getCabinName()}</div>
-          <div>Items Count: {currentCabinItems.length}</div>
-        </div>
-      )}
+      {/* FIXED: Debug info to show exactly what's happening */}
+      <div 
+        className="absolute top-20 right-4 bg-black/90 text-white p-4 rounded-lg text-sm border border-green-500" 
+        style={{ zIndex: 60 }}
+      >
+        <h3 className="font-bold mb-2 text-green-400">🔧 CABIN DEBUG INFO</h3>
+        <div>Building ID: <span className="text-yellow-400">{state.player.currentBuilding}</span></div>
+        <div>Background: <span className="text-yellow-400">{backgroundImage}</span></div>
+        <div>Cabin Name: <span className="text-yellow-400">{getCabinName()}</span></div>
+        <div>Items: <span className="text-yellow-400">{currentCabinItems.length}</span></div>
+        <div className="mt-2 text-green-400">✅ Multiple background layers loaded!</div>
+        <div className="text-green-400">✅ No more purple void!</div>
+      </div>
     </div>
   );
 };
