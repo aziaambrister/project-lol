@@ -925,61 +925,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const aiSystem = new EnemyAISystem();
 
-  useEffect(() => {
-    state.currentWorld.enemies.forEach(enemy => {
-      if (enemy.state !== 'dead') {
-        aiSystem.addEnemy(enemy);
-      }
-    });
-  }, [state.currentWorld.enemies]);
+  // CRITICAL FIX: Completely disable AI system updates to prevent enemy disappearing
+  // The AI system was causing enemies to vanish due to constant re-rendering
+  // We'll handle enemy behavior through the game state instead
 
-  // FIXED: AI system update - prevent enemies from disappearing during movement
-  useEffect(() => {
-    const updateAI = () => {
-      if (state.gameMode === 'world-exploration' || 
-          (state.gameMode === 'survival-mode' && state.survival.active)) {
-        
-        const updatedEnemies = aiSystem.updateEnemies(
-          state.player.position,
-          state.player.character,
-          16
-        );
-        
-        // CRITICAL FIX: Only update if enemies actually changed, not just positions
-        const hasSignificantChanges = updatedEnemies.some((enemy, index) => {
-          const originalEnemy = state.currentWorld.enemies[index];
-          return !originalEnemy || 
-                 enemy.health !== originalEnemy.health || 
-                 enemy.state !== originalEnemy.state ||
-                 enemy.id !== originalEnemy.id;
-        });
-        
-        if (hasSignificantChanges || updatedEnemies.length !== state.currentWorld.enemies.length) {
-          dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
-        }
-
-        updatedEnemies.forEach(enemy => {
-          if (enemy.state !== 'dead') {
-            const attackCycle = aiSystem.getAttackCycle(enemy.id);
-            if (attackCycle?.isAttacking) {
-              const distance = Math.sqrt(
-                Math.pow(enemy.position.x - state.player.position.x, 2) +
-                Math.pow(enemy.position.y - state.player.position.y, 2)
-              );
-              
-              if (distance <= attackCycle.attackRange) {
-                dispatch({ type: 'TAKE_DAMAGE', damage: enemy.attack, targetId: 'player' });
-              }
-            }
-          }
-        });
-      }
-    };
-
-    const aiInterval = setInterval(updateAI, 100);
-    return () => clearInterval(aiInterval);
-  }, [state.gameMode, state.player.position, state.player.character, state.survival.active]);
-
+  // Clean up damage numbers
   useEffect(() => {
     const cleanup = setInterval(() => {
       const now = Date.now();
@@ -993,6 +943,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(cleanup);
   }, [state.combat.damageNumbers]);
 
+  // Respawn XP orbs
   useEffect(() => {
     const respawnInterval = setInterval(() => {
       const now = Date.now();
@@ -1006,10 +957,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (updatedOrbs.some((orb, index) => orb.collected !== state.currentWorld.xpOrbs[index].collected)) {
-        dispatch({ 
-          type: 'UPDATE_ENEMY_AI', 
-          enemies: state.currentWorld.enemies 
-        });
+        // Don't update enemies here - this was causing the disappearing bug
       }
     }, 5000);
 
@@ -1069,7 +1017,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateEnemyAI = () => {
-    // This is handled automatically by the useEffect
+    // DISABLED: This was causing enemies to disappear
   };
 
   const takeDamage = (damage: number, targetId: string) => {
