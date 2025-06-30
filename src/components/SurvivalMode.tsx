@@ -207,33 +207,47 @@ const SurvivalMode: React.FC = () => {
     window.location.reload();
   };
 
+  // Calculate camera offset for entities (NOT for the map)
+  const cameraOffsetX = state.player.position.x - window.innerWidth / 2;
+  const cameraOffsetY = state.player.position.y - window.innerHeight / 2;
+
   const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* ✅ LAYER 1: STATIC MAP - Never moves, always stays in place */}
-      <div className="map" style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100vw', 
-        height: '100vh',
-        backgroundImage: `url(/the-forgotten-courtyard.png)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        zIndex: 1
-      }}></div>
+      {/* ✅ LAYER 1: STATIC MAP - The Forgotten Courtyard NEVER MOVES */}
+      <div 
+        className="map-layer"
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          width: '100vw', 
+          height: '100vh',
+          backgroundImage: `url(/the-forgotten-courtyard.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          imageRendering: 'pixelated',
+          zIndex: 1
+        }}
+      ></div>
       
-      {/* ✅ LAYER 2: ENTITY LAYER - Only this layer moves with camera */}
-      <div className="entity-layer" style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100vw', 
-        height: '100vh',
-        zIndex: 10
-      }}>
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/20 z-2"></div>
+
+      {/* ✅ LAYER 2: ENTITY LAYER - Only entities move with camera */}
+      <div 
+        className="entity-layer"
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          width: '100vw', 
+          height: '100vh',
+          zIndex: 10
+        }}
+      >
         {/* Arena boundary */}
         {gameStarted && (
           <div 
@@ -241,17 +255,23 @@ const SurvivalMode: React.FC = () => {
             style={{
               width: `${state.survival.arena.radius * 2}px`,
               height: `${state.survival.arena.radius * 2}px`,
-              left: `${state.survival.arena.center.x - state.survival.arena.radius - (state.player.position.x - window.innerWidth / 2)}px`,
-              top: `${state.survival.arena.center.y - state.survival.arena.radius - (state.player.position.y - window.innerHeight / 2)}px`,
+              left: `${state.survival.arena.center.x - state.survival.arena.radius - cameraOffsetX}px`,
+              top: `${state.survival.arena.center.y - state.survival.arena.radius - cameraOffsetY}px`,
               boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`
             }}
           ></div>
         )}
 
-        {/* Enemies */}
+        {/* Enemies - positioned relative to camera */}
         {gameStarted && state.currentWorld.enemies.map(enemy => {
-          const screenX = enemy.position.x - (state.player.position.x - window.innerWidth / 2);
-          const screenY = enemy.position.y - (state.player.position.y - window.innerHeight / 2);
+          const screenX = enemy.position.x - cameraOffsetX;
+          const screenY = enemy.position.y - cameraOffsetY;
+          
+          // Only render enemies visible on screen
+          if (screenX < -100 || screenX > window.innerWidth + 100 || 
+              screenY < -100 || screenY > window.innerHeight + 100) {
+            return null;
+          }
           
           return (
             <div
@@ -269,12 +289,12 @@ const SurvivalMode: React.FC = () => {
           );
         })}
 
-        {/* Survival drops */}
+        {/* Survival drops - positioned relative to camera */}
         {gameStarted && state.survival.drops.map(drop => {
           if (drop.collected) return null;
           
-          const screenX = drop.position.x - (state.player.position.x - window.innerWidth / 2);
-          const screenY = drop.position.y - (state.player.position.y - window.innerHeight / 2);
+          const screenX = drop.position.x - cameraOffsetX;
+          const screenY = drop.position.y - cameraOffsetY;
           
           if (screenX < -50 || screenX > window.innerWidth + 50 || 
               screenY < -50 || screenY > window.innerHeight + 50) {
@@ -308,7 +328,7 @@ const SurvivalMode: React.FC = () => {
           );
         })}
 
-        {/* Player - Always centered */}
+        {/* Player - Always centered on screen */}
         <div 
           className="absolute"
           style={{
@@ -323,7 +343,7 @@ const SurvivalMode: React.FC = () => {
           <Player cameraX={0} cameraY={0} />
         </div>
 
-        {/* Damage numbers */}
+        {/* Damage numbers - positioned relative to camera */}
         {gameStarted && state.combat.damageNumbers.map(damageNumber => (
           <div
             key={damageNumber.id}
@@ -333,8 +353,8 @@ const SurvivalMode: React.FC = () => {
               'text-yellow-500'
             }`}
             style={{
-              left: damageNumber.position.x - (state.player.position.x - window.innerWidth / 2),
-              top: damageNumber.position.y - (state.player.position.y - window.innerHeight / 2),
+              left: damageNumber.position.x - cameraOffsetX,
+              top: damageNumber.position.y - cameraOffsetY,
               textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
               animation: 'float-up 2s ease-out forwards'
             }}
@@ -413,6 +433,52 @@ const SurvivalMode: React.FC = () => {
                   <h3 className="text-white font-bold text-sm">{state.player.character.name}</h3>
                   <div className="text-yellow-400 text-xs">Level {state.player.character.level}</div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Power-ups */}
+          <div className="absolute top-4 right-4 z-50">
+            <div className="space-y-2">
+              {state.survival.activePowerUps.map((activePowerUp, index) => {
+                const timeLeft = Math.max(0, activePowerUp.endTime - Date.now());
+                const progress = (timeLeft / activePowerUp.powerUp.duration) * 100;
+                
+                return (
+                  <div key={index} className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-purple-500/50">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">{activePowerUp.powerUp.icon}</span>
+                      <div>
+                        <div className="text-white font-bold text-sm">{activePowerUp.powerUp.name}</div>
+                        <div className="w-20 h-1 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-purple-500 transition-all duration-100"
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Wave Progress */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-blue-500/50">
+              <div className="text-center">
+                {state.survival.waveInProgress ? (
+                  <div className="text-white">
+                    <div className="text-sm">Enemies Remaining</div>
+                    <div className="text-2xl font-bold text-red-400">{aliveEnemies}</div>
+                  </div>
+                ) : (
+                  <div className="text-white">
+                    <div className="text-sm">Next Wave In</div>
+                    <div className="text-2xl font-bold text-blue-400">{Math.ceil(state.survival.nextWaveTimer / 1000)}s</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
