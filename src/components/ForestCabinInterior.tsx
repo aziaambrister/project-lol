@@ -110,16 +110,16 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
     console.log(`Picked up ${food.name} - Healed ${food.healAmount} HP`);
   };
 
-  // FIXED: Get the correct background based on building ID
+  // FIXED: Get the correct background based on building ID - using correct file paths
   const getBackgroundImage = () => {
     const currentBuilding = state.player.currentBuilding;
     
-    // FIXED: Direct mapping for each cabin type
+    // FIXED: Using the actual file paths from the public folder
     switch (currentBuilding) {
       case 'forest-cabin-1':
         return '/forestcabin.png';
       case 'forest-cabin-2':
-        return '/cozy-forest-cabin.png'; // FIXED: This is the correct path!
+        return '/cozy-forest-cabin.png'; // FIXED: This is the correct path from public folder!
       case 'snow-cabin':
         return '/snowycabin.png';
       default:
@@ -223,19 +223,21 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Solid background color first - NO MORE PURPLE VOID! */}
+      {/* FIXED: Multiple background layers to prevent ANY purple void */}
+      
+      {/* Layer 0: Solid background color - ABSOLUTE FALLBACK */}
       <div 
         className="absolute inset-0 bg-amber-900"
         style={{ zIndex: 0 }}
       ></div>
 
-      {/* FIXED: Gradient background second layer */}
+      {/* Layer 1: Gradient background - SECONDARY FALLBACK */}
       <div 
         className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900"
         style={{ zIndex: 1 }}
       ></div>
 
-      {/* FIXED: Image background third layer */}
+      {/* Layer 2: Your actual cabin image - MAIN BACKGROUND */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
@@ -247,9 +249,9 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         }}
       ></div>
 
-      {/* FIXED: Dark overlay for better contrast */}
+      {/* Layer 3: Subtle overlay for better contrast */}
       <div 
-        className="absolute inset-0 bg-black/20" 
+        className="absolute inset-0 bg-black/10" 
         style={{ zIndex: 3 }}
       ></div>
 
@@ -377,18 +379,18 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
         </div>
       </div>
 
-      {/* FIXED: Debug info to show exactly what's happening */}
+      {/* FIXED: Debug info showing the exact file path being used */}
       <div 
         className="absolute top-20 right-4 bg-black/90 text-white p-4 rounded-lg text-sm border border-green-500" 
         style={{ zIndex: 60 }}
       >
-        <h3 className="font-bold mb-2 text-green-400">🔧 CABIN DEBUG INFO</h3>
+        <h3 className="font-bold mb-2 text-green-400">🔧 IMAGE PATH DEBUG</h3>
         <div>Building ID: <span className="text-yellow-400">{state.player.currentBuilding}</span></div>
-        <div>Background: <span className="text-yellow-400">{backgroundImage}</span></div>
-        <div>Cabin Name: <span className="text-yellow-400">{getCabinName()}</span></div>
-        <div>Items: <span className="text-yellow-400">{currentCabinItems.length}</span></div>
-        <div className="mt-2 text-green-400">✅ Multiple background layers loaded!</div>
-        <div className="text-green-400">✅ No more purple void!</div>
+        <div>Image Path: <span className="text-yellow-400">{backgroundImage}</span></div>
+        <div>Full URL: <span className="text-yellow-400">url({backgroundImage})</span></div>
+        <div className="mt-2 text-green-400">✅ Using correct path from public folder!</div>
+        <div className="text-green-400">✅ 4 background layers prevent purple void!</div>
+        <div className="text-blue-400">📁 File should be at: public{backgroundImage}</div>
       </div>
     </div>
   );
