@@ -3,23 +3,34 @@ import { useGame } from '../context/GameContext';
 import { Clock, Shield, Zap, Target, Heart, Coins, Trophy, Users } from 'lucide-react';
 import Player from './Player';
 import Enemy from './Enemy';
+import EscapeMenu from './EscapeMenu';
 
 const SurvivalMode: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, collectSurvivalDrop, usePowerUp } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [gameStarted, setGameStarted] = useState(false);
+  const [showEscMenu, setShowEscMenu] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const keysPressedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
-  // Handle keyboard input - ONLY when game has started
+  // Handle keyboard input - ONLY when game has started and not paused
   useEffect(() => {
-    if (!gameStarted) return;
+    if (!gameStarted || showEscMenu || isPaused) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      // ESC key to show pause menu
+      if (key === 'escape') {
+        e.preventDefault();
+        setShowEscMenu(true);
+        setIsPaused(true);
+        return;
+      }
       
       if (['w', 'a', 's', 'd'].includes(key)) {
         e.preventDefault();
@@ -68,11 +79,11 @@ const SurvivalMode: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [performAttack, usePowerUp, gameStarted]);
+  }, [performAttack, usePowerUp, gameStarted, showEscMenu, isPaused]);
 
-  // Movement loop - ONLY when game has started
+  // Movement loop - ONLY when game has started and not paused
   useEffect(() => {
-    if (!gameStarted) return;
+    if (!gameStarted || showEscMenu || isPaused) return;
 
     let animationFrameId: number;
 
@@ -110,7 +121,7 @@ const SurvivalMode: React.FC = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [movePlayer, stopMoving, gameStarted, state.player.isMoving]);
+  }, [movePlayer, stopMoving, gameStarted, showEscMenu, isPaused, state.player.isMoving]);
 
   const findNearestEnemy = () => {
     if (!gameStarted) return null;
@@ -140,6 +151,16 @@ const SurvivalMode: React.FC = () => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleResumeGame = () => {
+    setShowEscMenu(false);
+    setIsPaused(false);
+  };
+
+  const handleExitGame = () => {
+    // This would be handled by the EscapeMenu component
+    window.location.reload();
   };
 
   const cameraX = state.camera.x - window.innerWidth / 2;
@@ -221,8 +242,8 @@ const SurvivalMode: React.FC = () => {
         );
       })}
 
-      {/* Player */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      {/* FIXED: Player - Always visible in center of screen */}
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
         <Player cameraX={0} cameraY={0} />
       </div>
 
@@ -246,8 +267,8 @@ const SurvivalMode: React.FC = () => {
         </div>
       ))}
 
-      {/* Survival HUD - ONLY when game started */}
-      {gameStarted && (
+      {/* Survival HUD - ONLY when game started and not paused */}
+      {gameStarted && !showEscMenu && (
         <>
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 border border-red-500/50">
@@ -375,11 +396,19 @@ const SurvivalMode: React.FC = () => {
                 <div>WASD - Move</div>
                 <div>Space - Attack</div>
                 <div>2 - Shuriken</div>
-                <div>1,3,4,5 - Power-ups</div>
+                <div>ESC - Pause Menu</div>
               </div>
             </div>
           </div>
         </>
+      )}
+
+      {/* ESC Menu */}
+      {showEscMenu && (
+        <EscapeMenu 
+          onClose={handleResumeGame}
+          onExit={handleExitGame}
+        />
       )}
 
       {/* Start Game Overlay */}

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Settings, LogOut, Play, Volume2, VolumeX, Monitor, Gamepad2 } from 'lucide-react';
+import { Settings, LogOut, Play, Volume2, VolumeX, Monitor, Gamepad2, Home } from 'lucide-react';
 
 interface EscapeMenuProps {
   onClose: () => void;
+  onExit?: () => void;
 }
 
-const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose }) => {
+const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose, onExit }) => {
   const [currentView, setCurrentView] = useState<'main' | 'settings'>('main');
   const [settings, setSettings] = useState({
     soundEnabled: true,
@@ -30,6 +31,16 @@ const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose }) => {
 
   const handleExitGame = () => {
     if (confirm('Are you sure you want to exit the game? Any unsaved progress will be lost.')) {
+      if (onExit) {
+        onExit();
+      } else {
+        window.location.reload();
+      }
+    }
+  };
+
+  const handleMainMenu = () => {
+    if (confirm('Return to main menu? Your current progress will be lost.')) {
       window.location.reload();
     }
   };
@@ -47,19 +58,19 @@ const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose }) => {
             {/* Main Menu */}
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-2">
-                Game Menu
+                Game Paused
               </h2>
               <div className="w-16 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto rounded-full"></div>
             </div>
 
             <div className="space-y-4">
-              {/* Return to Game */}
+              {/* Resume Game */}
               <button
                 onClick={handleReturnToGame}
                 className="w-full flex items-center justify-center space-x-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 <Play size={24} />
-                <span>Return to Game</span>
+                <span>Resume Game</span>
               </button>
 
               {/* Settings */}
@@ -69,6 +80,15 @@ const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose }) => {
               >
                 <Settings size={24} />
                 <span>Settings</span>
+              </button>
+
+              {/* Main Menu */}
+              <button
+                onClick={handleMainMenu}
+                className="w-full flex items-center justify-center space-x-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <Home size={24} />
+                <span>Main Menu</span>
               </button>
 
               {/* Exit Game */}
@@ -83,16 +103,16 @@ const EscapeMenu: React.FC<EscapeMenuProps> = ({ onClose }) => {
 
             {/* Quick Stats */}
             <div className="mt-8 p-4 bg-black/30 rounded-lg border border-gray-600">
-              <h3 className="text-yellow-400 font-bold mb-2 text-center">Quick Stats</h3>
+              <h3 className="text-yellow-400 font-bold mb-2 text-center">Current Session</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="text-gray-300">Level:</div>
-                <div className="text-white font-bold">1</div>
-                <div className="text-gray-300">Coins:</div>
-                <div className="text-yellow-400 font-bold">100</div>
+                <div className="text-gray-300">Character:</div>
+                <div className="text-white font-bold">Ninja</div>
                 <div className="text-gray-300">Health:</div>
                 <div className="text-red-400 font-bold">100/100</div>
+                <div className="text-gray-300">Wave:</div>
+                <div className="text-orange-400 font-bold">1</div>
                 <div className="text-gray-300">Enemies:</div>
-                <div className="text-orange-400 font-bold">8 Active</div>
+                <div className="text-yellow-400 font-bold">3 Active</div>
               </div>
             </div>
           </>
