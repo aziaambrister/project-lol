@@ -214,11 +214,11 @@ const SurvivalMode: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Using ONLY your provided background image */}
+      {/* FIXED: Using the correct filename for your background image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url(/The forgotten courtyard.png)`,
+          backgroundImage: `url(/the-forgotten-courtyard.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -226,8 +226,8 @@ const SurvivalMode: React.FC = () => {
         }}
       ></div>
       
-      {/* Fallback background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-20"></div>
+      {/* Fallback background overlay in case image doesn't load */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-30"></div>
 
       {/* Arena Boundary */}
       {gameStarted && (
