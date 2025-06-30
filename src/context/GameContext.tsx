@@ -212,7 +212,7 @@ const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
-    position: { x: 200, y: 3800 },
+    position: { x: 200, y: 3800 }, // FIXED: Proper spawn point for adventure mode
     direction: 'down',
     isMoving: false,
     isSwimming: false,
@@ -264,7 +264,7 @@ const initialState: GameState = {
     }
   },
   camera: {
-    x: 200,
+    x: 200, // FIXED: Proper camera position for adventure mode
     y: 3800,
     zoom: 1
   },
@@ -291,12 +291,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME': {
       const selectedCharacter = characters.find(c => c.class === action.characterClass) || characters[0];
+      // FIXED: Use proper spawn point from world data
+      const spawnPoint = state.currentWorld.spawnPoint;
       return {
         ...state,
         gameMode: 'world-exploration',
         player: {
           ...state.player,
-          character: { ...selectedCharacter }
+          character: { ...selectedCharacter },
+          position: { ...spawnPoint } // Use the world's spawn point
+        },
+        camera: {
+          ...state.camera,
+          x: spawnPoint.x, // Set camera to spawn point
+          y: spawnPoint.y
         }
       };
     }

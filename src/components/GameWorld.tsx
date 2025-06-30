@@ -254,21 +254,20 @@ const GameWorld: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Map - Always visible, no purple void */}
+      {/* FIXED: Extended background that covers the entire world bounds */}
       <div
         className="absolute"
         style={{
-          left: -cameraX,
-          top: -cameraY,
-          width: state.currentWorld.size.width,
-          height: state.currentWorld.size.height,
+          left: -cameraX - 500, // Extended beyond camera bounds
+          top: -cameraY - 500,
+          width: state.currentWorld.size.width + 1000, // Extended width
+          height: state.currentWorld.size.height + 1000, // Extended height
           backgroundImage: `url(/map.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           imageRendering: 'pixelated',
-          minWidth: '100vw',
-          minHeight: '100vh'
+          zIndex: 1
         }}
       >
         {!mapLoaded && (
@@ -277,6 +276,18 @@ const GameWorld: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* FIXED: Additional background layer to prevent purple void */}
+      <div
+        className="absolute bg-gradient-to-br from-green-800 via-green-700 to-green-900"
+        style={{
+          left: -cameraX - 1000,
+          top: -cameraY - 1000,
+          width: state.currentWorld.size.width + 2000,
+          height: state.currentWorld.size.height + 2000,
+          zIndex: 0
+        }}
+      ></div>
 
       {/* XP Orbs */}
       {state.currentWorld.xpOrbs.map(orb => {
