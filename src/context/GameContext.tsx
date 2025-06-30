@@ -107,7 +107,7 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
   const enemyTemplates = [
     {
       name: 'Mindless Zombie',
-      sprite: '/zombie.png',
+      sprite: 'zombie.png',
       baseHealth: 50,
       baseAttack: 8,
       defense: 3,
@@ -118,7 +118,7 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
     },
     {
       name: 'Wild Wolf',
-      sprite: '/wolf.png',
+      sprite: 'wolf.png',
       baseHealth: 40,
       baseAttack: 10,
       defense: 2,
@@ -129,7 +129,7 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
     },
     {
       name: 'Ice Bear',
-      sprite: '/icebear.png',
+      sprite: 'icebear.png',
       baseHealth: 80,
       baseAttack: 15,
       defense: 8,
@@ -212,7 +212,7 @@ const initialState: GameState = {
   gameMode: 'character-select',
   player: {
     character: characters[0],
-    position: { x: 200, y: 3800 }, // FIXED: Proper spawn point for adventure mode
+    position: { x: 200, y: 3800 },
     direction: 'down',
     isMoving: false,
     isSwimming: false,
@@ -264,7 +264,7 @@ const initialState: GameState = {
     }
   },
   camera: {
-    x: 200, // FIXED: Proper camera position for adventure mode
+    x: 200,
     y: 3800,
     zoom: 1
   },
@@ -291,19 +291,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME': {
       const selectedCharacter = characters.find(c => c.class === action.characterClass) || characters[0];
-      // FIXED: Use proper spawn point from world data
       const spawnPoint = state.currentWorld.spawnPoint;
+      
+      console.log('🎮 Starting adventure mode with character:', selectedCharacter.name);
+      console.log('🌍 Adventure mode enemies:', state.currentWorld.enemies.length);
+      
       return {
         ...state,
         gameMode: 'world-exploration',
         player: {
           ...state.player,
           character: { ...selectedCharacter },
-          position: { ...spawnPoint } // Use the world's spawn point
+          position: { ...spawnPoint }
         },
         camera: {
           ...state.camera,
-          x: spawnPoint.x, // Set camera to spawn point
+          x: spawnPoint.x,
           y: spawnPoint.y
         }
       };
@@ -919,6 +922,64 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { user } = useAuth();
   
   const aiSystem = new EnemyAISystem();
+
+  // FIXED: AI system management for BOTH adventure and survival modes
+  useEffect(() => {
+    // Add enemies to AI system when they exist
+    state.currentWorld.enemies.forEach(enemy => {
+      if (enemy.state !== 'dead' && !aiSystem.getEnemyState(enemy.id)) {
+        aiSystem.addEnemy(enemy);
+        console.log(`🤖 Added enemy ${enemy.id} to AI system`);
+      }
+    });
+  }, [state.currentWorld.enemies.length]);
+
+  // FIXED: AI update loop for BOTH adventure and survival modes
+  useEffect(() => {
+    // Only run AI when in world exploration or survival mode
+    if (state.gameMode !== 'world-exploration' && state.gameMode !== 'survival-mode') {
+      return;
+    }
+
+    console.log(`🎮 Starting AI system for ${state.gameMode} mode`);
+
+    const updateAI = () => {
+      try {
+        const updatedEnemies = aiSystem.updateEnemies(
+          state.player.position,
+          state.player.character,
+          16
+        );
+        
+        if (updatedEnemies.length > 0) {
+          dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
+
+          // Check for enemy attacks
+          updatedEnemies.forEach(enemy => {
+            if (enemy.state !== 'dead') {
+              const attackCycle = aiSystem.getAttackCycle(enemy.id);
+              if (attackCycle?.isAttacking) {
+                const distance = Math.sqrt(
+                  Math.pow(enemy.position.x - state.player.position.x, 2) +
+                  Math.pow(enemy.position.y - state.player.position.y, 2)
+                );
+                
+                if (distance <= attackCycle.attackRange) {
+                  dispatch({ type: 'TAKE_DAMAGE', damage: enemy.attack, targetId: 'player' });
+                  console.log(`💥 Enemy ${enemy.id} hit player for ${enemy.attack} damage!`);
+                }
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('AI update error:', error);
+      }
+    };
+
+    const aiInterval = setInterval(updateAI, 100);
+    return () => clearInterval(aiInterval);
+  }, [state.gameMode, state.player.position.x, state.player.position.y]);
 
   // Clean up damage numbers
   useEffect(() => {
