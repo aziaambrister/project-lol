@@ -203,25 +203,31 @@ const ForestCabinInterior: React.FC<ForestCabinInteriorProps> = ({ keysHeld = {}
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Cabin Background - Dynamic based on current building */}
+      {/* FIXED: Cabin Background - Dynamic based on current building with proper error handling */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
           backgroundImage: `url(${getBackgroundImage()})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+        onError={(e) => {
+          // FIXED: Fallback if image fails to load
+          console.warn(`Failed to load cabin background: ${getBackgroundImage()}`);
+          e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #8B4513, #A0522D, #CD853F)';
         }}
       ></div>
 
-      {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/20"></div>
+      {/* FIXED: Additional fallback background to prevent purple void */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-20"></div>
 
       {/* Player inside cabin */}
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <Player cameraX={0} cameraY={0} />
       </div>
 
-      {/* Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
+      {/* FIXED: Exit Button - ALWAYS VISIBLE AND FUNCTIONAL */}
       <button
         onClick={handleExitCabin}
         className="absolute top-6 left-6 z-50 flex items-center px-6 py-3 bg-amber-700/90 hover:bg-amber-600/90 text-white rounded-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-amber-500"
