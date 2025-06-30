@@ -214,11 +214,11 @@ const SurvivalMode: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: Using the correct filename for your background image */}
+      {/* FIXED: Using the correct filename for your background image - REMOVED LEADING SLASH */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url(/the-forgotten-courtyard.png)`,
+          backgroundImage: `url(the-forgotten-courtyard.png)`, // FIXED: Removed leading slash
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

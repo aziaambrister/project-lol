@@ -70,7 +70,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/forestcabin.png',
+        background: 'forestcabin.png', // FIXED: Removed leading slash
         npcs: [],
         items: [
           {
@@ -167,7 +167,7 @@ export const gameWorld: GameWorld = {
       enterable: true,
       sprite: '🏠',
       interior: {
-        background: '/snowycabin.png', // FIXED: Correct snowy cabin background
+        background: 'snowycabin.png', // FIXED: Removed leading slash
         npcs: [],
         items: [
           {
@@ -242,7 +242,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 800, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/zombie.png',
+      sprite: 'zombie.png', // FIXED: Removed leading slash
       aiDifficulty: 'easy',
       moveSet: [
         {
@@ -286,7 +286,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 1200, y: 1500 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/zombie.png',
+      sprite: 'zombie.png', // FIXED: Removed leading slash
       aiDifficulty: 'easy',
       moveSet: [
         {
@@ -330,7 +330,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 900, y: 1800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/wolf.png',
+      sprite: 'wolf.png', // FIXED: Removed leading slash
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -375,7 +375,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 800 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/wolf.png',
+      sprite: 'wolf.png', // FIXED: Removed leading slash
       aiDifficulty: 'medium',
       moveSet: [
         {
@@ -419,7 +419,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 3000, y: 1000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/icebear.png', // Using the updated ice bear image
+      sprite: 'icebear.png', // FIXED: Removed leading slash
       aiDifficulty: 'hard',
       moveSet: [
         {
@@ -555,7 +555,7 @@ export const gameWorld: GameWorld = {
       patrolCenter: { x: 2600, y: 3000 },
       state: 'patrol',
       lastAction: 0,
-      sprite: '/dragonsnake.png', // Updated to use the new dragon snake image
+      sprite: 'dragonsnake.png', // FIXED: Removed leading slash
       aiDifficulty: 'medium',
       moveSet: [
         {
