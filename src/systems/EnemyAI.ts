@@ -51,7 +51,7 @@ export class EnemyAISystem {
       lastAttackTime: 0,
       cooldownDuration: 1500, // Reduced from 2000ms to 1500ms for more aggressive combat
       isAttacking: false,
-      attackRange: 60 // Increased from 50 to 60 for better attack range
+      attackRange: 80 // INCREASED from 60 to 80 to match bigger hitboxes
     });
     this.updateSpatialGrid(enemy);
   }
@@ -89,8 +89,8 @@ export class EnemyAISystem {
       // FIXED: Always update movement - enemies should always move toward player
       this.updateEnemyMovement(enemy, aiState, playerPosition, deltaTime);
 
-      // FIXED: Update attack behavior with better range
-      if (distanceToPlayer <= 200) { // Increased from 150 to 200
+      // FIXED: Update attack behavior with better range to match bigger hitboxes
+      if (distanceToPlayer <= 250) { // Increased from 200 to 250
         this.updateAttackBehavior(enemy, attackCycle, playerPosition, deltaTime);
       }
 
@@ -134,6 +134,7 @@ export class EnemyAISystem {
         break;
 
       case 'pursuit':
+        // FIXED: Increased attack range to match bigger hitboxes
         if (distanceToPlayer <= this.attackCycles.get(enemy.id)!.attackRange) {
           this.changeState(aiState, 'attack', currentTime);
           if (this.debugMode) console.log(`⚔️ Enemy ${enemy.id} in attack range`);
@@ -144,7 +145,8 @@ export class EnemyAISystem {
         break;
 
       case 'attack':
-        if (distanceToPlayer > this.attackCycles.get(enemy.id)!.attackRange * 1.3) {
+        // FIXED: Increased attack range threshold
+        if (distanceToPlayer > this.attackCycles.get(enemy.id)!.attackRange * 1.4) { // Increased from 1.3
           this.changeState(aiState, 'pursuit', currentTime);
         }
         break;
@@ -200,7 +202,7 @@ export class EnemyAISystem {
     const currentTime = Date.now();
     const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
 
-    // FIXED: More frequent attacks with better range
+    // FIXED: More frequent attacks with better range to match bigger hitboxes
     if (distanceToPlayer <= attackCycle.attackRange && 
         currentTime - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
       
