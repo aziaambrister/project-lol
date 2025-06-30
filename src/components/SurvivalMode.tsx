@@ -207,10 +207,6 @@ const SurvivalMode: React.FC = () => {
     window.location.reload();
   };
 
-  // ✅ CALCULATE CAMERA OFFSET - Keep background fixed, move entities
-  const cameraX = state.camera.x - window.innerWidth / 2;
-  const cameraY = state.camera.y - window.innerHeight / 2;
-
   const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
 
   return (
@@ -231,58 +227,44 @@ const SurvivalMode: React.FC = () => {
       {/* Dark overlay for better contrast */}
       <div className="absolute inset-0 bg-black/20 z-2"></div>
 
-      {/* ✅ GAME WORLD LAYER - Character and enemies with camera offset */}
+      {/* ✅ GAME WORLD LAYER - Character and enemies move around the static background */}
       <div 
         className="absolute inset-0"
         style={{ zIndex: 10 }}
       >
-        {/* Arena boundary */}
+        {/* Arena boundary - positioned in world coordinates */}
         {gameStarted && (
           <div 
             className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
             style={{
               width: `${state.survival.arena.radius * 2}px`,
               height: `${state.survival.arena.radius * 2}px`,
-              left: `${state.survival.arena.center.x - state.survival.arena.radius - cameraX}px`,
-              top: `${state.survival.arena.center.y - state.survival.arena.radius - cameraY}px`,
+              left: `${state.survival.arena.center.x - state.survival.arena.radius}px`,
+              top: `${state.survival.arena.center.y - state.survival.arena.radius}px`,
               boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`
             }}
           ></div>
         )}
 
-        {/* ✅ ENEMIES - Now visible with camera offset */}
-        {gameStarted && state.currentWorld.enemies.map(enemy => {
-          const screenX = enemy.position.x - cameraX;
-          const screenY = enemy.position.y - cameraY;
-          
-          // Only render enemies that are visible on screen
-          if (screenX < -100 || screenX > window.innerWidth + 100 || 
-              screenY < -100 || screenY > window.innerHeight + 100) {
-            return null;
-          }
-          
-          return (
-            <div
-              key={enemy.id}
-              className="absolute"
-              style={{
-                left: `${screenX - 32}px`,
-                top: `${screenY - 32}px`,
-                width: '64px',
-                height: '64px'
-              }}
-            >
-              <Enemy enemy={enemy} cameraX={0} cameraY={0} />
-            </div>
-          );
-        })}
+        {/* Enemies - positioned in world coordinates */}
+        {gameStarted && state.currentWorld.enemies.map(enemy => (
+          <div
+            key={enemy.id}
+            className="absolute"
+            style={{
+              left: `${enemy.position.x - 32}px`,
+              top: `${enemy.position.y - 32}px`,
+              width: '64px',
+              height: '64px'
+            }}
+          >
+            <Enemy enemy={enemy} cameraX={0} cameraY={0} />
+          </div>
+        ))}
 
-        {/* Survival drops */}
+        {/* Survival drops - positioned in world coordinates */}
         {gameStarted && state.survival.drops.map(drop => {
           if (drop.collected) return null;
-          
-          const screenX = drop.position.x - cameraX;
-          const screenY = drop.position.y - cameraY;
           
           const getDropColor = () => {
             switch (drop.type) {
@@ -299,8 +281,8 @@ const SurvivalMode: React.FC = () => {
               key={drop.id}
               className="absolute cursor-pointer"
               style={{
-                left: `${screenX - 12}px`,
-                top: `${screenY - 12}px`
+                left: `${drop.position.x - 12}px`,
+                top: `${drop.position.y - 12}px`
               }}
               onClick={() => collectSurvivalDrop(drop.id)}
             >
@@ -311,13 +293,12 @@ const SurvivalMode: React.FC = () => {
           );
         })}
 
-        {/* ✅ PLAYER - Now visible in center of screen */}
+        {/* Player - positioned in world coordinates */}
         <div 
           className="absolute"
           style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
+            left: `${state.player.position.x - 32}px`,
+            top: `${state.player.position.y - 32}px`,
             width: '64px',
             height: '64px',
             zIndex: 30
@@ -326,7 +307,7 @@ const SurvivalMode: React.FC = () => {
           <Player cameraX={0} cameraY={0} />
         </div>
 
-        {/* Damage numbers */}
+        {/* Damage numbers - positioned in world coordinates */}
         {gameStarted && state.combat.damageNumbers.map(damageNumber => (
           <div
             key={damageNumber.id}
@@ -336,8 +317,8 @@ const SurvivalMode: React.FC = () => {
               'text-yellow-500'
             }`}
             style={{
-              left: `${damageNumber.position.x - cameraX}px`,
-              top: `${damageNumber.position.y - cameraY}px`,
+              left: `${damageNumber.position.x}px`,
+              top: `${damageNumber.position.y}px`,
               textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
               animation: 'float-up 2s ease-out forwards'
             }}
