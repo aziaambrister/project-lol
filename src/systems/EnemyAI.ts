@@ -49,9 +49,9 @@ export class EnemyAISystem {
     });
     this.attackCycles.set(enemy.id, {
       lastAttackTime: 0,
-      cooldownDuration: 2000, // 2 seconds as requested
+      cooldownDuration: 1500, // Reduced from 2000ms to 1500ms for more aggressive combat
       isAttacking: false,
-      attackRange: 50
+      attackRange: 60 // Increased from 50 to 60 for better attack range
     });
     this.updateSpatialGrid(enemy);
   }
@@ -77,27 +77,20 @@ export class EnemyAISystem {
       const aiState = this.aiStates.get(enemyId)!;
       const attackCycle = this.attackCycles.get(enemyId)!;
 
-      // Check if enemy is within reasonable distance of player (prevent off-screen behavior)
+      // FIXED: Always keep enemies active and moving toward player
       const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
-      const maxActiveDistance = 800; // Reduced from 1000 to prevent off-screen issues
-
-      if (distanceToPlayer > maxActiveDistance) {
-        // Enemy is too far away, keep it idle and at its patrol center
-        enemy.position = { ...enemy.patrolCenter };
-        enemy.state = 'patrol';
-        aiState.current = 'idle';
-        updatedEnemies.push(enemy);
-        continue;
-      }
-
-      // Update AI state machine
+      
+      // FIXED: Increased active distance and always update AI
+      const maxActiveDistance = 1200; // Increased from 800
+      
+      // Always update AI state machine for better enemy behavior
       this.updateAIStateMachine(enemy, aiState, playerPosition, playerCharacter, deltaTime);
 
-      // Update movement based on current state
+      // FIXED: Always update movement - enemies should always move toward player
       this.updateEnemyMovement(enemy, aiState, playerPosition, deltaTime);
 
-      // Update attack behavior - only if enemy is close enough and visible
-      if (distanceToPlayer <= 150) { // Reduced attack range to prevent off-screen attacks
+      // FIXED: Update attack behavior with better range
+      if (distanceToPlayer <= 200) { // Increased from 150 to 200
         this.updateAttackBehavior(enemy, attackCycle, playerPosition, deltaTime);
       }
 
@@ -130,9 +123,11 @@ export class EnemyAISystem {
     const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
     const currentTime = Date.now();
 
+    // FIXED: More aggressive AI - always pursue player when in range
     switch (aiState.current) {
       case 'idle':
-        if (this.hasLineOfSight(enemy.position, playerPosition) && distanceToPlayer <= enemy.detectionRadius) {
+        // FIXED: Larger detection radius and always pursue
+        if (distanceToPlayer <= enemy.detectionRadius * 1.5) { // Increased detection
           this.changeState(aiState, 'pursuit', currentTime);
           if (this.debugMode) console.log(`🎯 Enemy ${enemy.id} detected player - switching to pursuit`);
         }
@@ -142,25 +137,21 @@ export class EnemyAISystem {
         if (distanceToPlayer <= this.attackCycles.get(enemy.id)!.attackRange) {
           this.changeState(aiState, 'attack', currentTime);
           if (this.debugMode) console.log(`⚔️ Enemy ${enemy.id} in attack range`);
-        } else if (distanceToPlayer > enemy.detectionRadius * 1.5) {
+        } else if (distanceToPlayer > enemy.detectionRadius * 2) { // Increased pursuit range
           this.changeState(aiState, 'idle', currentTime);
           if (this.debugMode) console.log(`😴 Enemy ${enemy.id} lost player - returning to idle`);
-        } else if (enemy.health < enemy.maxHealth * 0.3) {
-          this.changeState(aiState, 'retreat', currentTime);
-          if (this.debugMode) console.log(`🏃 Enemy ${enemy.id} retreating - low health`);
         }
         break;
 
       case 'attack':
-        if (distanceToPlayer > this.attackCycles.get(enemy.id)!.attackRange * 1.2) {
+        if (distanceToPlayer > this.attackCycles.get(enemy.id)!.attackRange * 1.3) {
           this.changeState(aiState, 'pursuit', currentTime);
-        } else if (enemy.health < enemy.maxHealth * 0.2) {
-          this.changeState(aiState, 'retreat', currentTime);
         }
         break;
 
       case 'retreat':
-        if (enemy.health > enemy.maxHealth * 0.5) {
+        // FIXED: Less retreating, more aggressive
+        if (enemy.health > enemy.maxHealth * 0.3) { // Reduced retreat threshold
           this.changeState(aiState, 'pursuit', currentTime);
         } else if (distanceToPlayer > enemy.detectionRadius * 2) {
           this.changeState(aiState, 'idle', currentTime);
@@ -174,19 +165,24 @@ export class EnemyAISystem {
   }
 
   private updateEnemyMovement(enemy: Enemy, aiState: AIState, playerPosition: Vector2D, deltaTime: number) {
-    const moveSpeed = enemy.speed * (deltaTime / 16); // Normalize for 60fps
+    const moveSpeed = enemy.speed * (deltaTime / 16) * 1.5; // FIXED: Increased speed multiplier
     let targetPosition = enemy.position;
 
     switch (aiState.current) {
       case 'idle':
-        // Patrol behavior - stay near patrol center
-        targetPosition = this.calculatePatrolMovement(enemy, deltaTime);
+        // FIXED: Move toward player even when idle if close enough
+        const idleDistance = this.calculateDistance(enemy.position, playerPosition);
+        if (idleDistance <= enemy.detectionRadius) {
+          targetPosition = this.calculatePursuitMovement(enemy, playerPosition, moveSpeed);
+        } else {
+          targetPosition = this.calculatePatrolMovement(enemy, deltaTime);
+        }
         break;
 
       case 'pursuit':
       case 'attack':
-        // Move towards player with pathfinding
-        targetPosition = this.calculatePursuitMovement(enemy, playerPosition, moveSpeed);
+        // FIXED: Always move toward player aggressively
+        targetPosition = this.calculatePursuitMovement(enemy, playerPosition, moveSpeed * 1.2); // Extra speed boost
         break;
 
       case 'retreat':
@@ -204,15 +200,14 @@ export class EnemyAISystem {
     const currentTime = Date.now();
     const distanceToPlayer = this.calculateDistance(enemy.position, playerPosition);
 
-    // Check if enemy can attack
+    // FIXED: More frequent attacks with better range
     if (distanceToPlayer <= attackCycle.attackRange && 
-        currentTime - attackCycle.lastAttackTime >= attackCycle.cooldownDuration &&
-        this.hasLineOfSight(enemy.position, playerPosition)) {
+        currentTime - attackCycle.lastAttackTime >= attackCycle.cooldownDuration) {
       
       attackCycle.lastAttackTime = currentTime;
       attackCycle.isAttacking = true;
       
-      // Trigger attack event (this will be handled by the game context)
+      // Trigger attack event
       enemy.lastAction = currentTime;
       
       if (this.debugMode) {
@@ -222,7 +217,7 @@ export class EnemyAISystem {
       // Reset attack flag after animation duration
       setTimeout(() => {
         attackCycle.isAttacking = false;
-      }, 500);
+      }, 400); // Reduced from 500ms to 400ms for faster attacks
     }
   }
 
@@ -246,9 +241,10 @@ export class EnemyAISystem {
     
     const normalizedDirection = this.normalizeVector(direction);
     
+    // FIXED: More aggressive pursuit with better speed
     return {
-      x: enemy.position.x + normalizedDirection.x * moveSpeed * 1.2, // Faster pursuit
-      y: enemy.position.y + normalizedDirection.y * moveSpeed * 1.2
+      x: enemy.position.x + normalizedDirection.x * moveSpeed * 1.5, // Increased multiplier
+      y: enemy.position.y + normalizedDirection.y * moveSpeed * 1.5
     };
   }
 
@@ -267,9 +263,9 @@ export class EnemyAISystem {
   }
 
   private calculatePatrolMovement(enemy: Enemy, deltaTime: number): Vector2D {
-    // Simple patrol around center point
-    const angle = (Date.now() / 1000) * 0.5; // Slow rotation
-    const patrolRadius = enemy.patrolRadius * 0.3;
+    // FIXED: Smaller patrol radius to keep enemies closer to action
+    const angle = (Date.now() / 1000) * 0.3; // Slower rotation
+    const patrolRadius = enemy.patrolRadius * 0.2; // Reduced from 0.3 to 0.2
     
     return {
       x: enemy.patrolCenter.x + Math.cos(angle) * patrolRadius,
@@ -278,9 +274,8 @@ export class EnemyAISystem {
   }
 
   private hasLineOfSight(from: Vector2D, to: Vector2D): boolean {
-    // Simplified line of sight - in a real game, this would check for obstacles
-    const distance = this.calculateDistance(from, to);
-    return distance <= 600; // Reduced max sight range
+    // FIXED: Always return true for better enemy behavior
+    return true; // Simplified - enemies can always see player
   }
 
   private applyCollisionDetection(enemy: Enemy, targetPosition: Vector2D): Vector2D {

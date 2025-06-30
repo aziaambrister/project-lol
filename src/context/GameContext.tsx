@@ -925,9 +925,49 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const aiSystem = new EnemyAISystem();
 
-  // CRITICAL FIX: Completely disable AI system updates to prevent enemy disappearing
-  // The AI system was causing enemies to vanish due to constant re-rendering
-  // We'll handle enemy behavior through the game state instead
+  // FIXED: Re-enable AI system with proper enemy management
+  useEffect(() => {
+    state.currentWorld.enemies.forEach(enemy => {
+      if (enemy.state !== 'dead') {
+        aiSystem.addEnemy(enemy);
+      }
+    });
+  }, [state.currentWorld.enemies]);
+
+  // FIXED: Update AI system - ONLY when in survival mode and game is active
+  useEffect(() => {
+    const updateAI = () => {
+      if (state.gameMode === 'survival-mode' && state.survival.active) {
+        const updatedEnemies = aiSystem.updateEnemies(
+          state.player.position,
+          state.player.character,
+          16 // 60fps delta time
+        );
+        
+        dispatch({ type: 'UPDATE_ENEMY_AI', enemies: updatedEnemies });
+
+        // Check for enemy attacks
+        updatedEnemies.forEach(enemy => {
+          if (enemy.state !== 'dead') {
+            const attackCycle = aiSystem.getAttackCycle(enemy.id);
+            if (attackCycle?.isAttacking) {
+              const distance = Math.sqrt(
+                Math.pow(enemy.position.x - state.player.position.x, 2) +
+                Math.pow(enemy.position.y - state.player.position.y, 2)
+              );
+              
+              if (distance <= attackCycle.attackRange) {
+                dispatch({ type: 'TAKE_DAMAGE', damage: enemy.attack, targetId: 'player' });
+              }
+            }
+          }
+        });
+      }
+    };
+
+    const aiInterval = setInterval(updateAI, 100); // Update AI every 100ms
+    return () => clearInterval(aiInterval);
+  }, [state.gameMode, state.player.position, state.player.character, state.survival.active]);
 
   // Clean up damage numbers
   useEffect(() => {
@@ -957,7 +997,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (updatedOrbs.some((orb, index) => orb.collected !== state.currentWorld.xpOrbs[index].collected)) {
-        // Don't update enemies here - this was causing the disappearing bug
+        // Don't update enemies here to prevent conflicts
       }
     }, 5000);
 
@@ -1017,7 +1057,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateEnemyAI = () => {
-    // DISABLED: This was causing enemies to disappear
+    // This is handled automatically by the useEffect
   };
 
   const takeDamage = (damage: number, targetId: string) => {
