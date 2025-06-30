@@ -5,26 +5,76 @@ import Player from './Player';
 import Enemy from './Enemy';
 import EscapeMenu from './EscapeMenu';
 
+// Tilemap data for The Forgotten Courtyard
+const TILE_SIZE = 32;
+const MAP_WIDTH = 25;
+const MAP_HEIGHT = 25;
+
+// Tile types
+const TILES = {
+  STONE: 0,
+  GRASS: 1,
+  WATER: 2,
+  SAND: 3,
+  DIRT: 4
+};
+
+// Generate a proper courtyard tilemap
+const generateCourtyard = (): number[][] => {
+  const map: number[][] = [];
+  
+  for (let y = 0; y < MAP_HEIGHT; y++) {
+    const row: number[] = [];
+    for (let x = 0; x < MAP_WIDTH; x++) {
+      // Create courtyard pattern
+      if (y === 0 || y === MAP_HEIGHT - 1 || x === 0 || x === MAP_WIDTH - 1) {
+        // Outer walls
+        row.push(TILES.STONE);
+      } else if (y < 3 || y > MAP_HEIGHT - 4 || x < 3 || x > MAP_WIDTH - 4) {
+        // Stone border
+        row.push(TILES.STONE);
+      } else if ((x === 12 && y >= 8 && y <= 16) || (y === 12 && x >= 8 && x <= 16)) {
+        // Central cross pattern
+        row.push(TILES.STONE);
+      } else if (Math.abs(x - 12) <= 2 && Math.abs(y - 12) <= 2) {
+        // Central area
+        row.push(TILES.STONE);
+      } else if ((x + y) % 3 === 0) {
+        // Scattered stone tiles
+        row.push(TILES.STONE);
+      } else {
+        // Grass areas
+        row.push(TILES.GRASS);
+      }
+    }
+    map.push(row);
+  }
+  
+  return map;
+};
+
+const COURTYARD_MAP = generateCourtyard();
+
 const SurvivalMode: React.FC = () => {
-  const { state, movePlayer, stopMoving, performAttack, collectSurvivalDrop, usePowerUp } = useGame();
+  const { state, movePlayer, stopMoving, performAttack, collectSurvivalDrop, usePowerUp, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
   const [gameStarted, setGameStarted] = useState(false);
   const [showEscMenu, setShowEscMenu] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const keysPressedRef = useRef<Set<string>>(new Set());
+  const gameLoopRef = useRef<number>();
 
   useEffect(() => {
     keysPressedRef.current = keysPressed;
   }, [keysPressed]);
 
-  // Handle keyboard input - ONLY when game has started and not paused
+  // Handle keyboard input
   useEffect(() => {
     if (!gameStarted || showEscMenu || isPaused) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
-      // ESC key to show pause menu
       if (key === 'escape') {
         e.preventDefault();
         setShowEscMenu(true);
@@ -81,13 +131,12 @@ const SurvivalMode: React.FC = () => {
     };
   }, [performAttack, usePowerUp, gameStarted, showEscMenu, isPaused]);
 
-  // Movement loop - ONLY when game has started and not paused
+  // Game loop for movement and AI
   useEffect(() => {
     if (!gameStarted || showEscMenu || isPaused) return;
 
-    let animationFrameId: number;
-
-    const moveLoop = () => {
+    const gameLoop = () => {
+      // Handle player movement
       if (keysPressedRef.current.size === 0) {
         if (state.player.isMoving) {
           stopMoving();
@@ -111,17 +160,63 @@ const SurvivalMode: React.FC = () => {
         });
       }
 
-      animationFrameId = requestAnimationFrame(moveLoop);
+      gameLoopRef.current = requestAnimationFrame(gameLoop);
     };
 
-    animationFrameId = requestAnimationFrame(moveLoop);
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
       }
     };
   }, [movePlayer, stopMoving, gameStarted, showEscMenu, isPaused, state.player.isMoving]);
+
+  // AI System updates
+  useEffect(() => {
+    if (!gameStarted || showEscMenu || isPaused) return;
+
+    // Add enemies to AI system
+    state.currentWorld.enemies.forEach(enemy => {
+      if (enemy.state !== 'dead' && !aiSystem.getEnemyState(enemy.id)) {
+        aiSystem.addEnemy(enemy);
+      }
+    });
+
+    // AI update loop
+    const aiUpdateLoop = () => {
+      try {
+        const updatedEnemies = aiSystem.updateEnemies(
+          state.player.position,
+          state.player.character,
+          16
+        );
+        
+        // Check for enemy attacks
+        updatedEnemies.forEach(enemy => {
+          if (enemy.state !== 'dead') {
+            const attackCycle = aiSystem.getAttackCycle(enemy.id);
+            if (attackCycle?.isAttacking) {
+              const distance = Math.sqrt(
+                Math.pow(enemy.position.x - state.player.position.x, 2) +
+                Math.pow(enemy.position.y - state.player.position.y, 2)
+              );
+              
+              if (distance <= attackCycle.attackRange) {
+                console.log(`🔥 Enemy ${enemy.id} hit player!`);
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('AI update error:', error);
+      }
+    };
+
+    const aiInterval = setInterval(aiUpdateLoop, 16); // 60fps
+
+    return () => clearInterval(aiInterval);
+  }, [gameStarted, showEscMenu, isPaused, state.player.position.x, state.player.position.y]);
 
   const findNearestEnemy = () => {
     if (!gameStarted) return null;
@@ -159,46 +254,107 @@ const SurvivalMode: React.FC = () => {
   };
 
   const handleExitGame = () => {
-    // This would be handled by the EscapeMenu component
     window.location.reload();
   };
 
   const cameraX = state.camera.x - window.innerWidth / 2;
   const cameraY = state.camera.y - window.innerHeight / 2;
 
-  // FIXED: Count alive enemies properly
   const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
+
+  // Render tilemap
+  const renderTilemap = () => {
+    const tiles = [];
+    const mapOffsetX = (state.survival.arena.center.x - (MAP_WIDTH * TILE_SIZE) / 2) - cameraX;
+    const mapOffsetY = (state.survival.arena.center.y - (MAP_HEIGHT * TILE_SIZE) / 2) - cameraY;
+
+    for (let y = 0; y < MAP_HEIGHT; y++) {
+      for (let x = 0; x < MAP_WIDTH; x++) {
+        const tileType = COURTYARD_MAP[y][x];
+        const tileX = mapOffsetX + x * TILE_SIZE;
+        const tileY = mapOffsetY + y * TILE_SIZE;
+
+        // Only render tiles that are visible on screen
+        if (tileX > -TILE_SIZE && tileX < window.innerWidth + TILE_SIZE &&
+            tileY > -TILE_SIZE && tileY < window.innerHeight + TILE_SIZE) {
+          
+          let tileStyle = '';
+          let tileEmoji = '';
+          
+          switch (tileType) {
+            case TILES.STONE:
+              tileStyle = 'bg-gray-600 border border-gray-500';
+              tileEmoji = '🏛️';
+              break;
+            case TILES.GRASS:
+              tileStyle = 'bg-green-600 border border-green-500';
+              tileEmoji = '🌱';
+              break;
+            case TILES.WATER:
+              tileStyle = 'bg-blue-600 border border-blue-500';
+              tileEmoji = '💧';
+              break;
+            case TILES.SAND:
+              tileStyle = 'bg-yellow-600 border border-yellow-500';
+              tileEmoji = '🏖️';
+              break;
+            case TILES.DIRT:
+              tileStyle = 'bg-amber-700 border border-amber-600';
+              tileEmoji = '🟫';
+              break;
+            default:
+              tileStyle = 'bg-gray-500';
+              tileEmoji = '⬜';
+          }
+
+          tiles.push(
+            <div
+              key={`${x}-${y}`}
+              className={`absolute ${tileStyle} flex items-center justify-center text-xs opacity-80`}
+              style={{
+                left: tileX,
+                top: tileY,
+                width: TILE_SIZE,
+                height: TILE_SIZE,
+                zIndex: 1
+              }}
+            >
+              {tileEmoji}
+            </div>
+          );
+        }
+      }
+    }
+
+    return tiles;
+  };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* FIXED: The Forgotten Courtyard Background - Using correct image path */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(/The forgotten courtyard.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          imageRendering: 'pixelated'
-        }}
-      ></div>
-      
-      {/* Fallback background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-20"></div>
+      {/* Tilemap Background */}
+      <div className="absolute inset-0" style={{ zIndex: 1 }}>
+        {gameStarted && renderTilemap()}
+      </div>
+
+      {/* Fallback Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black" style={{ zIndex: 0 }}></div>
 
       {/* Arena Boundary */}
-      <div 
-        className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
-        style={{
-          width: `${state.survival.arena.radius * 2}px`,
-          height: `${state.survival.arena.radius * 2}px`,
-          left: `${state.survival.arena.center.x - state.survival.arena.radius - cameraX}px`,
-          top: `${state.survival.arena.center.y - state.survival.arena.radius - cameraY}px`,
-          boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`
-        }}
-      ></div>
+      {gameStarted && (
+        <div 
+          className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
+          style={{
+            width: `${state.survival.arena.radius * 2}px`,
+            height: `${state.survival.arena.radius * 2}px`,
+            left: `${state.survival.arena.center.x - state.survival.arena.radius - cameraX}px`,
+            top: `${state.survival.arena.center.y - state.survival.arena.radius - cameraY}px`,
+            boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`,
+            zIndex: 5
+          }}
+        ></div>
+      )}
 
-      {/* Enemies - ONLY render when game started */}
+      {/* Enemies */}
       {gameStarted && state.currentWorld.enemies.map(enemy => (
         <Enemy key={enemy.id} enemy={enemy} cameraX={cameraX} cameraY={cameraY} />
       ))}
@@ -242,7 +398,7 @@ const SurvivalMode: React.FC = () => {
         );
       })}
 
-      {/* FIXED: Player - Always visible in center of screen */}
+      {/* Player - Always visible in center */}
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
         <Player cameraX={0} cameraY={0} />
       </div>
@@ -260,38 +416,35 @@ const SurvivalMode: React.FC = () => {
             left: damageNumber.position.x - cameraX,
             top: damageNumber.position.y - cameraY,
             textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            animation: 'float-up 2s ease-out forwards'
+            animation: 'float-up 2s ease-out forwards',
+            zIndex: 40
           }}
         >
           {damageNumber.type === 'damage' ? '-' : '+'}{damageNumber.value}
         </div>
       ))}
 
-      {/* Survival HUD - ONLY when game started and not paused */}
+      {/* Survival HUD */}
       {gameStarted && !showEscMenu && (
         <>
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 border border-red-500/50">
               <div className="flex items-center space-x-6 text-white">
-                {/* Wave Info */}
                 <div className="flex items-center space-x-2">
                   <Target className="text-red-400" size={20} />
                   <span className="font-bold">Wave {state.survival.currentWave.waveNumber}</span>
                 </div>
                 
-                {/* Survival Time */}
                 <div className="flex items-center space-x-2">
                   <Clock className="text-blue-400" size={20} />
                   <span className="font-mono">{formatTime(state.survival.stats.survivalTime)}</span>
                 </div>
                 
-                {/* Enemies Remaining - FIXED */}
                 <div className="flex items-center space-x-2">
                   <Users className="text-orange-400" size={20} />
                   <span>{aliveEnemies} left</span>
                 </div>
                 
-                {/* Score */}
                 <div className="flex items-center space-x-2">
                   <Trophy className="text-yellow-400" size={20} />
                   <span>{state.survival.stats.enemiesDefeated * 100 + state.survival.stats.survivalTime * 10}</span>
@@ -343,52 +496,6 @@ const SurvivalMode: React.FC = () => {
             </div>
           </div>
 
-          {/* Active Power-ups */}
-          <div className="absolute top-4 right-4 z-30">
-            <div className="space-y-2">
-              {state.survival.activePowerUps.map((activePowerUp, index) => {
-                const timeLeft = Math.max(0, activePowerUp.endTime - Date.now());
-                const progress = (timeLeft / activePowerUp.powerUp.duration) * 100;
-                
-                return (
-                  <div key={index} className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-purple-500/50">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">{activePowerUp.powerUp.icon}</span>
-                      <div>
-                        <div className="text-white font-bold text-sm">{activePowerUp.powerUp.name}</div>
-                        <div className="w-20 h-1 bg-gray-700 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-purple-500 transition-all duration-100"
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Wave Progress */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
-            <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-blue-500/50">
-              <div className="text-center">
-                {state.survival.waveInProgress ? (
-                  <div className="text-white">
-                    <div className="text-sm">Enemies Remaining</div>
-                    <div className="text-2xl font-bold text-red-400">{aliveEnemies}</div>
-                  </div>
-                ) : (
-                  <div className="text-white">
-                    <div className="text-sm">Next Wave In</div>
-                    <div className="text-2xl font-bold text-blue-400">{Math.ceil(state.survival.nextWaveTimer / 1000)}s</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Controls */}
           <div className="absolute bottom-4 right-4 z-30">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
@@ -417,15 +524,15 @@ const SurvivalMode: React.FC = () => {
           <div className="text-center max-w-md">
             <h1 className="text-4xl font-bold text-white mb-4">🏛️ The Forgotten Courtyard</h1>
             <p className="text-gray-300 mb-6">
-              Enter the ancient arena where warriors once fought for glory. Survive waves of enemies in this mystical courtyard lit by eternal flames.
+              Enter the ancient arena where warriors once fought for glory. Survive waves of enemies in this mystical courtyard with stone pathways and grassy areas.
             </p>
             <div className="mb-6 p-4 bg-orange-900/30 rounded-lg border border-orange-500/50">
-              <h3 className="text-orange-400 font-bold mb-2">Wave Structure:</h3>
+              <h3 className="text-orange-400 font-bold mb-2">Arena Features:</h3>
               <ul className="text-gray-300 text-sm space-y-1">
-                <li>• <strong>Wave 1:</strong> 3 enemies (Easy)</li>
-                <li>• <strong>Wave 2:</strong> 5 enemies (Medium)</li>
-                <li>• <strong>Wave 3:</strong> 7 enemies (Hard)</li>
-                <li>• Defeat all waves to complete survival!</li>
+                <li>• 🏛️ Stone pathways and structures</li>
+                <li>• 🌱 Grassy combat areas</li>
+                <li>• ⚔️ Enhanced enemy AI that chases you</li>
+                <li>• 🎯 Survive 3 waves to complete the challenge!</li>
               </ul>
             </div>
             <button
