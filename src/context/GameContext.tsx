@@ -111,9 +111,9 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
       baseHealth: 50,
       baseAttack: 8,
       defense: 3,
-      speed: 5, // Increased speed
+      speed: 5,
       experience: 25,
-      detectionRadius: 150, // Increased detection
+      detectionRadius: 150,
       patrolRadius: 100
     },
     {
@@ -122,9 +122,9 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
       baseHealth: 40,
       baseAttack: 10,
       defense: 2,
-      speed: 7, // Increased speed
+      speed: 7,
       experience: 20,
-      detectionRadius: 180, // Increased detection
+      detectionRadius: 180,
       patrolRadius: 150
     },
     {
@@ -133,9 +133,9 @@ const createSurvivalEnemiesForWave = (waveNumber: number): Enemy[] => {
       baseHealth: 80,
       baseAttack: 15,
       defense: 8,
-      speed: 4, // Increased speed
+      speed: 4,
       experience: 40,
-      detectionRadius: 160, // Increased detection
+      detectionRadius: 160,
       patrolRadius: 140
     }
   ];

@@ -5,56 +5,6 @@ import Player from './Player';
 import Enemy from './Enemy';
 import EscapeMenu from './EscapeMenu';
 
-// Tilemap data for The Forgotten Courtyard
-const TILE_SIZE = 32;
-const MAP_WIDTH = 25;
-const MAP_HEIGHT = 25;
-
-// Tile types
-const TILES = {
-  STONE: 0,
-  GRASS: 1,
-  WATER: 2,
-  SAND: 3,
-  DIRT: 4
-};
-
-// Generate a proper courtyard tilemap
-const generateCourtyard = (): number[][] => {
-  const map: number[][] = [];
-  
-  for (let y = 0; y < MAP_HEIGHT; y++) {
-    const row: number[] = [];
-    for (let x = 0; x < MAP_WIDTH; x++) {
-      // Create courtyard pattern
-      if (y === 0 || y === MAP_HEIGHT - 1 || x === 0 || x === MAP_WIDTH - 1) {
-        // Outer walls
-        row.push(TILES.STONE);
-      } else if (y < 3 || y > MAP_HEIGHT - 4 || x < 3 || x > MAP_WIDTH - 4) {
-        // Stone border
-        row.push(TILES.STONE);
-      } else if ((x === 12 && y >= 8 && y <= 16) || (y === 12 && x >= 8 && x <= 16)) {
-        // Central cross pattern
-        row.push(TILES.STONE);
-      } else if (Math.abs(x - 12) <= 2 && Math.abs(y - 12) <= 2) {
-        // Central area
-        row.push(TILES.STONE);
-      } else if ((x + y) % 3 === 0) {
-        // Scattered stone tiles
-        row.push(TILES.STONE);
-      } else {
-        // Grass areas
-        row.push(TILES.GRASS);
-      }
-    }
-    map.push(row);
-  }
-  
-  return map;
-};
-
-const COURTYARD_MAP = generateCourtyard();
-
 const SurvivalMode: React.FC = () => {
   const { state, movePlayer, stopMoving, performAttack, collectSurvivalDrop, usePowerUp, aiSystem } = useGame();
   const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
@@ -262,82 +212,22 @@ const SurvivalMode: React.FC = () => {
 
   const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
 
-  // Render tilemap
-  const renderTilemap = () => {
-    const tiles = [];
-    const mapOffsetX = (state.survival.arena.center.x - (MAP_WIDTH * TILE_SIZE) / 2) - cameraX;
-    const mapOffsetY = (state.survival.arena.center.y - (MAP_HEIGHT * TILE_SIZE) / 2) - cameraY;
-
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-      for (let x = 0; x < MAP_WIDTH; x++) {
-        const tileType = COURTYARD_MAP[y][x];
-        const tileX = mapOffsetX + x * TILE_SIZE;
-        const tileY = mapOffsetY + y * TILE_SIZE;
-
-        // Only render tiles that are visible on screen
-        if (tileX > -TILE_SIZE && tileX < window.innerWidth + TILE_SIZE &&
-            tileY > -TILE_SIZE && tileY < window.innerHeight + TILE_SIZE) {
-          
-          let tileStyle = '';
-          let tileEmoji = '';
-          
-          switch (tileType) {
-            case TILES.STONE:
-              tileStyle = 'bg-gray-600 border border-gray-500';
-              tileEmoji = '🏛️';
-              break;
-            case TILES.GRASS:
-              tileStyle = 'bg-green-600 border border-green-500';
-              tileEmoji = '🌱';
-              break;
-            case TILES.WATER:
-              tileStyle = 'bg-blue-600 border border-blue-500';
-              tileEmoji = '💧';
-              break;
-            case TILES.SAND:
-              tileStyle = 'bg-yellow-600 border border-yellow-500';
-              tileEmoji = '🏖️';
-              break;
-            case TILES.DIRT:
-              tileStyle = 'bg-amber-700 border border-amber-600';
-              tileEmoji = '🟫';
-              break;
-            default:
-              tileStyle = 'bg-gray-500';
-              tileEmoji = '⬜';
-          }
-
-          tiles.push(
-            <div
-              key={`${x}-${y}`}
-              className={`absolute ${tileStyle} flex items-center justify-center text-xs opacity-80`}
-              style={{
-                left: tileX,
-                top: tileY,
-                width: TILE_SIZE,
-                height: TILE_SIZE,
-                zIndex: 1
-              }}
-            >
-              {tileEmoji}
-            </div>
-          );
-        }
-      }
-    }
-
-    return tiles;
-  };
-
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Tilemap Background */}
-      <div className="absolute inset-0" style={{ zIndex: 1 }}>
-        {gameStarted && renderTilemap()}
-      </div>
-
-      {/* Fallback Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black" style={{ zIndex: 0 }}></div>
+      {/* FIXED: Using ONLY your provided background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(/The forgotten courtyard.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          imageRendering: 'pixelated'
+        }}
+      ></div>
+      
+      {/* Fallback background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black opacity-20"></div>
 
       {/* Arena Boundary */}
       {gameStarted && (
@@ -524,15 +414,15 @@ const SurvivalMode: React.FC = () => {
           <div className="text-center max-w-md">
             <h1 className="text-4xl font-bold text-white mb-4">🏛️ The Forgotten Courtyard</h1>
             <p className="text-gray-300 mb-6">
-              Enter the ancient arena where warriors once fought for glory. Survive waves of enemies in this mystical courtyard with stone pathways and grassy areas.
+              Enter the ancient arena where warriors once fought for glory. Survive waves of enemies in this mystical courtyard lit by eternal flames.
             </p>
             <div className="mb-6 p-4 bg-orange-900/30 rounded-lg border border-orange-500/50">
-              <h3 className="text-orange-400 font-bold mb-2">Arena Features:</h3>
+              <h3 className="text-orange-400 font-bold mb-2">Wave Structure:</h3>
               <ul className="text-gray-300 text-sm space-y-1">
-                <li>• 🏛️ Stone pathways and structures</li>
-                <li>• 🌱 Grassy combat areas</li>
-                <li>• ⚔️ Enhanced enemy AI that chases you</li>
-                <li>• 🎯 Survive 3 waves to complete the challenge!</li>
+                <li>• <strong>Wave 1:</strong> 3 enemies (Easy)</li>
+                <li>• <strong>Wave 2:</strong> 5 enemies (Medium)</li>
+                <li>• <strong>Wave 3:</strong> 7 enemies (Hard)</li>
+                <li>• Defeat all waves to complete survival!</li>
               </ul>
             </div>
             <button
