@@ -207,143 +207,144 @@ const SurvivalMode: React.FC = () => {
     window.location.reload();
   };
 
-  // ✅ FIXED: Calculate camera offset for world positioning
-  const cameraX = state.camera.x - window.innerWidth / 2;
-  const cameraY = state.camera.y - window.innerHeight / 2;
-
   const aliveEnemies = state.currentWorld.enemies.filter(e => e.state !== 'dead').length;
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* ✅ FIXED: Static background map - NO camera transforms applied */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(/the-forgotten-courtyard.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          imageRendering: 'pixelated',
-          // ✅ NO transform applied - map stays fixed
-          zIndex: 1
-        }}
-      ></div>
+      {/* ✅ LAYER 1: STATIC MAP - Never moves, always stays in place */}
+      <div className="map" style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100vw', 
+        height: '100vh',
+        backgroundImage: `url(/the-forgotten-courtyard.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        zIndex: 1
+      }}></div>
       
-      {/* Fallback background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-800 via-orange-900 to-red-900 opacity-20 z-2"></div>
-
-      {/* ✅ FIXED: Arena boundary positioned relative to world coordinates */}
-      {gameStarted && (
-        <div 
-          className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
-          style={{
-            width: `${state.survival.arena.radius * 2}px`,
-            height: `${state.survival.arena.radius * 2}px`,
-            left: `${state.survival.arena.center.x - state.survival.arena.radius - cameraX}px`,
-            top: `${state.survival.arena.center.y - state.survival.arena.radius - cameraY}px`,
-            boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`,
-            zIndex: 5
-          }}
-        ></div>
-      )}
-
-      {/* ✅ FIXED: Enemies positioned absolutely using world coordinates minus camera offset */}
-      {gameStarted && state.currentWorld.enemies.map(enemy => {
-        const screenX = enemy.position.x - cameraX;
-        const screenY = enemy.position.y - cameraY;
-        
-        return (
-          <div
-            key={enemy.id}
-            className="absolute z-15"
+      {/* ✅ LAYER 2: ENTITY LAYER - Only this layer moves with camera */}
+      <div className="entity-layer" style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100vw', 
+        height: '100vh',
+        zIndex: 10
+      }}>
+        {/* Arena boundary */}
+        {gameStarted && (
+          <div 
+            className="absolute border-4 border-red-500/70 rounded-full pointer-events-none"
             style={{
-              left: screenX - 32, // Center the enemy sprite
-              top: screenY - 32,
-              width: '64px',
-              height: '64px'
+              width: `${state.survival.arena.radius * 2}px`,
+              height: `${state.survival.arena.radius * 2}px`,
+              left: `${state.survival.arena.center.x - state.survival.arena.radius - (state.player.position.x - window.innerWidth / 2)}px`,
+              top: `${state.survival.arena.center.y - state.survival.arena.radius - (state.player.position.y - window.innerHeight / 2)}px`,
+              boxShadow: `inset 0 0 50px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)`
             }}
-          >
-            <Enemy enemy={enemy} cameraX={0} cameraY={0} />
-          </div>
-        );
-      })}
+          ></div>
+        )}
 
-      {/* ✅ FIXED: Survival drops positioned absolutely */}
-      {gameStarted && state.survival.drops.map(drop => {
-        if (drop.collected) return null;
-        
-        const screenX = drop.position.x - cameraX;
-        const screenY = drop.position.y - cameraY;
-        
-        // Only render drops visible on screen
-        if (screenX < -50 || screenX > window.innerWidth + 50 || 
-            screenY < -50 || screenY > window.innerHeight + 50) {
-          return null;
-        }
-        
-        const getDropColor = () => {
-          switch (drop.type) {
-            case 'currency': return 'from-yellow-400 to-yellow-600';
-            case 'health': return 'from-red-400 to-red-600';
-            case 'power-up': return 'from-purple-400 to-purple-600';
-            case 'special-attack': return 'from-blue-400 to-blue-600';
-            default: return 'from-gray-400 to-gray-600';
-          }
-        };
-        
-        return (
-          <div
-            key={drop.id}
-            className="absolute z-25 cursor-pointer"
-            style={{
-              left: screenX - 12,
-              top: screenY - 12
-            }}
-            onClick={() => collectSurvivalDrop(drop.id)}
-          >
-            <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${getDropColor()} animate-bounce shadow-lg border-2 border-white/50 flex items-center justify-center text-white text-xs font-bold`}>
-              {drop.icon}
+        {/* Enemies */}
+        {gameStarted && state.currentWorld.enemies.map(enemy => {
+          const screenX = enemy.position.x - (state.player.position.x - window.innerWidth / 2);
+          const screenY = enemy.position.y - (state.player.position.y - window.innerHeight / 2);
+          
+          return (
+            <div
+              key={enemy.id}
+              className="absolute"
+              style={{
+                left: screenX - 32,
+                top: screenY - 32,
+                width: '64px',
+                height: '64px'
+              }}
+            >
+              <Enemy enemy={enemy} cameraX={0} cameraY={0} />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      {/* ✅ FIXED: Player positioned absolutely in center of screen */}
-      <div 
-        className="absolute z-30"
-        style={{
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '64px',
-          height: '64px'
-        }}
-      >
-        <Player cameraX={0} cameraY={0} />
-      </div>
+        {/* Survival drops */}
+        {gameStarted && state.survival.drops.map(drop => {
+          if (drop.collected) return null;
+          
+          const screenX = drop.position.x - (state.player.position.x - window.innerWidth / 2);
+          const screenY = drop.position.y - (state.player.position.y - window.innerHeight / 2);
+          
+          if (screenX < -50 || screenX > window.innerWidth + 50 || 
+              screenY < -50 || screenY > window.innerHeight + 50) {
+            return null;
+          }
+          
+          const getDropColor = () => {
+            switch (drop.type) {
+              case 'currency': return 'from-yellow-400 to-yellow-600';
+              case 'health': return 'from-red-400 to-red-600';
+              case 'power-up': return 'from-purple-400 to-purple-600';
+              case 'special-attack': return 'from-blue-400 to-blue-600';
+              default: return 'from-gray-400 to-gray-600';
+            }
+          };
+          
+          return (
+            <div
+              key={drop.id}
+              className="absolute cursor-pointer"
+              style={{
+                left: screenX - 12,
+                top: screenY - 12
+              }}
+              onClick={() => collectSurvivalDrop(drop.id)}
+            >
+              <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${getDropColor()} animate-bounce shadow-lg border-2 border-white/50 flex items-center justify-center text-white text-xs font-bold`}>
+                {drop.icon}
+              </div>
+            </div>
+          );
+        })}
 
-      {/* ✅ FIXED: Damage numbers positioned absolutely using world coordinates */}
-      {gameStarted && state.combat.damageNumbers.map(damageNumber => (
-        <div
-          key={damageNumber.id}
-          className={`absolute font-bold text-2xl pointer-events-none animate-bounce ${
-            damageNumber.type === 'damage' ? 'text-red-500' :
-            damageNumber.type === 'heal' ? 'text-green-500' :
-            'text-yellow-500'
-          }`}
+        {/* Player - Always centered */}
+        <div 
+          className="absolute"
           style={{
-            left: damageNumber.position.x - cameraX,
-            top: damageNumber.position.y - cameraY,
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            animation: 'float-up 2s ease-out forwards',
-            zIndex: 40
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '64px',
+            height: '64px',
+            zIndex: 30
           }}
         >
-          {damageNumber.type === 'damage' ? '-' : '+'}{damageNumber.value}
+          <Player cameraX={0} cameraY={0} />
         </div>
-      ))}
 
-      {/* ✅ FIXED: UI elements positioned relative to screen (not world) */}
+        {/* Damage numbers */}
+        {gameStarted && state.combat.damageNumbers.map(damageNumber => (
+          <div
+            key={damageNumber.id}
+            className={`absolute font-bold text-2xl pointer-events-none animate-bounce ${
+              damageNumber.type === 'damage' ? 'text-red-500' :
+              damageNumber.type === 'heal' ? 'text-green-500' :
+              'text-yellow-500'
+            }`}
+            style={{
+              left: damageNumber.position.x - (state.player.position.x - window.innerWidth / 2),
+              top: damageNumber.position.y - (state.player.position.y - window.innerHeight / 2),
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+              animation: 'float-up 2s ease-out forwards'
+            }}
+          >
+            {damageNumber.type === 'damage' ? '-' : '+'}{damageNumber.value}
+          </div>
+        ))}
+      </div>
+
+      {/* ✅ LAYER 3: UI LAYER - Always stays on screen */}
       {gameStarted && !showEscMenu && (
         <>
           {/* Top HUD */}
